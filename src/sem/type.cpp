@@ -1,5 +1,6 @@
 #include "sem/type.hpp"
 
+#include <limits>
 #include <utility>
 
 using namespace arkoi::sem;

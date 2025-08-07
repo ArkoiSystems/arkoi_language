@@ -1,5 +1,9 @@
 #pragma once
 
+#include <array>
+#include <cstdint>
+#include <variant>
+
 #include "utils/size.hpp"
 
 namespace arkoi::x86_64 {
