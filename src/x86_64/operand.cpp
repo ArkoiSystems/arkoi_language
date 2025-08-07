@@ -1,6 +1,7 @@
 #include "x86_64/operand.hpp"
 
 #include <utility>
+#include <variant>
 
 using namespace arkoi::x86_64;
 
