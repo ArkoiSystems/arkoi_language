@@ -12,28 +12,6 @@
 
 ## Critical Build Information
 
-⚠️ **IMPORTANT**: The repository has missing include statements that cause build failures. You must fix these includes before building:
-
-### Required Include Fixes
-```cpp
-// include/sem/type.hpp - add after existing includes:
-#include <variant>
-
-// include/sem/symbol.hpp - add after existing includes:
-#include <optional>
-
-// src/sem/type.cpp - add after existing includes:
-#include <limits>
-
-// include/x86_64/operand.hpp - add after existing includes:
-#include <array>
-#include <cstdint>
-#include <variant>
-
-// src/x86_64/operand.cpp - add after existing includes:
-#include <variant>
-```
-
 ### Build Process (Always follows this sequence)
 ```bash
 # Prerequisites: GCC 13.3.0+ or equivalent C++23 compiler, CMake 3.29.6+
@@ -113,7 +91,7 @@ cmake .. && cmake --build .
 ```
 
 ### Common Issues and Solutions
-1. **Build failures**: Always apply the include fixes listed above first
+1. **Build failures**: Ensure all required C++ includes are present in source files
 2. **Missing executables**: Ensure you're in the build directory
 3. **Test naming**: Test executable is `arkoi_language_tests`, not `test_arkoi_language`
 4. **Memory errors**: Project uses AddressSanitizer and UBSan flags by default
@@ -150,4 +128,4 @@ cmake .. && cmake --build .
 - **Output formats**: `.il` (intermediate language), `.asm` (assembly), `.dot` (CFG visualization)
 - **Build artifacts**: Exclude `build/` directory, `cmake-build-*/` patterns
 
-**Trust these instructions**: Only search for additional information if these instructions are incomplete or found to be incorrect. The include fixes and build sequence have been validated and are required for successful compilation.
+**Trust these instructions**: Only search for additional information if these instructions are incomplete or found to be incorrect. The build sequence has been validated and should work for successful compilation.
