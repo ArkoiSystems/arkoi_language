@@ -284,7 +284,7 @@ void Generator::visit(ast::If &node) {
     { // Next block
         _current_block = next_block;
 
-        if(node.next()) node.next()->accept(*this);
+        if (node.next()) node.next()->accept(*this);
 
         if (!_current_block->instructions().empty()) {
             const auto &last_instruction = _current_block->instructions().back();

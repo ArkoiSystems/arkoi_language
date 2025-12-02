@@ -133,10 +133,10 @@ void TypeResolver::visit(ast::Return &node) {
 }
 
 void TypeResolver::visit(ast::Identifier &node) {
-    if(node.kind() == ast::Identifier::Kind::Function) {
+    if (node.kind() == ast::Identifier::Kind::Function) {
         const auto &function = std::get<Function>(*node.symbol());
         _current_type = function.return_type();
-    } else if(node.kind() == ast::Identifier::Kind::Variable) {
+    } else if (node.kind() == ast::Identifier::Kind::Variable) {
         const auto &variable = std::get<Variable>(*node.symbol());
         _current_type = variable.type();
     } else {

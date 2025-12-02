@@ -296,7 +296,7 @@ void Generator::_int_to_int(const Operand &result, Operand source, const sem::In
     // If both are the same exact type, store the source in the result.
     if (from == to) return _store(source, result, to);
 
-    if(from.sign() == to.sign() && !from.sign() && from.size() == Size::DWORD && to.size() == Size::QWORD) {
+    if (from.sign() == to.sign() && !from.sign() && from.size() == Size::DWORD && to.size() == Size::QWORD) {
         // This catches the case when you want to transform a 32bit unsigned integer to a 64bit unsigned integer.
         // There is no zero extension of such operand types, as all 32bit operations implicilty zero-extend 32bit to
         // 64bit.
@@ -307,7 +307,7 @@ void Generator::_int_to_int(const Operand &result, Operand source, const sem::In
 
         // Store the adjusted source in the result (can be either of type mem or reg).
         _store(source, result, to);
-    } else if(from.sign() == to.sign() && from.sign() && from.size() == Size::DWORD && to.size() == Size::QWORD) {
+    } else if (from.sign() == to.sign() && from.sign() && from.size() == Size::DWORD && to.size() == Size::QWORD) {
         // This is another case where a 32bit signed integer is converted to a 64bit signed integer. The standard movsx
         // is not applicable to this case, thus there is the movsxd instruction that covers this case.
 
@@ -475,7 +475,7 @@ void Generator::_bool_to_float(const Operand &result, Operand source, const sem:
 
 void Generator::_bool_to_int(const Operand &result, Operand source, const sem::Boolean &from,
                              const sem::Integral &to) {
-    if(to.size() == Size::BYTE) {
+    if (to.size() == Size::BYTE) {
         // If we want to store a boolean in a 8bit integer we do not need to change anything.
 
         // Thus we will just store the source in the result (can be either of type mem or reg).

@@ -44,7 +44,7 @@ std::string get_base_path(const std::string &path) {
     return path.substr(0, last_dot);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
     argparse::ArgumentParser argument_parser(PROJECT_NAME, PROJECT_VERSION);
 
     argument_parser.add_argument("input_path")
@@ -171,4 +171,3 @@ int main(int argc, char* argv[]) {
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //==============================================================================
-

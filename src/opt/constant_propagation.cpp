@@ -14,7 +14,7 @@ bool ConstantPropagation::on_block(il::BasicBlock &block) {
     _constants.clear();
 
     for (auto &instruction: block.instructions()) {
-        if(auto *constant = std::get_if<il::Constant>(&instruction)) {
+        if (auto *constant = std::get_if<il::Constant>(&instruction)) {
             _constants[constant->result()] = constant->immediate();
         }
 

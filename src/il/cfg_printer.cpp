@@ -30,7 +30,7 @@ void CFGPrinter::visit(Function &function) {
     _current_function = &function;
     _liveness.run(function);
 
-    for(auto &block : function) {
+    for (auto &block: function) {
         block.accept(*this);
     }
 }
@@ -64,19 +64,19 @@ void CFGPrinter::visit(BasicBlock &block) {
     _output << "\\l";
 
     _output << "IN:  { ";
-    for(const auto &in : _liveness.in().at(&block)) _output << in << " ";
+    for (const auto &in: _liveness.in().at(&block)) _output << in << " ";
     _output << "}\\l";
     _output << "OUT: { ";
-    for(const auto &out : _liveness.out().at(&block)) _output << out << " ";
+    for (const auto &out: _liveness.out().at(&block)) _output << out << " ";
     _output << "}\\l";
 
     _output << "\"];\n";
 
-    if(block.next()) {
+    if (block.next()) {
         _output << "\t" << block.label() << " -> " << block.next()->label() << " [label=\"Next\"];\n";
     }
 
-    if(block.branch()) {
+    if (block.branch()) {
         _output << "\t" << block.label() << " -> " << block.branch()->label() << " [label=\"Branch\"];\n";
     }
 }

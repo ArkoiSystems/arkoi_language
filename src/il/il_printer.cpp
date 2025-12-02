@@ -35,7 +35,7 @@ void ILPrinter::visit(Function &function) {
 
     _output << ") @" << function.type() << ":\n";
 
-    for(auto &block : function) {
+    for (auto &block: function) {
         block.accept(*this);
     }
 

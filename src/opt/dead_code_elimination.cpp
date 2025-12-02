@@ -10,8 +10,8 @@ using namespace arkoi;
 bool DeadCodeElimination::enter_function(il::Function &function) {
     _used.clear();
 
-    for(auto &block : function) {
-        for(auto &instr : block) {
+    for (auto &block: function) {
+        for (auto &instr: block) {
             std::visit(match{
                 [&](il::Cast &instruction) {
                     _used.insert(instruction.source());

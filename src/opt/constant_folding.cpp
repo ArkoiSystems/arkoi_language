@@ -10,7 +10,7 @@ bool ConstantFolding::on_block(il::BasicBlock &block) {
     bool changed = false;
 
     for (auto &instruction: block.instructions()) {
-        if(!instruction.is_constant()) continue;
+        if (!instruction.is_constant()) continue;
 
         if (auto *const cast = std::get_if<il::Cast>(&instruction)) {
             const auto value = _cast(*cast);

@@ -6,7 +6,7 @@ Instruction &BasicBlock::emplace_back(Args &&... args) {
 }
 
 template<typename... Args>
-Function& Module::emplace_back(Args &&... args) {
+Function &Module::emplace_back(Args &&... args) {
     return _functions.emplace_back(std::forward<Args>(args)...);
 }
 

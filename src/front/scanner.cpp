@@ -95,7 +95,7 @@ Token Scanner::_next_token() {
 }
 
 Token Scanner::_lex_comment() {
-    auto[column, row] = _mark_start();
+    auto [column, row] = _mark_start();
 
     _consume('#');
     while (_try_consume(_is_not_newline)) {
@@ -105,7 +105,7 @@ Token Scanner::_lex_comment() {
 }
 
 Token Scanner::_lex_identifier() {
-    auto[column, row] = _mark_start();
+    auto [column, row] = _mark_start();
 
     _consume(_is_ident_start, "_, a-z or A-Z");
     while (_try_consume(_is_ident_inner)) {
@@ -120,7 +120,7 @@ Token Scanner::_lex_identifier() {
 }
 
 Token Scanner::_lex_number() {
-    auto[column, row] = _mark_start();
+    auto [column, row] = _mark_start();
 
     if (_try_consume('-') && !_is_digit(_peek())) {
         return {Token::Type::Minus, column, row, _current_view()};
@@ -182,7 +182,7 @@ Token Scanner::_lex_number() {
 }
 
 Token Scanner::_lex_char() {
-    auto[column, row] = _mark_start();
+    auto [column, row] = _mark_start();
 
     _consume('\'');
     const auto consumed = _consume(_is_ascii, "'");
@@ -192,7 +192,7 @@ Token Scanner::_lex_char() {
 }
 
 Token Scanner::_lex_special() {
-    auto[column, row] = _mark_start();
+    auto [column, row] = _mark_start();
 
     const auto current = _current_char();
     if (auto special = Token::lookup_special(current)) {
