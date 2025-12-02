@@ -23,7 +23,7 @@ private:
 
     static void _merge_block(il::Function &function, il::BasicBlock &block);
 
-    [[nodiscard]] static bool _is_mergable_block(il::BasicBlock &block);
+    [[nodiscard]] static bool is_simple_block(il::BasicBlock &block);
 
 private:
     std::unordered_set<il::BasicBlock *> _mergable_blocks;

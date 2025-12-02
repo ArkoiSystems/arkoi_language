@@ -1,3 +1,5 @@
+#pragma once
+
 template<typename Type, typename... Args>
 Instruction &BasicBlock::emplace_back(Args &&... args) {
     return _instructions.emplace_back(Type(std::forward<Args>(args)...));

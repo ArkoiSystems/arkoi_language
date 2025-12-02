@@ -1,3 +1,5 @@
+#pragma once
+
 template<typename Type, typename... Args>
 std::shared_ptr<Symbol> &SymbolTable::insert(const std::string &name, Args &&... args) {
     if (_symbols.contains(name)) throw IdentifierAlreadyTaken(name);

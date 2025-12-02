@@ -97,7 +97,7 @@ public:
 
     [[nodiscard]] bool is_leaf();
 
-    [[nodiscard]] bool remove(BasicBlock *block);
+    [[nodiscard]] bool remove(BasicBlock *target);
 
     [[nodiscard]] auto &name() const { return _name; }
 

@@ -12,7 +12,7 @@ bool SimplifyCFG::enter_function(il::Function &) {
 }
 
 bool SimplifyCFG::on_block(il::BasicBlock &block) {
-    if (_is_mergable_block(block)) {
+    if (is_simple_block(block)) {
         _mergable_blocks.insert(&block);
     } else if (_is_proxy_block(block)) {
         _proxy_blocks.insert(&block);
@@ -95,14 +95,14 @@ void SimplifyCFG::_merge_block(il::Function &function, il::BasicBlock &block) {
     assert(function.remove(&block));
 }
 
-bool SimplifyCFG::_is_mergable_block(il::BasicBlock &block) {
+bool SimplifyCFG::is_simple_block(il::BasicBlock &block) {
     if (block.branch()) return false;
     if (block.predecessors().size() != 1) return false;
 
     auto *predecessor = *block.predecessors().begin();
     assert(!predecessor->instructions().empty());
 
-    auto &instruction = predecessor->instructions().back();
+    const auto &instruction = predecessor->instructions().back();
     if (!std::holds_alternative<il::Goto>(instruction)) return false;
 
     return true;

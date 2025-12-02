@@ -1,3 +1,5 @@
+#pragma once
+
 template<typename Type, typename... Args>
 std::shared_ptr<Symbol> NameResolver::_check_non_existence(const front::Token &token, Args &&... args) {
     try {

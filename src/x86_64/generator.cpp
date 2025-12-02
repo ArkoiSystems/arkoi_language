@@ -1,7 +1,7 @@
 #include "x86_64/generator.hpp"
 
-#include "il/cfg.hpp"
 #include "il/il_printer.hpp"
+#include "il/cfg.hpp"
 #include "utils/utils.hpp"
 
 using namespace arkoi::x86_64;
@@ -687,187 +687,187 @@ Register Generator::_adjust_to_reg(const Operand &, const Operand &target, const
 }
 
 void Generator::_directive(const std::string &directive, std::vector<AssemblyItem> &output) {
-    output.push_back(Directive(directive));
+    output.emplace_back(Directive(directive));
 }
 
 void Generator::_label(const std::string &name) {
-    _text.push_back(Label(name));
+    _text.emplace_back(Label(name));
 }
 
 void Generator::_jmp(const std::string &name) {
-    _text.push_back(Instruction(Instruction::Opcode::JMP, {name}));
+    _text.emplace_back(Instruction(Instruction::Opcode::JMP, {name}));
 }
 
 void Generator::_jnz(const std::string &name) {
-    _text.push_back(Instruction(Instruction::Opcode::JNZ, {name}));
+    _text.emplace_back(Instruction(Instruction::Opcode::JNZ, {name}));
 }
 
 void Generator::_call(const std::string &name) {
-    _text.push_back(Instruction(Instruction::Opcode::CALL, {name}));
+    _text.emplace_back(Instruction(Instruction::Opcode::CALL, {name}));
 }
 
 void Generator::_movsxd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::MOVSXD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVSXD, {destination, source}));
 }
 
 void Generator::_movsd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::MOVSD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVSD, {destination, source}));
 }
 
 void Generator::_movss(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::MOVSS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVSS, {destination, source}));
 }
 
 void Generator::_movzx(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::MOVZX, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVZX, {destination, source}));
 }
 
 void Generator::_movsx(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::MOVSX, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVSX, {destination, source}));
 }
 
 void Generator::_mov(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::MOV, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::MOV, {destination, source}));
 }
 
 void Generator::_addsd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::ADDSD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::ADDSD, {destination, source}));
 }
 
 void Generator::_addss(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::ADDSS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::ADDSS, {destination, source}));
 }
 
 void Generator::_add(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::ADD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::ADD, {destination, source}));
 }
 
 void Generator::_subsd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::SUBSD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SUBSD, {destination, source}));
 }
 
 void Generator::_subss(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::SUBSS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SUBSS, {destination, source}));
 }
 
 void Generator::_sub(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::SUB, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SUB, {destination, source}));
 }
 
 void Generator::_mulsd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::MULSD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::MULSD, {destination, source}));
 }
 
 void Generator::_mulss(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::MULSS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::MULSS, {destination, source}));
 }
 
 void Generator::_imul(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::IMUL, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::IMUL, {destination, source}));
 }
 
 void Generator::_divsd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::DIVSD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::DIVSD, {destination, source}));
 }
 
 void Generator::_divss(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::DIVSS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::DIVSS, {destination, source}));
 }
 
 void Generator::_idiv(const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::IDIV, {source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::IDIV, {source}));
 }
 
 void Generator::_udiv(const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::DIV, {source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::DIV, {source}));
 }
 
 void Generator::_xorps(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::XORPS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::XORPS, {destination, source}));
 }
 
 void Generator::_or(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::OR, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::OR, {destination, source}));
 }
 
 void Generator::_ucomisd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::UCOMISD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::UCOMISD, {destination, source}));
 }
 
 void Generator::_ucomiss(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::UCOMISS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::UCOMISS, {destination, source}));
 }
 
 void Generator::_cvtsd2ss(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::CVTSD2SS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTSD2SS, {destination, source}));
 }
 
 void Generator::_cvtss2sd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::CVTSS2SD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTSS2SD, {destination, source}));
 }
 
 void Generator::_cvtsi2sd(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::CVTSI2SD, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTSI2SD, {destination, source}));
 }
 
 void Generator::_cvtsi2ss(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::CVTSI2SS, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTSI2SS, {destination, source}));
 }
 
 void Generator::_cvttsd2si(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::CVTTSD2SI, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTTSD2SI, {destination, source}));
 }
 
 void Generator::_cvttss2si(const Operand &destination, const Operand &source) {
-    _text.push_back(Instruction(Instruction::Opcode::CVTTSS2SI, {destination, source}));
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTTSS2SI, {destination, source}));
 }
 
 void Generator::_test(const Operand &first, const Operand &second) {
-    _text.push_back(Instruction(Instruction::Opcode::TEST, {first, second}));
+    _text.emplace_back(Instruction(Instruction::Opcode::TEST, {first, second}));
 }
 
 void Generator::_cmp(const Operand &first, const Operand &second) {
-    _text.push_back(Instruction(Instruction::Opcode::CMP, {first, second}));
+    _text.emplace_back(Instruction(Instruction::Opcode::CMP, {first, second}));
 }
 
 void Generator::_setne(const Operand &destination) {
-    _text.push_back(Instruction(Instruction::Opcode::SETNE, {destination}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SETNE, {destination}));
 }
 
 void Generator::_setg(const Operand &destination) {
-    _text.push_back(Instruction(Instruction::Opcode::SETG, {destination}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SETG, {destination}));
 }
 
 void Generator::_seta(const Operand &destination) {
-    _text.push_back(Instruction(Instruction::Opcode::SETA, {destination}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SETA, {destination}));
 }
 
 void Generator::_setb(const Operand &destination) {
-    _text.push_back(Instruction(Instruction::Opcode::SETB, {destination}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SETB, {destination}));
 }
 
 void Generator::_setl(const Operand &destination) {
-    _text.push_back(Instruction(Instruction::Opcode::SETL, {destination}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SETL, {destination}));
 }
 
 void Generator::_setp(const Operand &destination) {
-    _text.push_back(Instruction(Instruction::Opcode::SETP, {destination}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SETP, {destination}));
 }
 
 void Generator::_enter(uint16_t size, uint8_t nesting_level) {
-    _text.push_back(Instruction(Instruction::Opcode::ENTER, {size, nesting_level}));
+    _text.emplace_back(Instruction(Instruction::Opcode::ENTER, {size, nesting_level}));
 }
 
 void Generator::_syscall() {
-    _text.push_back(Instruction(Instruction::Opcode::SYSCALL, {}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SYSCALL, {}));
 }
 
 void Generator::_leave() {
-    _text.push_back(Instruction(Instruction::Opcode::LEAVE, {}));
+    _text.emplace_back(Instruction(Instruction::Opcode::LEAVE, {}));
 }
 
 void Generator::_ret() {
-    _text.push_back(Instruction(Instruction::Opcode::RET, {}));
+    _text.emplace_back(Instruction(Instruction::Opcode::RET, {}));
 }
 
 void Generator::_newline(std::vector<AssemblyItem> &output) {

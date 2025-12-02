@@ -1,3 +1,5 @@
+#pragma once
+
 template<typename T>
 bool OrderedSet<T>::insert(const T &value) {
     if (this->contains(value)) return false;

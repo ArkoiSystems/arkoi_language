@@ -6,7 +6,7 @@ using namespace arkoi::front;
 using namespace arkoi;
 
 ast::Program Parser::parse_program() {
-    std::vector<std::unique_ptr<ast::Node>> statements;
+    std::vector<std::unique_ptr<ast::Node> > statements;
     auto own_scope = _enter_scope();
 
     while (true) {
@@ -135,7 +135,7 @@ ast::Parameter Parser::_parse_parameter() {
 sem::Type Parser::_parse_type() {
     _consume(Token::Type::At);
 
-    auto token = _consume_any();
+    const auto token = _consume_any();
     switch (token.type()) {
         case Token::Type::U8: return sem::Integral(Size::BYTE, false);
         case Token::Type::S8: return sem::Integral(Size::BYTE, true);
@@ -155,7 +155,7 @@ sem::Type Parser::_parse_type() {
 }
 
 std::unique_ptr<ast::Block> Parser::_parse_block() {
-    std::vector<std::unique_ptr<ast::Node>> statements;
+    std::vector<std::unique_ptr<ast::Node> > statements;
 
     auto own_scope = _enter_scope();
     _consume(Token::Type::Indentation);
@@ -286,7 +286,7 @@ std::unique_ptr<ast::Call> Parser::_parse_call(const Token &name) {
 
     _consume(Token::Type::LParent);
 
-    std::vector<std::unique_ptr<ast::Node>> arguments;
+    std::vector<std::unique_ptr<ast::Node> > arguments;
     while (true) {
         const auto &current = _current();
         if (current.type() == Token::Type::EndOfFile) throw UnexpectedEndOfTokens();
@@ -411,7 +411,7 @@ const Token &Parser::_consume_any() {
     return current;
 }
 
-const Token &Parser::_consume(Token::Type type) {
+const Token &Parser::_consume(const Token::Type type) {
     const auto &current = _current();
     _next();
 
@@ -430,7 +430,7 @@ std::optional<Token> Parser::_try_consume(const std::function<bool(const Token &
     return current;
 }
 
-std::optional<Token> Parser::_try_consume(Token::Type type) {
+std::optional<Token> Parser::_try_consume(const Token::Type type) {
     const auto &current = _current();
 
     if (current.type() != type) return std::nullopt;

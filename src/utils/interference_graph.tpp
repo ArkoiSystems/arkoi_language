@@ -1,3 +1,5 @@
+#pragma once
+
 template<typename Node>
 void InterferenceGraph<Node>::add_node(const Node &node) {
     _adjacents.emplace(node, std::unordered_set<Node>());

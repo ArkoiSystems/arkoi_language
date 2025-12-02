@@ -11,7 +11,7 @@ bool DeadCodeElimination::enter_function(il::Function &function) {
     _used.clear();
 
     for(auto &block : function) {
-        for(auto &instruction : block) {
+        for(auto &instr : block) {
             std::visit(match{
                 [&](il::Cast &instruction) {
                     _used.insert(instruction.source());
@@ -25,7 +25,7 @@ bool DeadCodeElimination::enter_function(il::Function &function) {
                 [&](il::Store &instruction) {
                     _used.insert(instruction.source());
                 },
-                [&](il::Load &instruction) {
+                [&](const il::Load &instruction) {
                     _used.insert(instruction.source());
                 },
                 [&](il::Binary &instruction) {
@@ -40,7 +40,7 @@ bool DeadCodeElimination::enter_function(il::Function &function) {
                 [&](il::Constant &) {},
                 [&](il::Alloca &) {},
                 [&](il::Goto &) {},
-            }, instruction);
+            }, instr);
         }
     }
 
@@ -48,31 +48,31 @@ bool DeadCodeElimination::enter_function(il::Function &function) {
 }
 
 bool DeadCodeElimination::on_block(il::BasicBlock &block) {
-    return std::erase_if(block.instructions(), [&](auto &instruction) {
+    return std::erase_if(block.instructions(), [&](auto &instr) {
         return std::visit(match{
-            [&](il::Binary &instruction) {
+            [&](const il::Binary &instruction) {
                 return !_used.contains(instruction.result());
             },
-            [&](il::Load &instruction) {
+            [&](const il::Load &instruction) {
                 return !_used.contains(instruction.result());
             },
-            [&](il::Cast &instruction) {
+            [&](const il::Cast &instruction) {
                 return !_used.contains(instruction.result());
             },
-            [&](il::Constant &instruction) {
+            [&](const il::Constant &instruction) {
                 return !_used.contains(instruction.result());
             },
-            [&](il::Alloca &instruction) {
+            [&](const il::Alloca &instruction) {
                 return !_used.contains(instruction.result());
             },
-            [&](il::Store &instruction) {
+            [&](const il::Store &instruction) {
                 return !_used.contains(instruction.result());
             },
             [&](il::Return &) { return false; },
             [&](il::Goto &) { return false; },
             [&](il::Call &) { return false; },
             [&](il::If &) { return false; },
-        }, instruction);
+        }, instr);
     });
 }
 

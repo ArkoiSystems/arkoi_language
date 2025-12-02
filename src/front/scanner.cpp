@@ -229,11 +229,11 @@ char Scanner::_peek() const {
     return _current_line[_column];
 }
 
-void Scanner::_consume(char expected) {
-    _consume([&](char input) { return input == expected; }, std::string(1, expected));
+void Scanner::_consume(const char expected) {
+    _consume([&](const char input) { return input == expected; }, std::string(1, expected));
 }
 
-bool Scanner::_try_consume(char expected) {
+bool Scanner::_try_consume(const char expected) {
     try {
         _consume(expected);
         return true;
@@ -277,45 +277,45 @@ size_t Scanner::_leading_spaces(const std::string &line) {
     return count;
 }
 
-bool Scanner::_is_digit(char input) {
+bool Scanner::_is_digit(const char input) {
     return std::isdigit(static_cast<unsigned char>(input));
 }
 
-bool Scanner::_is_ident_start(char input) {
+bool Scanner::_is_ident_start(const char input) {
     return std::isalpha(static_cast<unsigned char>(input)) || input == '_';
 }
 
-bool Scanner::_is_ident_inner(char input) {
+bool Scanner::_is_ident_inner(const char input) {
     return std::isalnum(static_cast<unsigned char>(input)) || input == '_';
 }
 
-bool Scanner::_is_not_newline(char input) {
+bool Scanner::_is_not_newline(const char input) {
     return input != '\n';
 }
 
-bool Scanner::_is_ascii(char input) {
+bool Scanner::_is_ascii(const char input) {
     return static_cast<unsigned char>(input) <= 127;
 }
 
-bool Scanner::_is_space(char input) {
+bool Scanner::_is_space(const char input) {
     return std::isspace(static_cast<unsigned char>(input));
 }
 
-bool Scanner::_is_hex(char input) {
+bool Scanner::_is_hex(const char input) {
     return (input >= '0' && input <= '9') ||
            (input >= 'a' && input <= 'f') ||
            (input >= 'A' && input <= 'F');
 }
 
-bool Scanner::_is_hex_expo(char input) {
+bool Scanner::_is_hex_expo(const char input) {
     return input == 'p' || input == 'P';
 }
 
-bool Scanner::_is_expo(char input) {
+bool Scanner::_is_expo(const char input) {
     return input == 'e' || input == 'E';
 }
 
-bool Scanner::_is_decimal_sign(char input) {
+bool Scanner::_is_decimal_sign(const char input) {
     return input == '+' || input == '-';
 }
 

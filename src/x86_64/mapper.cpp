@@ -1,11 +1,10 @@
 #include "x86_64/mapper.hpp"
 
-#include <cassert>
 #include <ranges>
 
-#include "il/cfg.hpp"
-#include "utils/utils.hpp"
 #include "x86_64/register_allocation.hpp"
+#include "utils/utils.hpp"
+#include "il/cfg.hpp"
 
 using namespace arkoi::x86_64;
 using namespace arkoi;
@@ -68,7 +67,7 @@ void Mapper::visit(il::Function &function) {
     }
 }
 
-void Mapper::_map_parameters(const std::vector<il::Variable> &parameters, bool use_redzone) {
+void Mapper::_map_parameters(const std::vector<il::Variable> &parameters, const bool use_redzone) {
     size_t stack = 0, integer = 0, floating = 0;
     const auto stack_reg = use_redzone ? RSP : RBP;
 
@@ -176,7 +175,7 @@ Register Mapper::return_register(const sem::Type &target) {
     }, target);
 }
 
-size_t Mapper::align_size(size_t input) {
+size_t Mapper::align_size(const size_t input) {
     static constexpr size_t STACK_ALIGNMENT = 16;
     return (input + (STACK_ALIGNMENT - 1)) & ~(STACK_ALIGNMENT - 1);
 }

@@ -75,7 +75,7 @@ void Generator::visit(ast::Block &node) {
         statement->accept(*this);
 
         // Stop generating instructions for the block after a return statement.
-        auto *_return = dynamic_cast<ast::Return *>(statement.get());
+        const auto *_return = dynamic_cast<ast::Return *>(statement.get());
         if (_return) break;
     }
 
@@ -100,14 +100,14 @@ void Generator::visit_integer(const ast::Immediate &node) {
 
     Immediate immediate;
     if (sign) {
-        auto value = std::stoll(number_string);
+        const auto value = std::stoll(number_string);
         if (value > std::numeric_limits<int32_t>::max()) {
             immediate = static_cast<int64_t>(value);
         } else {
             immediate = static_cast<int32_t>(value);
         }
     } else {
-        auto value = std::stoull(number_string);
+        const auto value = std::stoull(number_string);
         if (value > std::numeric_limits<uint32_t>::max()) {
             immediate = static_cast<uint64_t>(value);
         } else {
@@ -270,7 +270,7 @@ void Generator::visit(ast::If &node) {
         node.branch()->accept(*this);
 
         if (!_current_block->instructions().empty()) {
-            auto &last_instruction = _current_block->instructions().back();
+            const auto &last_instruction = _current_block->instructions().back();
             if (std::holds_alternative<Goto>(last_instruction)) branch_already_connected = true;
         }
 
@@ -287,7 +287,7 @@ void Generator::visit(ast::If &node) {
         if(node.next()) node.next()->accept(*this);
 
         if (!_current_block->instructions().empty()) {
-            auto &last_instruction = _current_block->instructions().back();
+            const auto &last_instruction = _current_block->instructions().back();
             if (std::holds_alternative<Goto>(last_instruction)) next_already_connected = true;
         }
 

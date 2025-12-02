@@ -36,7 +36,7 @@ void dump_cfg(const std::string &base_path, il::Module &module) {
 }
 
 std::string get_base_path(const std::string &path) {
-    auto last_dot = path.find_last_of('.');
+    const auto last_dot = path.find_last_of('.');
     if (last_dot == std::string::npos || path.substr(last_dot) != ".ark") {
         throw std::invalid_argument("This is not a valid file path with '.ark' extension.");
     }
