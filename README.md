@@ -12,7 +12,7 @@ Arkoi Language is a small toy compiler project designed to provide a hands-on ex
 - [Installation](#installation)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
-- [Development Goals](#development-goals)
+- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -105,14 +105,8 @@ arkoi_language/
 
 ---
 
-## Development Goals
-The following goals are planned for the Arkoi Language project:
-
-1. **Core Compiler**: Implement basic lexical analysis, parsing, and code generation.
-2. **Custom Syntax and Semantics**: Define a unique set of rules and syntax for the Arkoi Language.
-3. **Error Handling**: Provide detailed error messages for syntax and semantic issues.
-4. **Optimization**: Explore optimization opportunities in the generated code.
-5. **Ecosystem**: Build supporting tools and libraries for the Arkoi Language.
+## Roadmap
+There is a separate [ROADMAP.md]() file that lists the planned features and improvements for the compiler.
 
 ---
 
@@ -128,7 +122,7 @@ Please make sure to follow the [contribution guidelines](CODE_OF_CONDUCT.md).
 ---
 
 ## Credits
-This repository uses the following open source projects:
+This repository uses the following open-source projects:
 - [Google Test](https://github.com/google/googletest)
 - [argparse](https://github.com/p-ranav/argparse/)
 
