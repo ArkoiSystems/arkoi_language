@@ -9,6 +9,7 @@ _start:
 	syscall
 
 main:
+	# %01 @s32 = alloca
 	# store @s32 0, %01
 	mov DWORD PTR [rsp - 4], 0
 	# $03 @s32 = load %01

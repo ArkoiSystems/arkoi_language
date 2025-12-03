@@ -72,7 +72,7 @@ Once the Arkoi compiler is built, you can use it to compile Arkoi source files i
 
 ### Example
 ```bash
-./arkoi_language ../example/hello_world/main.ark
+./arkoi_language ../example/hello_world/hello_world.ark
 ```
 
 ### Output

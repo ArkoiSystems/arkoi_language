@@ -23,31 +23,81 @@
 
 using namespace arkoi;
 
-void dump_cfg(const std::string &base_path, il::Module &module);
-
 std::string get_base_path(const std::string &path);
 
 std::string read_file(const std::string &path);
 
 int32_t run_binary(const std::string &path);
 
-int main(int argc, char *argv[]) {
-    argparse::ArgumentParser argument_parser(PROJECT_NAME, PROJECT_VERSION);
+int32_t compile(
+    const std::string &source,
+    bool print_il, const std::string &il_file,
+    bool print_cfg, const std::string &cfg_file,
+    bool print_asm, const std::string &asm_file
+);
 
-    argument_parser.add_argument("input")
-            .help("the input path to the arkoi source file to compile.");
+int main(const int argc, const char *argv[]) {
+    argparse::ArgumentParser argument_parser(PROJECT_NAME, PROJECT_VERSION, argparse::default_arguments::none);
+
+    argument_parser.add_argument("-h", "--help")
+            .action([&](const auto &) {
+                std::cout << argument_parser.help().str();
+                std::exit(0);
+            })
+            .help("Shows the help message and exits")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
+
+    argument_parser.add_argument("-v", "--version")
+            .action([&](const auto &) {
+                std::cout << PROJECT_VERSION << std::endl;
+                std::exit(0);
+            })
+            .help("Prints version information and exits")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
+
+    argument_parser.add_argument("inputs")
+            .help("All input files that should be compiled\n\b")
+            .nargs(argparse::nargs_pattern::at_least_one);
     argument_parser.add_argument("-o", "--output")
-            .help("the output path of the compiled input path.");
-    argument_parser.add_argument("-il", "--output-il").flag()
-            .help("print the intermediate language to a file ending with \".il\".");
-    argument_parser.add_argument("-asm", "--output-asm").flag()
-            .help("print the assembly code to a file ending with \".asm\".");
-    argument_parser.add_argument("-cfg", "--output-cfg").flag()
-            .help("print the control flow graph to a file ending with \".dot\".");
-    argument_parser.add_argument("-link", "--do-link").flag()
-            .help("assemble and link the output assembly to create an executable.");
-    argument_parser.add_argument("-run", "--do-run").flag()
-            .help("assemble, link and run the resulting executable.");
+            .help("The output file name of the compiled files\n\b")
+            .nargs(argparse::nargs_pattern::optional)
+            .default_value("./a.out");
+
+    argument_parser.add_argument("-S")
+            .help("Only compile but do not assemble.\nFor each source an assembly file \".s\" is generated")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
+    argument_parser.add_argument("-c")
+            .help("Only compile and assemble, but do not link.\nFor each source an object file \".o\" is generated")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
+    argument_parser.add_argument("-r")
+            .help("Compile, assemble, link and run the program afterwards")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
+
+    argument_parser.add_argument("-print-asm")
+            .help("Print the assembly code of each source to a file ending in \".s\"")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
+    argument_parser.add_argument("-print-cfg")
+            .help("Print the Control-Flow-Graph of each source to a file ending in \".dot\"")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
+    argument_parser.add_argument("-print-il")
+            .help("Print the Intermediate Language of each source to a file ending in \".il\"")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
 
     try {
         argument_parser.parse_args(argc, argv);
@@ -57,42 +107,84 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    const auto output_path = argument_parser.present<std::string>("output");
-    const auto input_path = argument_parser.get<std::string>("input");
+    const auto inputs = argument_parser.get<std::vector<std::string>>("inputs");
+    const auto output = argument_parser.get<std::string>("output");
 
-    const auto base_path = output_path ? get_base_path(output_path.value()) : get_base_path(input_path);
+    const auto mode_S = argument_parser.get<bool>("-S");
+    const auto mode_c = argument_parser.get<bool>("-c");
+    const auto mode_r = argument_parser.get<bool>("-r");
+    const bool mode_full = !mode_S && !mode_c && !mode_r;
 
-    const auto output_il = argument_parser.get<bool>("--output-il");
-    const auto output_asm = argument_parser.get<bool>("--output-asm");
-    const auto output_cfg = argument_parser.get<bool>("--output-cfg");
+    const auto print_cfg = argument_parser.get<bool>("-print-cfg");
+    const auto print_asm = argument_parser.get<bool>("-print-asm");
+    const auto print_il = argument_parser.get<bool>("-print-il");
 
-    const auto do_link = argument_parser.get<bool>("--do-link");
-    const auto do_run  = argument_parser.get<bool>("--do-run");
+    const bool should_assemble = !mode_S;
+    const bool should_link = mode_full || mode_r;
+    const bool should_run = mode_r;
 
-    auto source = read_file(input_path);
-    front::Scanner scanner(source);
+    std::vector<std::string> object_files;
+    for (const auto &input: inputs) {
+        const auto base_path = get_base_path(input);
+        const auto source = read_file(input);
 
-    front::Parser parser(scanner.tokenize());
-    auto program = parser.parse_program();
+        const auto il_file = base_path + ".il";
+        const auto cfg_file = base_path + ".dot";
+        const auto asm_file = base_path + ".s";
+        const auto obj_file = base_path + ".o";
 
-    if (scanner.has_failed() || parser.has_failed()) exit(1);
+        const auto exit_code = compile(
+            source,
+            print_il, il_file,
+            print_cfg, cfg_file,
+            print_asm, asm_file
+        );
+        if (exit_code != 0) return exit_code;
 
-    auto name_resolver = sem::NameResolver::resolve(program);
-    if (name_resolver.has_failed()) exit(1);
+        if (should_assemble) {
+            const auto assemble_command = "as " + asm_file + " -o " + obj_file;
+            const auto assemble_result = std::system(assemble_command.c_str());
+            if (WEXITSTATUS(assemble_result) != 0) return 1;
 
-    auto type_resolver = sem::TypeResolver::resolve(program);
-    if (type_resolver.has_failed()) exit(1);
-
-    auto module = il::Generator::generate(program);
-    if (output_il) {
-        auto output = il::ILPrinter::print(module);
-        std::string il_path = base_path + "_org.il";
-        std::ofstream il_output(il_path);
-        il_output << output.str();
-        il_output.close();
+            object_files.push_back(obj_file);
+        }
     }
 
-    if (output_cfg) dump_cfg(base_path + "_org", module);
+    if (should_link && !object_files.empty()) {
+        const auto input_objects = std::accumulate(object_files.begin(), object_files.end(), std::string{});
+        const auto link_command = "ld -o " + output + " " + input_objects;
+        const auto link_result = std::system(link_command.c_str());
+        if (WEXITSTATUS(link_result) != 0) return 1;
+    }
+
+    if (should_run) {
+        const int32_t exit_code = run_binary(output);
+        std::remove(output.c_str());
+        return exit_code;
+    }
+
+    return 0;
+}
+
+int32_t compile(
+    const std::string &source,
+    bool print_il, const std::string &il_file,
+    bool print_cfg, const std::string &cfg_file,
+    bool print_asm, const std::string &asm_file
+) {
+    front::Scanner scanner(source);
+    front::Parser parser(scanner.tokenize());
+
+    auto program = parser.parse_program();
+    if (scanner.has_failed() || parser.has_failed()) return 1;
+
+    auto name_resolver = sem::NameResolver::resolve(program);
+    if (name_resolver.has_failed()) return 1;
+
+    auto type_resolver = sem::TypeResolver::resolve(program);
+    if (type_resolver.has_failed()) return 1;
+
+    auto module = il::Generator::generate(program);
 
     opt::PassManager manager;
     manager.add<opt::ConstantFolding>();
@@ -101,52 +193,28 @@ int main(int argc, char *argv[]) {
     manager.add<opt::SimplifyCFG>();
     manager.run(module);
 
-    if (output_il) {
-        auto output = il::ILPrinter::print(module);
-        std::string il_path = base_path + "_opt.il";
-        std::ofstream il_output(il_path);
-        il_output << output.str();
+    if (print_il) {
+        auto il_output = il::ILPrinter::print(module);
+        std::ofstream file(il_file);
+        file << il_output.str();
+        file.close();
     }
 
-    if (output_cfg) dump_cfg(base_path + "_opt", module);
+    if (print_cfg) {
+        auto cfg_output = il::CFGPrinter::print(module);
+        std::ofstream file(cfg_file);
+        file << cfg_output.str();
+        file.close();
+    }
 
     auto assembly_generator = x86_64::Generator(module);
-    std::string asm_path = base_path + ".asm";
-    std::ofstream asm_output(asm_path);
-    asm_output << assembly_generator.output().str();
-    asm_output.close();
-
-    std::string object_path = base_path + ".o";
-    std::string nasm_command = "as " + asm_path + " -o " + object_path;
-    int nasm_result = std::system(nasm_command.c_str());
-    if (WEXITSTATUS(nasm_result) != 0) exit(1);
-
-    if (!output_asm) std::remove(asm_path.c_str());
-
-    if (do_link || do_run) {
-        std::string ld_command = "ld " + object_path + " -o " + base_path;
-        int ld_result = std::system(ld_command.c_str());
-        if (WEXITSTATUS(ld_result) != 0) exit(1);
+    if (print_asm) {
+        std::ofstream file(asm_file);
+        file << assembly_generator.output().str();
+        file.close();
     }
 
-    if (do_run) return run_binary(base_path);
-
     return 0;
-}
-
-void dump_cfg(const std::string &base_path, il::Module &module) {
-    auto cfg_output = il::CFGPrinter::print(module);
-
-    auto dot_path = base_path + ".dot";
-    auto png_path = base_path + ".png";
-
-    std::ofstream file(dot_path);
-    file << cfg_output.str();
-    file.close();
-
-    std::string assemble_command = "dot -Tpng " + dot_path + " -o " + png_path;
-    int assemble_result = std::system(assemble_command.c_str());
-    if (WEXITSTATUS(assemble_result) != 0) exit(1);
 }
 
 std::string get_base_path(const std::string &path) {

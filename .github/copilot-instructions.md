@@ -30,10 +30,10 @@ cmake --build .
 ### Running the Compiler
 ```bash
 # Basic usage (from build directory)
-./arkoi_language ../example/hello_world/main.ark
+./arkoi_language ../example/hello_world/hello_world.ark
 
 # With output options
-./arkoi_language ../example/hello_world/main.ark --output-il --output-asm --output-cfg
+./arkoi_language ../example/hello_world/hello_world.ark -print-il -print-asm -print-cfg
 ```
 
 **Build Time**: ~1-2 minutes including dependency fetch on first build
@@ -86,7 +86,7 @@ cmake .. && cmake --build .
 ./arkoi_language_tests
 
 # Test compiler functionality
-./arkoi_language ../example/hello_world/main.ark
+./arkoi_language ../example/hello_world/hello_world.ark
 ./arkoi_language ../example/test/test.ark --output-il --output-asm
 ```
 

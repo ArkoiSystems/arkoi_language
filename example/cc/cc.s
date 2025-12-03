@@ -10,6 +10,7 @@ _start:
 
 main:
 	enter 16, 0
+	# %01 @u32 = alloca
 	# $19 @u64 = call calling_convention(1, 2, 3, 4, 5, 6, 7, 8)
 	sub rsp, 16
 	mov edi, 1
@@ -33,6 +34,7 @@ main:
 	ret
 
 calling_convention:
+	# %01 @u64 = alloca
 	# store @u64 1, %01
 	mov QWORD PTR [rsp - 8], 1
 	# $12 @u64 = load %01
