@@ -90,7 +90,13 @@ Checklist convention:
   - Target: arkoi_language_tests
 - [x] Snapshot tests for scanner
   - Summary: Ensures tokenization output remains stable
-  - Files: test/snapshot/scanner/*, test/snapshot/test_snapshot.cpp
+  - Files: test/snapshot/scanner/*
+- [ ] Snapshot tests for parser
+  - Summary: Ensures parsed output remains stable
+  - Files: test/snapshot/parser/*
+- [ ] End-to-end tests
+  - Summary: Compiles and executes a program and validates output
+  - Files: test/e2e/*
 - [x] Unit tests
   - Summary: Validates CFG utilities and interference graph behavior
   - Files: test/test_cfg.cpp, test/test_interference.cpp
