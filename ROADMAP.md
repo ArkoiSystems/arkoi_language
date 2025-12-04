@@ -94,7 +94,7 @@ Checklist convention:
 - [ ] Snapshot tests for parser
   - Summary: Ensures parsed output remains stable
   - Files: test/snapshot/parser/*
-- [ ] End-to-end tests
+- [x] End-to-end tests
   - Summary: Compiles and executes a program and validates output
   - Files: test/e2e/*
 - [x] Unit tests
