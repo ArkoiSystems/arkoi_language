@@ -31,9 +31,9 @@ int32_t run_binary(const std::string &path);
 
 int32_t compile(
     const std::string &source,
-    bool print_il, const std::string &il_file,
-    bool print_cfg, const std::string &cfg_file,
-    bool print_asm, const std::string &asm_file
+    std::ofstream *il_ostream,
+    std::ofstream *cfg_ostream,
+    std::ofstream *asm_ostream
 );
 
 int main(const int argc, const char *argv[]) {
@@ -48,13 +48,17 @@ int main(const int argc, const char *argv[]) {
             .default_value(false)
             .implicit_value(true)
             .nargs(0);
-
-    argument_parser.add_argument("-v", "--version")
+    argument_parser.add_argument("--version")
             .action([&](const auto &) {
                 std::cout << PROJECT_VERSION << std::endl;
                 std::exit(0);
             })
             .help("Prints version information and exits")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
+    argument_parser.add_argument("-v")
+            .help("Print (on the standard error output) the commands executed to run the stages of compilation")
             .default_value(false)
             .implicit_value(true)
             .nargs(0);
@@ -109,6 +113,7 @@ int main(const int argc, const char *argv[]) {
 
     const auto inputs = argument_parser.get<std::vector<std::string>>("inputs");
     const auto output = argument_parser.get<std::string>("output");
+    const auto verbose = argument_parser.get<bool>("-v");
 
     const auto mode_S = argument_parser.get<bool>("-S");
     const auto mode_c = argument_parser.get<bool>("-c");
@@ -128,39 +133,51 @@ int main(const int argc, const char *argv[]) {
         const auto base_path = get_base_path(input);
         const auto source = read_file(input);
 
-        const auto il_file = base_path + ".il";
-        const auto cfg_file = base_path + ".dot";
-        const auto asm_file = base_path + ".s";
-        const auto obj_file = base_path + ".o";
+        const auto il_path  = base_path + ".il";
+        const auto cfg_path = base_path + ".dot";
+        const auto asm_path = base_path + ".s";
 
-        const auto exit_code = compile(
-            source,
-            print_il, il_file,
-            print_cfg, cfg_file,
-            print_asm, asm_file
-        );
-        if (exit_code != 0) return exit_code;
+        { // This block has to exist, as the files get closed automatically because of RAII
+            auto il_ostream  = std::ofstream(il_path);
+            auto cfg_ostream = std::ofstream(cfg_path);
+            auto asm_ostream = std::ofstream(asm_path);
 
-        if (should_assemble) {
-            const auto assemble_command = "as " + asm_file + " -o " + obj_file;
-            const auto assemble_result = std::system(assemble_command.c_str());
-            if (WEXITSTATUS(assemble_result) != 0) return 1;
-
-            object_files.push_back(obj_file);
+            const auto compile_exit = compile(
+                source,
+                print_il  ? &il_ostream : nullptr,
+                print_cfg ? &cfg_ostream : nullptr,
+                print_asm ? &asm_ostream : nullptr
+            );
+            if (compile_exit != 0) return compile_exit;
         }
+
+        if (!should_assemble) continue;
+
+        const auto obj_path = base_path + ".o";
+        const auto assemble_command = "as " + asm_path + " -o " + obj_path;
+        if (verbose) std::cerr << "Assemble Command: " << assemble_command << std::endl;
+
+        const auto assemble_result = std::system(assemble_command.c_str());
+        const auto assemble_exit = WEXITSTATUS(assemble_result);
+        if (assemble_exit != 0) return assemble_exit;
+
+        object_files.push_back(obj_path);
     }
 
     if (should_link && !object_files.empty()) {
         const auto input_objects = std::accumulate(object_files.begin(), object_files.end(), std::string{});
         const auto link_command = "ld -o " + output + " " + input_objects;
+        if (verbose) std::cerr << "Linking Command: " << link_command << std::endl;
+
         const auto link_result = std::system(link_command.c_str());
-        if (WEXITSTATUS(link_result) != 0) return 1;
+        const auto link_exit = WEXITSTATUS(link_result);
+        if (link_exit != 0) return link_exit;
     }
 
-    if (should_run) {
-        const int32_t exit_code = run_binary(output);
+    if (should_run && !object_files.empty()) {
+        const int32_t run_exit = run_binary(output);
         std::remove(output.c_str());
-        return exit_code;
+        return run_exit;
     }
 
     return 0;
@@ -168,9 +185,9 @@ int main(const int argc, const char *argv[]) {
 
 int32_t compile(
     const std::string &source,
-    bool print_il, const std::string &il_file,
-    bool print_cfg, const std::string &cfg_file,
-    bool print_asm, const std::string &asm_file
+    std::ofstream *il_ostream,
+    std::ofstream *cfg_ostream,
+    std::ofstream *asm_ostream
 ) {
     front::Scanner scanner(source);
     front::Parser parser(scanner.tokenize());
@@ -193,25 +210,19 @@ int32_t compile(
     manager.add<opt::SimplifyCFG>();
     manager.run(module);
 
-    if (print_il) {
+    if (il_ostream) {
         auto il_output = il::ILPrinter::print(module);
-        std::ofstream file(il_file);
-        file << il_output.str();
-        file.close();
+        *il_ostream << il_output.str();
     }
 
-    if (print_cfg) {
+    if (cfg_ostream) {
         auto cfg_output = il::CFGPrinter::print(module);
-        std::ofstream file(cfg_file);
-        file << cfg_output.str();
-        file.close();
+        *cfg_ostream << cfg_output.str();
     }
 
     auto assembly_generator = x86_64::Generator(module);
-    if (print_asm) {
-        std::ofstream file(asm_file);
-        file << assembly_generator.output().str();
-        file.close();
+    if (asm_ostream) {
+        *asm_ostream << assembly_generator.output().str();
     }
 
     return 0;
