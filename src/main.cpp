@@ -6,35 +6,10 @@
 
 #include "argparse/argparse.hpp"
 
-#include "front/parser.hpp"
-#include "front/scanner.hpp"
-#include "il/cfg_printer.hpp"
-#include "il/generator.hpp"
-#include "il/il_printer.hpp"
-#include "opt/constant_folding.hpp"
-#include "opt/constant_propagation.hpp"
-#include "opt/dead_code_elimination.hpp"
-#include "opt/pass.hpp"
-#include "opt/simplify_cfg.hpp"
-#include "sem/name_resolver.hpp"
-#include "sem/type_resolver.hpp"
-#include "x86_64/generator.hpp"
-#include "il/analyses.hpp"
+#include "utils/driver.hpp"
+#include "utils/utils.hpp"
 
 using namespace arkoi;
-
-std::string get_base_path(const std::string &path);
-
-std::string read_file(const std::string &path);
-
-int32_t run_binary(const std::string &path);
-
-int32_t compile(
-    const std::string &source,
-    std::ofstream *il_ostream,
-    std::ofstream *cfg_ostream,
-    std::ofstream *asm_ostream
-);
 
 int main(const int argc, const char *argv[]) {
     argparse::ArgumentParser argument_parser(PROJECT_NAME, PROJECT_VERSION, argparse::default_arguments::none);
@@ -57,11 +32,6 @@ int main(const int argc, const char *argv[]) {
             .default_value(false)
             .implicit_value(true)
             .nargs(0);
-    argument_parser.add_argument("-v")
-            .help("Print (on the standard error output) the commands executed to run the stages of compilation")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
 
     argument_parser.add_argument("inputs")
             .help("All input files that should be compiled\n\b")
@@ -70,6 +40,11 @@ int main(const int argc, const char *argv[]) {
             .help("The output file name of the compiled files\n\b")
             .nargs(argparse::nargs_pattern::optional)
             .default_value("./a.out");
+    argument_parser.add_argument("-v")
+            .help("Print (on the standard error output) the commands executed to run the stages of compilation")
+            .default_value(false)
+            .implicit_value(true)
+            .nargs(0);
 
     argument_parser.add_argument("-S")
             .help("Only compile but do not assemble.\nFor each source an assembly file \".s\" is generated")
@@ -111,8 +86,8 @@ int main(const int argc, const char *argv[]) {
         return 1;
     }
 
-    const auto inputs = argument_parser.get<std::vector<std::string>>("inputs");
-    const auto output = argument_parser.get<std::string>("output");
+    const auto input_paths = argument_parser.get<std::vector<std::string>>("inputs");
+    const auto output_path = argument_parser.get<std::string>("output");
     const auto verbose = argument_parser.get<bool>("-v");
 
     const auto mode_S = argument_parser.get<bool>("-S");
@@ -129,20 +104,22 @@ int main(const int argc, const char *argv[]) {
     const bool should_run = mode_r;
 
     std::vector<std::string> object_files;
-    for (const auto &input: inputs) {
-        const auto base_path = get_base_path(input);
-        const auto source = read_file(input);
+    for (const auto &input_path: input_paths) {
+        const auto base_path = get_base_path(input_path);
+        const auto source = read_file(input_path);
 
         const auto il_path  = base_path + ".il";
         const auto cfg_path = base_path + ".dot";
         const auto asm_path = base_path + ".s";
+        const auto obj_path = base_path + ".o";
 
-        { // This block has to exist, as the files get closed automatically because of RAII
+        { // This block has to exist, as the files get closed automatically because of RAII,
+          // which is necessary so the files get written before commands are executed with it.
             auto il_ostream  = std::ofstream(il_path);
             auto cfg_ostream = std::ofstream(cfg_path);
             auto asm_ostream = std::ofstream(asm_path);
 
-            const auto compile_exit = compile(
+            const auto compile_exit = driver::compile(
                 source,
                 print_il  ? &il_ostream : nullptr,
                 print_cfg ? &cfg_ostream : nullptr,
@@ -153,127 +130,27 @@ int main(const int argc, const char *argv[]) {
 
         if (!should_assemble) continue;
 
-        const auto obj_path = base_path + ".o";
-        const auto assemble_command = "as " + asm_path + " -o " + obj_path;
-        if (verbose) std::cerr << "Assemble Command: " << assemble_command << std::endl;
-
-        const auto assemble_result = std::system(assemble_command.c_str());
-        const auto assemble_exit = WEXITSTATUS(assemble_result);
+        auto obj_ostream = std::ofstream(obj_path);
+        auto assemble_exit = driver::assemble(asm_path, obj_ostream, verbose);
         if (assemble_exit != 0) return assemble_exit;
 
         object_files.push_back(obj_path);
     }
 
-    if (should_link && !object_files.empty()) {
-        const auto input_objects = std::accumulate(object_files.begin(), object_files.end(), std::string{});
-        const auto link_command = "ld -o " + output + " " + input_objects;
-        if (verbose) std::cerr << "Linking Command: " << link_command << std::endl;
+    if (!should_link || object_files.empty()) return 0;
 
-        const auto link_result = std::system(link_command.c_str());
-        const auto link_exit = WEXITSTATUS(link_result);
+    { // The same RAII logic applies here.
+        auto output_ostream  = std::ofstream(output_path);
+        auto link_exit = driver::link(object_files, output_ostream, verbose);
         if (link_exit != 0) return link_exit;
     }
 
-    if (should_run && !object_files.empty()) {
-        const int32_t run_exit = run_binary(output);
-        std::remove(output.c_str());
-        return run_exit;
-    }
+    if (!should_run || object_files.empty()) return 0;
 
-    return 0;
-}
+    const int32_t run_exit = driver::run_binary(output_path);
+    std::remove(output_path.c_str());
 
-int32_t compile(
-    const std::string &source,
-    std::ofstream *il_ostream,
-    std::ofstream *cfg_ostream,
-    std::ofstream *asm_ostream
-) {
-    front::Scanner scanner(source);
-    front::Parser parser(scanner.tokenize());
-
-    auto program = parser.parse_program();
-    if (scanner.has_failed() || parser.has_failed()) return 1;
-
-    auto name_resolver = sem::NameResolver::resolve(program);
-    if (name_resolver.has_failed()) return 1;
-
-    auto type_resolver = sem::TypeResolver::resolve(program);
-    if (type_resolver.has_failed()) return 1;
-
-    auto module = il::Generator::generate(program);
-
-    opt::PassManager manager;
-    manager.add<opt::ConstantFolding>();
-    manager.add<opt::ConstantPropagation>();
-    manager.add<opt::DeadCodeElimination>();
-    manager.add<opt::SimplifyCFG>();
-    manager.run(module);
-
-    if (il_ostream) {
-        auto il_output = il::ILPrinter::print(module);
-        *il_ostream << il_output.str();
-    }
-
-    if (cfg_ostream) {
-        auto cfg_output = il::CFGPrinter::print(module);
-        *cfg_ostream << cfg_output.str();
-    }
-
-    auto assembly_generator = x86_64::Generator(module);
-    if (asm_ostream) {
-        *asm_ostream << assembly_generator.output().str();
-    }
-
-    return 0;
-}
-
-std::string get_base_path(const std::string &path) {
-    const auto last_dot = path.find_last_of('.');
-    if (last_dot == std::string::npos || path.substr(last_dot) != ".ark") {
-        throw std::invalid_argument("This is not a valid file path with '.ark' extension.");
-    }
-
-    return path.substr(0, last_dot);
-}
-
-std::string read_file(const std::string &path) {
-    std::ifstream file(path);
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
-
-
-int32_t run_binary(const std::string &path) {
-    const pid_t pid = fork();
-    if (pid == -1) {
-        std::cerr << "Failed to fork process." << std::endl;
-        return 1;
-    }
-
-    if (pid == 0) {
-        execl(path.c_str(), path.c_str(), nullptr);
-        std::cerr << "Failed to execute binary." << std::endl;
-        return 1;
-    }
-
-    int status;
-    if (waitpid(pid, &status, 0) == -1) {
-        std::cerr << "Failed to wait for child process." << std::endl;
-        return 1;
-    }
-
-    if (WIFSIGNALED(status)) {
-        return 128 + WTERMSIG(status);
-    }
-
-    if (WIFEXITED(status)) {
-        return WEXITSTATUS(status);
-    }
-
-    std::cerr << "Child process terminated abnormally." << std::endl;
-    return 1;
+    return run_exit;
 }
 
 //==============================================================================

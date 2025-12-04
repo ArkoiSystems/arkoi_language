@@ -59,6 +59,8 @@ add_library(${PROJECT_NAME}_lib
         src/x86_64/generator.cpp
         src/utils/interference_graph.tpp
         src/utils/ordered_set.tpp
+        src/utils/driver.cpp
+        src/utils/utils.cpp
         src/utils/size.cpp
 )
 
@@ -84,11 +86,12 @@ enable_testing()
 add_executable(${PROJECT_NAME}_tests
         test/snapshot/snapshot.cpp
         test/snapshot/test_snapshot.cpp
+        test/e2e/test_e2e.cpp
         test/test_interference.cpp
         test/test_cfg.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_tests gtest gtest_main gmock gmock_main ${PROJECT_NAME}_lib)
-target_compile_definitions(${PROJECT_NAME}_tests PRIVATE TEST_PATH="${CMAKE_SOURCE_DIR}/test")
+target_compile_definitions(${PROJECT_NAME}_tests PRIVATE TEST_PATH="${CMAKE_SOURCE_DIR}/test" ROOT_PATH="${CMAKE_SOURCE_DIR}")
 
 add_test(NAME test_${PROJECT_NAME} COMMAND test_${PROJECT_NAME})

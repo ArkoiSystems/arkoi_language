@@ -1,27 +1,28 @@
 #pragma once
 
-#include <sstream>
+#include <filesystem>
+#include <string>
+#include <vector>
 
-template<class... Ts>
-struct match : Ts ... {
-    using Ts::operator()...;
-};
+namespace arkoi::driver {
 
-template<class... Ts>
-match(Ts...) -> match<Ts...>;
+std::filesystem::path generate_temp_path();
 
-template<typename T>
-std::string to_string(const T &value) {
-    std::ostringstream ss;
-    ss << value;
-    return ss.str();
-}
+int32_t compile(
+    const std::string &source,
+    std::ofstream *il_ostream,
+    std::ofstream *cfg_ostream,
+    std::ofstream *asm_ostream
+);
 
-std::string get_base_path(const std::string &path);
+int32_t run_binary(const std::string &path);
 
-std::string read_file(const std::string &path);
+int32_t link(const std::vector<std::string> &object_files, std::ofstream &output, bool verbose = false);
 
-//==============================================================================
+int32_t assemble(const std::string &input_file, std::ofstream &output, bool verbose = false);
+
+} // namespace arkoi::driver
+
 // BSD 3-Clause License
 //
 // Copyright (c) 2025, Timo Behrend
@@ -50,4 +51,3 @@ std::string read_file(const std::string &path);
 // CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//==============================================================================
