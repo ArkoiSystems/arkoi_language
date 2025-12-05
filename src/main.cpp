@@ -1,3 +1,4 @@
+#include <complex>
 #include <sys/wait.h>
 #include <iostream>
 #include <unistd.h>
@@ -14,69 +15,60 @@ using namespace arkoi;
 int main(const int argc, const char *argv[]) {
     argparse::ArgumentParser argument_parser(PROJECT_NAME, PROJECT_VERSION, argparse::default_arguments::none);
 
+    argument_parser.add_description(
+        "The Arkoi Compiler is a lightweight experimental compiler for the Arkoi\n"
+        "Programming Language, designed to explore a mix of Python and C programming\n"
+        "principles. It is primarily a learning and experimentation tool for testing\n"
+        "new language features, compiler techniques, and language design concepts."
+    );
+
     argument_parser.add_argument("-h", "--help")
             .action([&](const auto &) {
                 std::cout << argument_parser.help().str();
                 std::exit(0);
             })
             .help("Shows the help message and exits")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
     argument_parser.add_argument("--version")
             .action([&](const auto &) {
                 std::cout << PROJECT_VERSION << std::endl;
                 std::exit(0);
             })
             .help("Prints version information and exits")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
 
+    argument_parser.add_group("Input and output control");
     argument_parser.add_argument("inputs")
             .help("All input files that should be compiled\n\b")
             .nargs(argparse::nargs_pattern::at_least_one);
     argument_parser.add_argument("-o", "--output")
             .help("The output file name of the compiled files\n\b")
-            .nargs(argparse::nargs_pattern::optional)
-            .default_value("./a.out");
+            .default_value("a.out");
     argument_parser.add_argument("-v")
             .help("Print (on the standard error output) the commands executed to run the stages of compilation")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
 
+    argument_parser.add_group("Compilation modes");
     argument_parser.add_argument("-S")
             .help("Only compile but do not assemble.\nFor each source an assembly file \".s\" is generated")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
     argument_parser.add_argument("-c")
             .help("Only compile and assemble, but do not link.\nFor each source an object file \".o\" is generated")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
     argument_parser.add_argument("-r")
             .help("Compile, assemble, link and run the program afterwards")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
 
+    argument_parser.add_group("Output control of compilation stages");
     argument_parser.add_argument("-print-asm")
             .help("Print the assembly code of each source to a file ending in \".s\"")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
     argument_parser.add_argument("-print-cfg")
             .help("Print the Control-Flow-Graph of each source to a file ending in \".dot\"")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
     argument_parser.add_argument("-print-il")
             .help("Print the Intermediate Language of each source to a file ending in \".il\"")
-            .default_value(false)
-            .implicit_value(true)
-            .nargs(0);
+            .flag();
 
     try {
         argument_parser.parse_args(argc, argv);

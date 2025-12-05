@@ -2,11 +2,10 @@
 
 #include <sys/wait.h>
 #include <unistd.h>
-#include <fstream>
 #include <iostream>
-#include <numeric>
-#include <random>
+#include <fstream>
 #include <sstream>
+#include <random>
 
 #include "front/parser.hpp"
 #include "front/scanner.hpp"
@@ -144,7 +143,7 @@ int32_t driver::run_binary(const std::string &path) {
 }
 
 int32_t driver::link(const std::vector<std::string>& object_files, std::ofstream &output, const bool verbose) {
-    const auto temp_path = generate_temp_path().string();
+    const auto temp_path = generate_temp_path().string() + ".o";
 
     std::ostringstream command;
     command << "ld -o " << std::quoted(temp_path);
@@ -169,7 +168,7 @@ int32_t driver::link(const std::vector<std::string>& object_files, std::ofstream
 }
 
 int32_t driver::assemble(const std::string& input_file, std::ofstream& output, bool verbose) {
-    const auto temp_path = generate_temp_path().string();
+    const auto temp_path = generate_temp_path().string() + ".o";
 
     std::ostringstream command;
     command << "as -o " << std::quoted(temp_path) << " " << std::quoted(input_file);

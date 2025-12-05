@@ -1,4 +1,3 @@
-// End-to-end test using the reusable driver API
 #include <fstream>
 #include <string>
 
