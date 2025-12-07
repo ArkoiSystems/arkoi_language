@@ -1,5 +1,12 @@
 <h1 align="center" id="title">Arkoi Language</h1>
 
+![State](https://img.shields.io/github/actions/workflow/status/ArkoiSystems/arkoi_language/cmake-single-platform.yml?style=flat&label=Build%2FTest)
+![Last Commit](https://img.shields.io/github/last-commit/ArkoiSystems/arkoi_language?style=flat&label=Last%20Commit)
+![Contributors](https://img.shields.io/github/contributors/ArkoiSystems/arkoi_language?style=flat&label=Contributors)
+![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FArkoiSystems%2Farkoi_language&label=Repository%20Visits&countColor=%232ccce4&style=flat&labelStyle=none)
+![License](https://img.shields.io/github/license/ArkoiSystems/arkoi_language?style=flat&label=License)
+![Stars](https://img.shields.io/github/stars/ArkoiSystems/arkoi_language)
+
 <p align="center" id="description">
 Arkoi Language is a small toy compiler project designed to provide a hands-on experience in developing a custom programming language and its ecosystem. This project serves as both an educational tool and an exploration of compiler optimizations and language design principles.
 </p>
