@@ -50,9 +50,14 @@ private:
 
 class Identifier final : public Node {
 public:
+#define IDENTIFIER_KIND_TYPES \
+    X(Function)               \
+    X(Variable)
+
     enum class Kind {
-        Function,
-        Variable,
+#define X(element) element,
+        IDENTIFIER_KIND_TYPES
+#undef X
     };
 
 public:
@@ -66,6 +71,15 @@ public:
     [[nodiscard]] auto &value() const { return _value; }
 
     [[nodiscard]] auto &kind() const { return _kind; }
+
+    static const char* to_string(const Kind kind) {
+        switch (kind) {
+#define X(element) case Kind::element: return #element;
+            IDENTIFIER_KIND_TYPES
+#undef X
+        }
+        return "<unknown>";
+    }
 
 private:
     std::optional<std::shared_ptr<Symbol>> _symbol{};
@@ -207,10 +221,15 @@ private:
 
 class Immediate final : public Node {
 public:
+#define IMMEDIATE_KIND_TYPES \
+    X(Integer)     \
+    X(Floating)    \
+    X(Boolean)
+
     enum class Kind {
-        Integer,
-        Floating,
-        Boolean
+#define X(element) element,
+        IMMEDIATE_KIND_TYPES
+#undef X
     };
 
 public:
@@ -225,6 +244,15 @@ public:
     [[nodiscard]] auto &type() const { return *_type; }
     void set_type(sem::Type type) { _type = std::move(type); }
 
+    static const char* to_string(const Kind kind) {
+        switch (kind) {
+#define X(element) case Kind::element: return #element;
+            IMMEDIATE_KIND_TYPES
+#undef X
+        }
+        return "<unknown>";
+    }
+
 private:
     std::optional<sem::Type> _type;
     front::Token _value;
@@ -233,13 +261,18 @@ private:
 
 class Binary final : public Node {
 public:
+#define BINARY_OPERATOR_TYPES \
+    X(Add)             \
+    X(Sub)             \
+    X(Mul)             \
+    X(Div)             \
+    X(GreaterThan)     \
+    X(LessThan)        \
+
     enum class Operator {
-        Add,
-        Sub,
-        Mul,
-        Div,
-        GreaterThan,
-        LessThan,
+#define X(element) element,
+        BINARY_OPERATOR_TYPES
+#undef X
     };
 
 public:
@@ -261,6 +294,15 @@ public:
 
     [[nodiscard]] auto &result_type() const { return _result_type.value(); }
     void set_result_type(sem::Type type) { _result_type = std::move(type); }
+
+    static const char* to_string(const Operator op) {
+        switch (op) {
+#define X(element) case Operator::element: return #element;
+            BINARY_OPERATOR_TYPES
+#undef X
+        }
+        return "<unknown>";
+    }
 
 private:
     std::optional<sem::Type> _result_type{}, _op_type{};
