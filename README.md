@@ -178,5 +178,5 @@ This project is licensed under the BSD 3-Clause License. See the [LICENSE](LICEN
 ---
 
 <p align="center">
-Happy coding with Arkoi Language! 🚀
+Happy coding with Arkoi Language!!! 🚀
 </p>
