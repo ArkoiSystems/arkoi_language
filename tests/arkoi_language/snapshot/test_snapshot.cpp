@@ -20,6 +20,8 @@ TEST(Snapshot, Scanner) {
         const auto file_path = entry.path().string();
 
         const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path);
+        source->set_working_path(TEST_PATH);
+
         auto scanner = arkoi::front::Scanner(source);
 
         std::stringstream output;
@@ -43,6 +45,8 @@ TEST(Snapshot, Parser) {
         const auto file_path = entry.path().string();
 
         const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path);
+        source->set_working_path(TEST_PATH);
+
         auto scanner = arkoi::front::Scanner(source);
         auto parser = arkoi::front::Parser(scanner.tokenize());
         auto program = parser.parse_program();
