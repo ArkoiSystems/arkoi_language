@@ -30,29 +30,34 @@ jobs:
         run: |
           git clone https://github.com/Excse/pretty_diagnostics
           cd pretty_diagnostics
-          cmake -S . -B own_build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DMAKE_INSTALLABLE=ON -DBUILD_SHARED_LIBS=OFF
-          cmake --build own_build --config Release
-          cmake --install own_build --config Release
+          cmake -S . -B "${{ github.workspace }}/pretty_diagnostics/build" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_TESTING=OFF \
+            -DMAKE_INSTALLABLE=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DCMAKE_INSTALL_PREFIX:PATH="${{github.workspace}}/pretty_diagnostics/install"
+          cmake --build "${{ github.workspace }}/pretty_diagnostics/build" --config Release
+          cmake --install "${{ github.workspace }}/pretty_diagnostics/build" --config Release
 
-      - name: Configure CMake
+      - name: Configure Arkoi Language CMake
         run: |
-          cmake -S . -B ${{github.workspace}}/build                    \
-            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}                     \
-            -DBUILD_TESTING=${{env.BUILD_TESTING}}                     \
-            -DBUILD_EXECUTABLE=${{env.BUILD_EXECUTABLE}}               \
-            -DMAKE_INSTALLABLE=${{env.MAKE_INSTALLABLE}}               \
-            -DBUILD_SHARED_LIBS=${{env.BUILD_SHARED_LIBS}}             \
-            -DCMAKE_INSTALL_PREFIX:PATH=$GITHUB_WORKSPACE/test_install \
-            -DFETCHCONTENT_UPDATES_DISCONNECTED=ON
+          cmake -S . -B "${{ github.workspace }}/arkoi_language/build" \
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+            -DBUILD_TESTING=${{env.BUILD_TESTING}} \
+            -DBUILD_EXECUTABLE=${{env.BUILD_EXECUTABLE}} \
+            -DMAKE_INSTALLABLE=${{env.MAKE_INSTALLABLE}} \
+            -DBUILD_SHARED_LIBS=${{env.BUILD_SHARED_LIBS}} \
+            -DCMAKE_INSTALL_PREFIX:PATH="${{ github.workspace }}/arkoi_language/install" \
+            -DCMAKE_PREFIX_PATH="${{ github.workspace }}/pretty_diagnostics/install"
 
       - name: Build
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{ github.workspace }}/arkoi_language/build
         run: cmake --build . --config ${{env.BUILD_TYPE}}
 
       - name: Test
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{ github.workspace }}/arkoi_language/build
         run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
 
       - name: Test Install
-        working-directory: ${{github.workspace}}/build
+        working-directory: ${{ github.workspace }}/arkoi_language/build
         run: cmake --install . --config ${{env.BUILD_TYPE}}
