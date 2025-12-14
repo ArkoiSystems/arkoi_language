@@ -19,7 +19,7 @@ Program
    │              │  │     │  └─ Immediate[value=true, kind=Boolean]
    │              │  │     └─ Immediate[value=10.5, kind=Floating]
    │              │  └─ Immediate[value=2.01, kind=Floating]
-   │              └─ Immediate[value=42, kind=Integer]
+   │              └─ Immediate[value='*', kind=Integer]
    ├─ Function
    │  ├─ Identifier[value=ok, kind=Function]
    │  ├─ Parameters
