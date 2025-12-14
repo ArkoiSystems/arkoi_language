@@ -11,7 +11,7 @@ using namespace arkoi;
 static const std::string PROGRAM_FILES = TEST_PATH "/e2e/programs/";
 
 TEST(EndToEnd, AllPrograms) {
-    for (const auto &entry: std::filesystem::directory_iterator(PROGRAM_FILES)) {
+    for (const auto& entry : std::filesystem::directory_iterator(PROGRAM_FILES)) {
         if (!entry.is_regular_file()) continue;
         if (entry.path().extension() != ".ark") continue;
 
@@ -44,7 +44,7 @@ TEST(EndToEnd, AllPrograms) {
         { // Link the assembled source
             std::ofstream bin_ostream(bin_path);
 
-            const auto link_exit = driver::link({obj_path}, bin_ostream);
+            const auto link_exit = driver::link({ obj_path }, bin_ostream);
             if (link_exit != 0) std::remove(bin_path.c_str());
 
             ASSERT_EQ(0, link_exit);

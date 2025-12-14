@@ -9,11 +9,11 @@ class BlockLivenessAnalysis final :
 public:
     BlockLivenessAnalysis() = default;
 
-    State merge(const std::vector<State> &predecessors) override;
+    State merge(const std::vector<State>& predecessors) override;
 
-    State initialize(Function &function, BasicBlock &current) override;
+    State initialize(Function& function, BasicBlock& current) override;
 
-    State transfer(BasicBlock &current, const State &state) override;
+    State transfer(BasicBlock& current, const State& state) override;
 };
 
 class InstructionLivenessAnalysis final :
@@ -21,11 +21,11 @@ class InstructionLivenessAnalysis final :
 public:
     InstructionLivenessAnalysis() = default;
 
-    State merge(const std::vector<State> &predecessors) override;
+    State merge(const std::vector<State>& predecessors) override;
 
-    State initialize(Function &function, Instruction &instruction) override;
+    State initialize(Function& function, Instruction& instruction) override;
 
-    State transfer(Instruction &current, const State &state) override;
+    State transfer(Instruction& current, const State& state) override;
 };
 
 } // namespace arkoi::il

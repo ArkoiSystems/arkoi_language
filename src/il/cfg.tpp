@@ -1,17 +1,17 @@
 #pragma once
 
-template<typename Type, typename... Args>
-Instruction &BasicBlock::emplace_back(Args &&... args) {
+template <typename Type, typename... Args>
+Instruction& BasicBlock::emplace_back(Args&&... args) {
     return _instructions.emplace_back(Type(std::forward<Args>(args)...));
 }
 
-template<typename... Args>
-Function &Module::emplace_back(Args &&... args) {
+template <typename... Args>
+Function& Module::emplace_back(Args&&... args) {
     return _functions.emplace_back(std::forward<Args>(args)...);
 }
 
-template<typename... Args>
-BasicBlock *Function::emplace_back(Args &&... args) {
+template <typename... Args>
+BasicBlock* Function::emplace_back(Args&&... args) {
     return _block_pool.emplace_back(std::make_unique<BasicBlock>(std::forward<Args>(args)...)).get();
 }
 

@@ -7,20 +7,21 @@
 using namespace arkoi::x86_64;
 using namespace arkoi;
 
-Generator::Generator(il::Module &module) : _module(module) {
+Generator::Generator(il::Module& module) :
+    _module(module) {
     module.accept(*this);
 }
 
 std::stringstream Generator::output() const {
     std::stringstream output;
 
-    for (const auto &item: this->_text) output << item << "\n";
-    for (const auto &item: this->_data) output << item << "\n";
+    for (const auto& item : this->_text) output << item << "\n";
+    for (const auto& item : this->_data) output << item << "\n";
 
     return output;
 }
 
-void Generator::visit(il::Module &module) {
+void Generator::visit(il::Module& module) {
     _directive(".section .data", _data);
 
     _directive(".intel_syntax noprefix", _text);
@@ -35,22 +36,22 @@ void Generator::visit(il::Module &module) {
     _syscall();
     _newline(_text);
 
-    for (auto &function: module) {
+    for (auto& function : module) {
         function.accept(*this);
     }
 }
 
-void Generator::visit(il::Function &function) {
+void Generator::visit(il::Function& function) {
     _current_mapper = std::make_unique<Mapper>(function);
 
     _label(function.name());
 
-    for (auto &block: function) {
+    for (auto& block : function) {
         block.accept(*this);
     }
 }
 
-void Generator::visit(il::BasicBlock &block) {
+void Generator::visit(il::BasicBlock& block) {
     const auto stack_size = _current_mapper->stack_size();
 
     if (_current_mapper->function().entry() == &block) {
@@ -62,7 +63,7 @@ void Generator::visit(il::BasicBlock &block) {
         _label(block.label());
     }
 
-    for (auto &instruction: block) {
+    for (auto& instruction : block) {
         std::stringstream output;
         output << "\t# ";
         il::ILPrinter printer(output);
@@ -82,11 +83,11 @@ void Generator::visit(il::BasicBlock &block) {
     }
 }
 
-void Generator::visit(il::Binary &instruction) {
+void Generator::visit(il::Binary& instruction) {
     const auto result = _load(instruction.result());
     const auto left = _load(instruction.left());
     const auto right = _load(instruction.right());
-    const auto &type = instruction.op_type();
+    const auto& type = instruction.op_type();
 
     switch (instruction.op()) {
         case il::Binary::Operator::Add: return _add(result, left, right, type);
@@ -98,7 +99,7 @@ void Generator::visit(il::Binary &instruction) {
     }
 }
 
-void Generator::_add(const Operand &result, Operand left, const Operand &right, const sem::Type &type) {
+void Generator::_add(const Operand& result, Operand left, const Operand& right, const sem::Type& type) {
     if (std::holds_alternative<sem::Floating>(type)) {
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
@@ -106,7 +107,7 @@ void Generator::_add(const Operand &result, Operand left, const Operand &right, 
         left = _adjust_to_reg(result, left, type);
 
         // Depending on the size of the type, either choose addsd or addss.
-        const auto &instruction = (type.size() == Size::QWORD) ? &Generator::_addsd : &Generator::_addss;
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_addsd : &Generator::_addss;
         (this->*instruction)(left, right);
 
         // Finally, store the lhs (where the result is written to) to the result operand.
@@ -123,7 +124,7 @@ void Generator::_add(const Operand &result, Operand left, const Operand &right, 
     }
 }
 
-void Generator::_sub(const Operand &result, Operand left, const Operand &right, const sem::Type &type) {
+void Generator::_sub(const Operand& result, Operand left, const Operand& right, const sem::Type& type) {
     if (std::holds_alternative<sem::Floating>(type)) {
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
@@ -131,7 +132,7 @@ void Generator::_sub(const Operand &result, Operand left, const Operand &right, 
         left = _adjust_to_reg(result, left, type);
 
         // Depending on the size of the type, either choose subsd or subss.
-        const auto &instruction = (type.size() == Size::QWORD) ? &Generator::_subsd : &Generator::_subss;
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_subsd : &Generator::_subss;
         (this->*instruction)(left, right);
 
         // Finally, store the lhs (where the result is written to) to the result operand.
@@ -148,7 +149,7 @@ void Generator::_sub(const Operand &result, Operand left, const Operand &right, 
     }
 }
 
-void Generator::_mul(const Operand &result, Operand left, const Operand &right, const sem::Type &type) {
+void Generator::_mul(const Operand& result, Operand left, const Operand& right, const sem::Type& type) {
     if (std::holds_alternative<sem::Floating>(type)) {
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
@@ -156,7 +157,7 @@ void Generator::_mul(const Operand &result, Operand left, const Operand &right, 
         left = _adjust_to_reg(result, left, type);
 
         // Depending on the size of the type, either choose mulsd or mulss.
-        const auto &instruction = (type.size() == Size::QWORD) ? &Generator::_mulsd : &Generator::_mulss;
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_mulsd : &Generator::_mulss;
         (this->*instruction)(left, right);
 
         // Finally, store the lhs (where the result is written to) to the result operand.
@@ -175,7 +176,7 @@ void Generator::_mul(const Operand &result, Operand left, const Operand &right, 
     }
 }
 
-void Generator::_div(const Operand &result, Operand left, Operand right, const sem::Type &type) {
+void Generator::_div(const Operand& result, Operand left, Operand right, const sem::Type& type) {
     if (std::holds_alternative<sem::Floating>(type)) {
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
@@ -183,7 +184,7 @@ void Generator::_div(const Operand &result, Operand left, Operand right, const s
         left = _adjust_to_reg(result, left, type);
 
         // Depending on the size of the type, either choose divsd or divss.
-        const auto &instruction = (type.size() == Size::QWORD) ? &Generator::_divsd : &Generator::_divss;
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_divsd : &Generator::_divss;
         (this->*instruction)(left, right);
 
         // Finally, store the lhs (where the result is written to) to the result operand.
@@ -199,15 +200,15 @@ void Generator::_div(const Operand &result, Operand left, Operand right, const s
         }
 
         // Depending on the signess of the integral value, we need to choose idiv or div.
-        auto *integral = std::get_if<sem::Integral>(&type);
-        const auto &instruction = (integral && integral->sign()) ? &Generator::_idiv : &Generator::_udiv;
+        auto* integral = std::get_if<sem::Integral>(&type);
+        const auto& instruction = (integral && integral->sign()) ? &Generator::_idiv : &Generator::_udiv;
         (this->*instruction)(right);
 
         _store(a_reg, result, type);
     }
 }
 
-void Generator::_gth(const Operand &result, Operand left, const Operand &right, const sem::Type &type) {
+void Generator::_gth(const Operand& result, Operand left, const Operand& right, const sem::Type& type) {
     if (std::holds_alternative<sem::Floating>(type)) {
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
@@ -215,7 +216,7 @@ void Generator::_gth(const Operand &result, Operand left, const Operand &right, 
         left = _adjust_to_reg(result, left, type);
 
         // Depending on the size of the type, either choose ucomisd or ucomiss.
-        const auto &instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
         (this->*instruction)(left, right);
 
         _seta(result);
@@ -226,13 +227,13 @@ void Generator::_gth(const Operand &result, Operand left, const Operand &right, 
 
         _cmp(left, right);
 
-        const auto *integral = std::get_if<sem::Integral>(&type);
-        const auto &instruction = (integral && integral->sign()) ? &Generator::_setg : &Generator::_seta;
+        const auto* integral = std::get_if<sem::Integral>(&type);
+        const auto& instruction = (integral && integral->sign()) ? &Generator::_setg : &Generator::_seta;
         (this->*instruction)(result);
     }
 }
 
-void Generator::_lth(const Operand &result, Operand left, const Operand &right, const sem::Type &type) {
+void Generator::_lth(const Operand& result, Operand left, const Operand& right, const sem::Type& type) {
     if (std::holds_alternative<sem::Floating>(type)) {
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
@@ -240,7 +241,7 @@ void Generator::_lth(const Operand &result, Operand left, const Operand &right, 
         left = _adjust_to_reg(result, left, type);
 
         // Depending on the size of the type, either choose ucomisd or ucomiss.
-        const auto &instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
         (this->*instruction)(left, right);
 
         _setb(result);
@@ -251,31 +252,31 @@ void Generator::_lth(const Operand &result, Operand left, const Operand &right, 
 
         _cmp(left, right);
 
-        const auto *integral = std::get_if<sem::Integral>(&type);
-        const auto &instruction = (integral && integral->sign()) ? &Generator::_setl : &Generator::_setb;
+        const auto* integral = std::get_if<sem::Integral>(&type);
+        const auto& instruction = (integral && integral->sign()) ? &Generator::_setl : &Generator::_setb;
         (this->*instruction)(result);
     }
 }
 
-void Generator::visit(il::Cast &instruction) {
+void Generator::visit(il::Cast& instruction) {
     const auto result = _load(instruction.result());
     const auto source = _load(instruction.source());
 
-    std::visit(match{
-        [&](const sem::Floating &from, const sem::Floating &to) { _float_to_float(result, source, from, to); },
-        [&](const sem::Floating &from, const sem::Integral &to) { _float_to_int(result, source, from, to); },
-        [&](const sem::Floating &from, const sem::Boolean &to) { _float_to_bool(result, source, from, to); },
-        [&](const sem::Integral &from, const sem::Integral &to) { _int_to_int(result, source, from, to); },
-        [&](const sem::Integral &from, const sem::Floating &to) { _int_to_float(result, source, from, to); },
-        [&](const sem::Integral &from, const sem::Boolean &to) { _int_to_bool(result, source, from, to); },
-        [&](const sem::Boolean &from, const sem::Floating &to) { _bool_to_float(result, source, from, to); },
-        [&](const sem::Boolean &from, const sem::Integral &to) { _bool_to_int(result, source, from, to); },
-        [&](const sem::Boolean &, const sem::Boolean &to) { _store(source, result, to); },
-    }, instruction.from(), instruction.result().type());
+    std::visit(match {
+                   [&](const sem::Floating& from, const sem::Floating& to) { _float_to_float(result, source, from, to); },
+                   [&](const sem::Floating& from, const sem::Integral& to) { _float_to_int(result, source, from, to); },
+                   [&](const sem::Floating& from, const sem::Boolean& to) { _float_to_bool(result, source, from, to); },
+                   [&](const sem::Integral& from, const sem::Integral& to) { _int_to_int(result, source, from, to); },
+                   [&](const sem::Integral& from, const sem::Floating& to) { _int_to_float(result, source, from, to); },
+                   [&](const sem::Integral& from, const sem::Boolean& to) { _int_to_bool(result, source, from, to); },
+                   [&](const sem::Boolean& from, const sem::Floating& to) { _bool_to_float(result, source, from, to); },
+                   [&](const sem::Boolean& from, const sem::Integral& to) { _bool_to_int(result, source, from, to); },
+                   [&](const sem::Boolean&, const sem::Boolean& to) { _store(source, result, to); },
+               }, instruction.from(), instruction.result().type());
 }
 
-void Generator::_float_to_float(const Operand &result, Operand source, const sem::Floating &from,
-                                const sem::Floating &to) {
+void Generator::_float_to_float(const Operand& result, Operand source, const sem::Floating& from,
+                                const sem::Floating& to) {
     // If both are the same, a simple move will fulfill
     if (from == to) return _store(source, result, to);
 
@@ -285,14 +286,14 @@ void Generator::_float_to_float(const Operand &result, Operand source, const sem
     auto converted_source = std::get<Register>(source);
     converted_source.set_size(to.size());
 
-    const auto &instruction = (from.size() == Size::QWORD) ? &Generator::_cvtsd2ss : &Generator::_cvtss2sd;
+    const auto& instruction = (from.size() == Size::QWORD) ? &Generator::_cvtsd2ss : &Generator::_cvtss2sd;
     (this->*instruction)(converted_source, source);
 
     _store(converted_source, result, to);
 }
 
-void Generator::_int_to_int(const Operand &result, Operand source, const sem::Integral &from,
-                            const sem::Integral &to) {
+void Generator::_int_to_int(const Operand& result, Operand source, const sem::Integral& from,
+                            const sem::Integral& to) {
     // If both are the same exact type, store the source in the result.
     if (from == to) return _store(source, result, to);
 
@@ -346,7 +347,7 @@ void Generator::_int_to_int(const Operand &result, Operand source, const sem::In
         auto converted_source = _temp_1_register(to);
 
         // Either choose the movsx or movzx instruction based on the from-signess.
-        const auto &instruction = from.sign() ? &Generator::_movsx : &Generator::_movzx;
+        const auto& instruction = from.sign() ? &Generator::_movsx : &Generator::_movzx;
         (this->*instruction)(converted_source, source);
 
         // Store the converted operand in the result (can be either of type mem or reg).
@@ -354,14 +355,14 @@ void Generator::_int_to_int(const Operand &result, Operand source, const sem::In
     }
 }
 
-void Generator::_float_to_int(const Operand &result, const Operand &source, const sem::Floating &from,
-                              const sem::Integral &to) {
+void Generator::_float_to_int(const Operand& result, const Operand& source, const sem::Floating& from,
+                              const sem::Integral& to) {
     // Get an int register that is at least 32bit big.
     const auto temp_size = (to.size() < Size::DWORD) ? Size::DWORD : to.size();
     const auto temp_1_int = _temp_1_register(sem::Integral(temp_size, to.sign()));
 
     // Either use the cvttsd2si/cvttss2si instruction based on the from-size.
-    const auto &instruction = (from.size() == Size::QWORD) ? &Generator::_cvttsd2si : &Generator::_cvttss2si;
+    const auto& instruction = (from.size() == Size::QWORD) ? &Generator::_cvttsd2si : &Generator::_cvttss2si;
     (this->*instruction)(temp_1_int, source);
 
     // Get the correct sized temp register.
@@ -371,8 +372,8 @@ void Generator::_float_to_int(const Operand &result, const Operand &source, cons
     _store(temp_sized, result, to);
 }
 
-void Generator::_float_to_bool(const Operand &result, const Operand &source, const sem::Floating &from,
-                               const sem::Boolean &to) {
+void Generator::_float_to_bool(const Operand& result, const Operand& source, const sem::Floating& from,
+                               const sem::Boolean& to) {
     // We need temp registers to evaluate if it's a bool or not.
     const auto temp_2_sse = _temp_2_register(from);
     const auto temp_1_int = _temp_1_register(to);
@@ -382,7 +383,7 @@ void Generator::_float_to_bool(const Operand &result, const Operand &source, con
     _xorps(temp_2_sse, temp_2_sse);
 
     // Compare the source float with 0.0.
-    const auto &instruction = (from.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
+    const auto& instruction = (from.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
     (this->*instruction)(temp_2_sse, source);
 
     // Set the first temp register if it is not equal to zero.
@@ -396,8 +397,8 @@ void Generator::_float_to_bool(const Operand &result, const Operand &source, con
     _store(temp_1_int, result, to);
 }
 
-void Generator::_int_to_float(const Operand &result, Operand source, const sem::Integral &from,
-                              const sem::Floating &to) {
+void Generator::_int_to_float(const Operand& result, Operand source, const sem::Integral& from,
+                              const sem::Floating& to) {
     if (!from.sign() && from.size() == Size::QWORD) {
         // TODO(timo): Converting a unsigned 64bit integer to float is a bit more complex, thus this is excluded for now.
         throw std::runtime_error("This is not implemented yet.");
@@ -415,7 +416,7 @@ void Generator::_int_to_float(const Operand &result, Operand source, const sem::
         auto converted_source = _temp_1_register(sem::Integral(Size::DWORD, from.sign()));
 
         // Either choose the movsx or movzx instruction based on the signess.
-        const auto &instruction = from.sign() ? &Generator::_movsx : &Generator::_movzx;
+        const auto& instruction = from.sign() ? &Generator::_movsx : &Generator::_movzx;
         (this->*instruction)(converted_source, source);
 
         // Assign the converted source to the source operand.
@@ -426,15 +427,15 @@ void Generator::_int_to_float(const Operand &result, Operand source, const sem::
     auto temp_1_sse = _temp_1_register(to);
 
     // Either choose the cvtsi2ss/cvtsi2sd instruction based on the size.
-    const auto &instruction = (to.size() == Size::QWORD) ? &Generator::_cvtsi2sd : &Generator::_cvtsi2ss;
+    const auto& instruction = (to.size() == Size::QWORD) ? &Generator::_cvtsi2sd : &Generator::_cvtsi2ss;
     (this->*instruction)(temp_1_sse, source);
 
     // Finally, store the calculated result in the result operand.
     _store(temp_1_sse, result, to);
 }
 
-void Generator::_int_to_bool(const Operand &result, Operand source, const sem::Integral &from,
-                             const sem::Boolean &to) {
+void Generator::_int_to_bool(const Operand& result, Operand source, const sem::Integral& from,
+                             const sem::Boolean& to) {
     // If the source holds an immediate, instead turn it into a register.
     if (std::holds_alternative<Immediate>(source)) {
         source = _adjust_to_reg(result, source, from);
@@ -451,8 +452,8 @@ void Generator::_int_to_bool(const Operand &result, Operand source, const sem::I
     _store(temp_1_int, result, to);
 }
 
-void Generator::_bool_to_float(const Operand &result, Operand source, const sem::Boolean &from,
-                               const sem::Floating &to) {
+void Generator::_bool_to_float(const Operand& result, Operand source, const sem::Boolean& from,
+                               const sem::Floating& to) {
     // If the source holds an immediate, instead turn it into a register.
     if (std::holds_alternative<Immediate>(source)) {
         source = _store_temp_1(source, from);
@@ -466,15 +467,15 @@ void Generator::_bool_to_float(const Operand &result, Operand source, const sem:
     _movzx(temp_1_int, source);
 
     // Convert the 32bit integer to either a float (cvtsi2ss) or double (cvtsi2sd).
-    const auto &instruction = (to.size() == Size::QWORD) ? &Generator::_cvtsi2sd : &Generator::_cvtsi2ss;
+    const auto& instruction = (to.size() == Size::QWORD) ? &Generator::_cvtsi2sd : &Generator::_cvtsi2ss;
     (this->*instruction)(temp_1_sse, temp_1_int);
 
     // Finally, store the calculated result in the result operand.
     _store(temp_1_sse, result, to);
 }
 
-void Generator::_bool_to_int(const Operand &result, Operand source, const sem::Boolean &from,
-                             const sem::Integral &to) {
+void Generator::_bool_to_int(const Operand& result, Operand source, const sem::Boolean& from,
+                             const sem::Integral& to) {
     if (to.size() == Size::BYTE) {
         // If we want to store a boolean in a 8bit integer we do not need to change anything.
 
@@ -500,7 +501,7 @@ void Generator::_bool_to_int(const Operand &result, Operand source, const sem::B
     }
 }
 
-void Generator::visit(il::Call &instruction) {
+void Generator::visit(il::Call& instruction) {
     const auto result = _load(instruction.result());
     const auto type = instruction.result().type();
 
@@ -515,13 +516,13 @@ void Generator::visit(il::Call &instruction) {
     _store(return_reg, result, type);
 }
 
-size_t Generator::_generate_arguments(const std::vector<il::Operand> &arguments) {
+size_t Generator::_generate_arguments(const std::vector<il::Operand>& arguments) {
     size_t integer = 0, floating = 0;
 
     // The first iteration is needed to calculate the stack arguments to allocate enough stack.
     size_t arg_stack_size = 0;
-    for (auto &argument: arguments) {
-        const auto &type = argument.type();
+    for (auto& argument : arguments) {
+        const auto& type = argument.type();
 
         if (std::holds_alternative<sem::Integral>(type) || std::holds_alternative<sem::Boolean>(type)) {
             if (integer++ < INTEGER_ARGUMENT_REGISTERS.size()) continue;
@@ -542,8 +543,8 @@ size_t Generator::_generate_arguments(const std::vector<il::Operand> &arguments)
     integer = 0, floating = 0;
     size_t stack = 0;
 
-    for (auto &argument: arguments) {
-        const auto &type = argument.type();
+    for (auto& argument : arguments) {
+        const auto& type = argument.type();
         const auto source = _load(argument);
 
         if (std::holds_alternative<sem::Integral>(type) || std::holds_alternative<sem::Boolean>(type)) {
@@ -571,7 +572,7 @@ size_t Generator::_generate_arguments(const std::vector<il::Operand> &arguments)
     return arg_stack_size;
 }
 
-void Generator::visit(il::If &instruction) {
+void Generator::visit(il::If& instruction) {
     auto condition = _load(instruction.condition());
 
     // The test instruction only works with reg:imm, mem:imm, reg:reg, mem:reg, thus we simply put the condition in a
@@ -585,60 +586,60 @@ void Generator::visit(il::If &instruction) {
     _jmp(instruction.next());
 }
 
-void Generator::visit(il::Goto &instruction) {
+void Generator::visit(il::Goto& instruction) {
     _jmp(instruction.label());
 }
 
-void Generator::visit(il::Store &instruction) {
+void Generator::visit(il::Store& instruction) {
     const auto result = _load(instruction.result());
     const auto source = _load(instruction.source());
     const auto type = instruction.result().type();
     _store(source, result, type);
 }
 
-void Generator::visit(il::Load &instruction) {
+void Generator::visit(il::Load& instruction) {
     const auto result = _load(instruction.result());
     const auto source = _load(instruction.source());
     const auto type = instruction.result().type();
     _store(source, result, type);
 }
 
-void Generator::visit(il::Constant &instruction) {
+void Generator::visit(il::Constant& instruction) {
     const auto result = _load(instruction.result());
     const auto immediate = _load(instruction.immediate());
     const auto type = instruction.result().type();
     _store(immediate, result, type);
 }
 
-Operand Generator::_load(const il::Operand &operand) {
-    return std::visit(match{
-        [&](const il::Immediate &immediate) -> Operand {
-            if (std::holds_alternative<double>(immediate)) {
-                const auto name = "float" + std::to_string(_constants++);
-                const auto value = std::to_string(std::get<double>(immediate));
-                _directive("\t" + name + ": .double\t" + value, _data);
-                return Memory(Size::QWORD, name);
-            }
+Operand Generator::_load(const il::Operand& operand) {
+    return std::visit(match {
+                          [&](const il::Immediate& immediate) -> Operand {
+                              if (std::holds_alternative<double>(immediate)) {
+                                  const auto name = "float" + std::to_string(_constants++);
+                                  const auto value = std::to_string(std::get<double>(immediate));
+                                  _directive("\t" + name + ": .double\t" + value, _data);
+                                  return Memory(Size::QWORD, name);
+                              }
 
-            if (std::holds_alternative<float>(immediate)) {
-                auto name = "float" + std::to_string(_constants++);
-                const auto value = std::to_string(std::get<float>(immediate));
-                _directive("\t" + name + ": .float\t" + value, _data);
-                return Memory(Size::DWORD, name);
-            }
+                              if (std::holds_alternative<float>(immediate)) {
+                                  auto name = "float" + std::to_string(_constants++);
+                                  const auto value = std::to_string(std::get<float>(immediate));
+                                  _directive("\t" + name + ": .float\t" + value, _data);
+                                  return Memory(Size::DWORD, name);
+                              }
 
-            return std::visit([](const auto &value) -> Immediate { return value; }, immediate);
-        },
-        [&](const il::Memory &memory) -> Operand {
-            return (*_current_mapper)[memory];
-        },
-        [&](const il::Variable &variable) -> Operand {
-            return (*_current_mapper)[variable];
-        },
-    }, operand);
+                              return std::visit([](const auto& value) -> Immediate { return value; }, immediate);
+                          },
+                          [&](const il::Memory& memory) -> Operand {
+                              return (*_current_mapper)[memory];
+                          },
+                          [&](const il::Variable& variable) -> Operand {
+                              return (*_current_mapper)[variable];
+                          },
+                      }, operand);
 }
 
-void Generator::_store(Operand source, const Operand &destination, const sem::Type &type) {
+void Generator::_store(Operand source, const Operand& destination, const sem::Type& type) {
     // If the source and destination is the same, the mov instruction is not needed.
     if (source == destination) return;
 
@@ -649,36 +650,36 @@ void Generator::_store(Operand source, const Operand &destination, const sem::Ty
     }
 
     if (std::holds_alternative<sem::Floating>(type)) {
-        const auto &instruction = (type.size() == Size::QWORD) ? &Generator::_movsd : &Generator::_movss;
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_movsd : &Generator::_movss;
         (this->*instruction)(destination, source);
     } else {
         _mov(destination, source);
     }
 }
 
-Register Generator::_store_temp_1(const Operand &source, const sem::Type &type) {
+Register Generator::_store_temp_1(const Operand& source, const sem::Type& type) {
     auto temp = _temp_1_register(type);
     _store(source, temp, type);
     return temp;
 }
 
-Register Generator::_temp_1_register(const sem::Type &type) {
+Register Generator::_temp_1_register(const sem::Type& type) {
     auto reg_base = (std::holds_alternative<sem::Floating>(type) ? Register::Base::XMM10 : Register::Base::R10);
-    return {reg_base, type.size()};
+    return { reg_base, type.size() };
 }
 
-Register Generator::_store_temp_2(const Operand &source, const sem::Type &type) {
+Register Generator::_store_temp_2(const Operand& source, const sem::Type& type) {
     auto temp = _temp_2_register(type);
     _store(source, temp, type);
     return temp;
 }
 
-Register Generator::_temp_2_register(const sem::Type &type) {
+Register Generator::_temp_2_register(const sem::Type& type) {
     auto reg_base = (std::holds_alternative<sem::Floating>(type) ? Register::Base::XMM11 : Register::Base::R11);
-    return {reg_base, type.size()};
+    return { reg_base, type.size() };
 }
 
-Register Generator::_adjust_to_reg(const Operand &, const Operand &target, const sem::Type &type) {
+Register Generator::_adjust_to_reg(const Operand&, const Operand& target, const sem::Type& type) {
     // Early exit if the target operand already is a register.
     if (std::holds_alternative<Register>(target)) return std::get<Register>(target);
 
@@ -686,191 +687,191 @@ Register Generator::_adjust_to_reg(const Operand &, const Operand &target, const
     return _store_temp_1(target, type);
 }
 
-void Generator::_directive(const std::string &directive, std::vector<AssemblyItem> &output) {
+void Generator::_directive(const std::string& directive, std::vector<AssemblyItem>& output) {
     output.emplace_back(Directive(directive));
 }
 
-void Generator::_label(const std::string &name) {
+void Generator::_label(const std::string& name) {
     _text.emplace_back(Label(name));
 }
 
-void Generator::_jmp(const std::string &name) {
-    _text.emplace_back(Instruction(Instruction::Opcode::JMP, {name}));
+void Generator::_jmp(const std::string& name) {
+    _text.emplace_back(Instruction(Instruction::Opcode::JMP, { name }));
 }
 
-void Generator::_jnz(const std::string &name) {
-    _text.emplace_back(Instruction(Instruction::Opcode::JNZ, {name}));
+void Generator::_jnz(const std::string& name) {
+    _text.emplace_back(Instruction(Instruction::Opcode::JNZ, { name }));
 }
 
-void Generator::_call(const std::string &name) {
-    _text.emplace_back(Instruction(Instruction::Opcode::CALL, {name}));
+void Generator::_call(const std::string& name) {
+    _text.emplace_back(Instruction(Instruction::Opcode::CALL, { name }));
 }
 
-void Generator::_movsxd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::MOVSXD, {destination, source}));
+void Generator::_movsxd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVSXD, { destination, source }));
 }
 
-void Generator::_movsd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::MOVSD, {destination, source}));
+void Generator::_movsd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVSD, { destination, source }));
 }
 
-void Generator::_movss(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::MOVSS, {destination, source}));
+void Generator::_movss(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVSS, { destination, source }));
 }
 
-void Generator::_movzx(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::MOVZX, {destination, source}));
+void Generator::_movzx(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVZX, { destination, source }));
 }
 
-void Generator::_movsx(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::MOVSX, {destination, source}));
+void Generator::_movsx(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::MOVSX, { destination, source }));
 }
 
-void Generator::_mov(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::MOV, {destination, source}));
+void Generator::_mov(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::MOV, { destination, source }));
 }
 
-void Generator::_addsd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::ADDSD, {destination, source}));
+void Generator::_addsd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::ADDSD, { destination, source }));
 }
 
-void Generator::_addss(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::ADDSS, {destination, source}));
+void Generator::_addss(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::ADDSS, { destination, source }));
 }
 
-void Generator::_add(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::ADD, {destination, source}));
+void Generator::_add(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::ADD, { destination, source }));
 }
 
-void Generator::_subsd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SUBSD, {destination, source}));
+void Generator::_subsd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SUBSD, { destination, source }));
 }
 
-void Generator::_subss(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SUBSS, {destination, source}));
+void Generator::_subss(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SUBSS, { destination, source }));
 }
 
-void Generator::_sub(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SUB, {destination, source}));
+void Generator::_sub(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SUB, { destination, source }));
 }
 
-void Generator::_mulsd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::MULSD, {destination, source}));
+void Generator::_mulsd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::MULSD, { destination, source }));
 }
 
-void Generator::_mulss(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::MULSS, {destination, source}));
+void Generator::_mulss(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::MULSS, { destination, source }));
 }
 
-void Generator::_imul(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::IMUL, {destination, source}));
+void Generator::_imul(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::IMUL, { destination, source }));
 }
 
-void Generator::_divsd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::DIVSD, {destination, source}));
+void Generator::_divsd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::DIVSD, { destination, source }));
 }
 
-void Generator::_divss(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::DIVSS, {destination, source}));
+void Generator::_divss(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::DIVSS, { destination, source }));
 }
 
-void Generator::_idiv(const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::IDIV, {source}));
+void Generator::_idiv(const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::IDIV, { source }));
 }
 
-void Generator::_udiv(const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::DIV, {source}));
+void Generator::_udiv(const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::DIV, { source }));
 }
 
-void Generator::_xorps(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::XORPS, {destination, source}));
+void Generator::_xorps(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::XORPS, { destination, source }));
 }
 
-void Generator::_or(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::OR, {destination, source}));
+void Generator::_or(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::OR, { destination, source }));
 }
 
-void Generator::_ucomisd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::UCOMISD, {destination, source}));
+void Generator::_ucomisd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::UCOMISD, { destination, source }));
 }
 
-void Generator::_ucomiss(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::UCOMISS, {destination, source}));
+void Generator::_ucomiss(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::UCOMISS, { destination, source }));
 }
 
-void Generator::_cvtsd2ss(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::CVTSD2SS, {destination, source}));
+void Generator::_cvtsd2ss(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTSD2SS, { destination, source }));
 }
 
-void Generator::_cvtss2sd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::CVTSS2SD, {destination, source}));
+void Generator::_cvtss2sd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTSS2SD, { destination, source }));
 }
 
-void Generator::_cvtsi2sd(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::CVTSI2SD, {destination, source}));
+void Generator::_cvtsi2sd(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTSI2SD, { destination, source }));
 }
 
-void Generator::_cvtsi2ss(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::CVTSI2SS, {destination, source}));
+void Generator::_cvtsi2ss(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTSI2SS, { destination, source }));
 }
 
-void Generator::_cvttsd2si(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::CVTTSD2SI, {destination, source}));
+void Generator::_cvttsd2si(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTTSD2SI, { destination, source }));
 }
 
-void Generator::_cvttss2si(const Operand &destination, const Operand &source) {
-    _text.emplace_back(Instruction(Instruction::Opcode::CVTTSS2SI, {destination, source}));
+void Generator::_cvttss2si(const Operand& destination, const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::CVTTSS2SI, { destination, source }));
 }
 
-void Generator::_test(const Operand &first, const Operand &second) {
-    _text.emplace_back(Instruction(Instruction::Opcode::TEST, {first, second}));
+void Generator::_test(const Operand& first, const Operand& second) {
+    _text.emplace_back(Instruction(Instruction::Opcode::TEST, { first, second }));
 }
 
-void Generator::_cmp(const Operand &first, const Operand &second) {
-    _text.emplace_back(Instruction(Instruction::Opcode::CMP, {first, second}));
+void Generator::_cmp(const Operand& first, const Operand& second) {
+    _text.emplace_back(Instruction(Instruction::Opcode::CMP, { first, second }));
 }
 
-void Generator::_setne(const Operand &destination) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SETNE, {destination}));
+void Generator::_setne(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETNE, { destination }));
 }
 
-void Generator::_setg(const Operand &destination) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SETG, {destination}));
+void Generator::_setg(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETG, { destination }));
 }
 
-void Generator::_seta(const Operand &destination) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SETA, {destination}));
+void Generator::_seta(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETA, { destination }));
 }
 
-void Generator::_setb(const Operand &destination) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SETB, {destination}));
+void Generator::_setb(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETB, { destination }));
 }
 
-void Generator::_setl(const Operand &destination) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SETL, {destination}));
+void Generator::_setl(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETL, { destination }));
 }
 
-void Generator::_setp(const Operand &destination) {
-    _text.emplace_back(Instruction(Instruction::Opcode::SETP, {destination}));
+void Generator::_setp(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETP, { destination }));
 }
 
 void Generator::_enter(uint16_t size, uint8_t nesting_level) {
-    _text.emplace_back(Instruction(Instruction::Opcode::ENTER, {size, nesting_level}));
+    _text.emplace_back(Instruction(Instruction::Opcode::ENTER, { size, nesting_level }));
 }
 
 void Generator::_syscall() {
-    _text.emplace_back(Instruction(Instruction::Opcode::SYSCALL, {}));
+    _text.emplace_back(Instruction(Instruction::Opcode::SYSCALL, { }));
 }
 
 void Generator::_leave() {
-    _text.emplace_back(Instruction(Instruction::Opcode::LEAVE, {}));
+    _text.emplace_back(Instruction(Instruction::Opcode::LEAVE, { }));
 }
 
 void Generator::_ret() {
-    _text.emplace_back(Instruction(Instruction::Opcode::RET, {}));
+    _text.emplace_back(Instruction(Instruction::Opcode::RET, { }));
 }
 
-void Generator::_newline(std::vector<AssemblyItem> &output) {
+void Generator::_newline(std::vector<AssemblyItem>& output) {
     _directive("", output);
 }
 

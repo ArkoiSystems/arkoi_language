@@ -10,9 +10,10 @@ namespace arkoi::x86_64 {
 
 class Label {
 public:
-    explicit Label(std::string name) : _name(std::move(name)) {}
+    explicit Label(std::string name) :
+        _name(std::move(name)) { }
 
-    [[nodiscard]] auto &name() const { return _name; }
+    [[nodiscard]] auto& name() const { return _name; }
 
 private:
     std::string _name;
@@ -20,9 +21,10 @@ private:
 
 class Directive {
 public:
-    explicit Directive(std::string text) : _text(std::move(text)) {}
+    explicit Directive(std::string text) :
+        _text(std::move(text)) { }
 
-    [[nodiscard]] auto &text() const { return _text; }
+    [[nodiscard]] auto& text() const { return _text; }
 
 private:
     std::string _text;
@@ -37,11 +39,12 @@ public:
     };
 
 public:
-    Instruction(Opcode opcode, std::vector<Operand> operands) : _operands(std::move(operands)), _opcode(opcode) {}
+    Instruction(Opcode opcode, std::vector<Operand> operands) :
+        _operands(std::move(operands)), _opcode(opcode) { }
 
-    [[nodiscard]] auto &operands() const { return _operands; }
+    [[nodiscard]] auto& operands() const { return _operands; }
 
-    [[nodiscard]] auto &opcode() const { return _opcode; }
+    [[nodiscard]] auto& opcode() const { return _opcode; }
 
 private:
     std::vector<Operand> _operands;
@@ -54,15 +57,15 @@ struct AssemblyItem final : std::variant<Label, Directive, Instruction> {
 
 } // namespace arkoi::x86_64
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Label &label);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Label& label);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Directive &directive);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Directive& directive);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Instruction::Opcode &opcode);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Instruction::Opcode& opcode);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Instruction &instruction);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Instruction& instruction);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::AssemblyItem &item);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::AssemblyItem& item);
 
 // BSD 3-Clause License
 //

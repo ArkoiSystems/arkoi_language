@@ -5,17 +5,17 @@
 using namespace arkoi::x86_64;
 using namespace arkoi;
 
-std::ostream &operator<<(std::ostream &os, const Label &label) {
+std::ostream& operator<<(std::ostream& os, const Label& label) {
     os << label.name() << ":";
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const Directive &directive) {
+std::ostream& operator<<(std::ostream& os, const Directive& directive) {
     os << directive.text();
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const Instruction::Opcode &opcode) {
+std::ostream& operator<<(std::ostream& os, const Instruction::Opcode& opcode) {
     switch (opcode) {
         case Instruction::Opcode::ADD: return os << "add";
         case Instruction::Opcode::CALL: return os << "call";
@@ -65,10 +65,10 @@ std::ostream &operator<<(std::ostream &os, const Instruction::Opcode &opcode) {
     }
 }
 
-std::ostream &operator<<(std::ostream &os, const Instruction &instruction) {
+std::ostream& operator<<(std::ostream& os, const Instruction& instruction) {
     os << "\t" << instruction.opcode();
     for (size_t index = 0; index < instruction.operands().size(); index++) {
-        const auto &operand = instruction.operands()[index];
+        const auto& operand = instruction.operands()[index];
         if (index != 0) {
             os << ", " << operand;
         } else {
@@ -78,8 +78,8 @@ std::ostream &operator<<(std::ostream &os, const Instruction &instruction) {
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const AssemblyItem &item) {
-    std::visit([&os](const auto &value) { os << value; }, item);
+std::ostream& operator<<(std::ostream& os, const AssemblyItem& item) {
+    std::visit([&os](const auto& value) { os << value; }, item);
     return os;
 }
 

@@ -11,11 +11,11 @@ public:
     using Mapping = std::unordered_map<il::Variable, Register::Base>;
 
 public:
-    RegisterAllocater(il::Function &function, Mapping precolored);
+    RegisterAllocater(il::Function& function, Mapping precolored);
 
-    [[nodiscard]] auto &assigned() { return _assigned; }
+    [[nodiscard]] auto& assigned() { return _assigned; }
 
-    [[nodiscard]] auto &spilled() { return _spilled; }
+    [[nodiscard]] auto& spilled() { return _spilled; }
 
 private:
     void _renumber();
@@ -28,7 +28,7 @@ private:
     il::DataflowAnalysis<il::InstructionLivenessAnalysis> _analysis;
     InterferenceGraph<il::Variable> _graph;
     std::vector<il::Variable> _spilled;
-    il::Function &_function;
+    il::Function& _function;
     Mapping _assigned;
 };
 } // namespace arkoi::x86_64

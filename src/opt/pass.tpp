@@ -1,7 +1,7 @@
 #pragma once
 
-template<typename Type, typename... Args>
-void PassManager::add(Args &&... args) {
+template <typename Type, typename... Args>
+void PassManager::add(Args&&... args) {
     _passes.push_back(std::make_unique<Type>(std::forward<Args>(args)...));
 }
 

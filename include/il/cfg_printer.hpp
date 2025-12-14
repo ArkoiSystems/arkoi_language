@@ -10,44 +10,44 @@ namespace arkoi::il {
 
 class CFGPrinter final : Visitor {
 public:
-    explicit CFGPrinter(std::stringstream &output)
-        : _current_function(nullptr), _output(output), _printer(output) {}
+    explicit CFGPrinter(std::stringstream& output) :
+        _current_function(nullptr), _output(output), _printer(output) { }
 
 public:
-    [[nodiscard]] static std::stringstream print(Module &module);
+    [[nodiscard]] static std::stringstream print(Module& module);
 
-    void visit(Module &module) override;
+    void visit(Module& module) override;
 
-    void visit(Function &function) override;
+    void visit(Function& function) override;
 
-    void visit(BasicBlock &block) override;
+    void visit(BasicBlock& block) override;
 
-    void visit(Return &instruction) override { _printer.visit(instruction); }
+    void visit(Return& instruction) override { _printer.visit(instruction); }
 
-    void visit(Binary &instruction) override { _printer.visit(instruction); }
+    void visit(Binary& instruction) override { _printer.visit(instruction); }
 
-    void visit(Cast &instruction) override { _printer.visit(instruction); }
+    void visit(Cast& instruction) override { _printer.visit(instruction); }
 
-    void visit(Call &instruction) override { _printer.visit(instruction); }
+    void visit(Call& instruction) override { _printer.visit(instruction); }
 
-    void visit(Goto &instruction) override { _printer.visit(instruction); }
+    void visit(Goto& instruction) override { _printer.visit(instruction); }
 
-    void visit(If &instruction) override { _printer.visit(instruction); }
+    void visit(If& instruction) override { _printer.visit(instruction); }
 
-    void visit(Alloca &instruction) override { _printer.visit(instruction); }
+    void visit(Alloca& instruction) override { _printer.visit(instruction); }
 
-    void visit(Store &instruction) override { _printer.visit(instruction); }
+    void visit(Store& instruction) override { _printer.visit(instruction); }
 
-    void visit(Load &instruction) override { _printer.visit(instruction); }
+    void visit(Load& instruction) override { _printer.visit(instruction); }
 
-    void visit(Constant &instruction) override { _printer.visit(instruction); }
+    void visit(Constant& instruction) override { _printer.visit(instruction); }
 
-    [[nodiscard]] auto &output() const { return _output; }
+    [[nodiscard]] auto& output() const { return _output; }
 
 private:
-    DataflowAnalysis<BlockLivenessAnalysis> _liveness{};
-    Function *_current_function;
-    std::stringstream &_output;
+    DataflowAnalysis<BlockLivenessAnalysis> _liveness { };
+    Function* _current_function;
+    std::stringstream& _output;
     ILPrinter _printer;
 };
 

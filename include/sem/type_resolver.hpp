@@ -10,54 +10,54 @@ private:
     TypeResolver() = default;
 
 public:
-    [[nodiscard]] static TypeResolver resolve(ast::Program &node);
+    [[nodiscard]] static TypeResolver resolve(ast::Program& node);
 
-    void visit(ast::Program &node) override;
+    void visit(ast::Program& node) override;
 
-    void visit_as_prototype(ast::Function &node);
+    void visit_as_prototype(ast::Function& node);
 
-    void visit(ast::Function &node) override;
+    void visit(ast::Function& node) override;
 
-    void visit(ast::Block &node) override;
+    void visit(ast::Block& node) override;
 
-    void visit(ast::Parameter &node) override;
+    void visit(ast::Parameter& node) override;
 
-    void visit(ast::Immediate &node) override;
+    void visit(ast::Immediate& node) override;
 
-    void visit_integer(ast::Immediate &node);
+    void visit_integer(ast::Immediate& node);
 
-    void visit_floating(ast::Immediate &node);
+    void visit_floating(ast::Immediate& node);
 
-    void visit_boolean(ast::Immediate &node);
+    void visit_boolean(ast::Immediate& node);
 
-    void visit(ast::Variable &node) override;
+    void visit(ast::Variable& node) override;
 
-    void visit(ast::Return &node) override;
+    void visit(ast::Return& node) override;
 
-    void visit(ast::Identifier &node) override;
+    void visit(ast::Identifier& node) override;
 
-    void visit(ast::Binary &node) override;
+    void visit(ast::Binary& node) override;
 
-    void visit(ast::Cast &node) override;
+    void visit(ast::Cast& node) override;
 
-    void visit(ast::Assign &node) override;
+    void visit(ast::Assign& node) override;
 
-    void visit(ast::Call &node) override;
+    void visit(ast::Call& node) override;
 
-    void visit(ast::If &node) override;
+    void visit(ast::If& node) override;
 
     [[nodiscard]] auto has_failed() const { return _failed; }
 
 private:
-    static Type _arithmetic_conversion(const Type &left_type, const Type &right_type);
+    static Type _arithmetic_conversion(const Type& left_type, const Type& right_type);
 
-    static bool _can_implicit_convert(const Type &from, const Type &destination);
+    static bool _can_implicit_convert(const Type& from, const Type& destination);
 
-    static std::unique_ptr<ast::Node> _cast(std::unique_ptr<ast::Node> &node, const Type &from, const Type &to);
+    static std::unique_ptr<ast::Node> _cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to);
 
 private:
-    std::optional<Type> _current_type{}, _return_type{};
-    bool _failed{};
+    std::optional<Type> _current_type { }, _return_type { };
+    bool _failed { };
 };
 
 } // namespace arkoi::sem

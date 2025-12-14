@@ -7,57 +7,57 @@
 using namespace arkoi::il;
 using namespace arkoi;
 
-bool Memory::operator<(const Memory &rhs) const {
+bool Memory::operator<(const Memory& rhs) const {
     return _index < rhs._index;
 }
 
-bool Memory::operator==(const Memory &rhs) const {
+bool Memory::operator==(const Memory& rhs) const {
     return _index == rhs._index;
 }
 
-bool Memory::operator!=(const Memory &rhs) const {
+bool Memory::operator!=(const Memory& rhs) const {
     return !(rhs == *this);
 }
 
-bool Variable::operator<(const Variable &rhs) const {
+bool Variable::operator<(const Variable& rhs) const {
     if (_name != rhs._name) return _name < rhs._name;
     return _version < rhs._version;
 }
 
-bool Variable::operator==(const Variable &rhs) const {
+bool Variable::operator==(const Variable& rhs) const {
     return _name == rhs._name && _version == rhs._version;
 }
 
-bool Variable::operator!=(const Variable &rhs) const {
+bool Variable::operator!=(const Variable& rhs) const {
     return !(rhs == *this);
 }
 
 sem::Type Immediate::type() const {
-    return std::visit(match{
-        [](const double &) -> sem::Type { return sem::Floating(Size::QWORD); },
-        [](const float &) -> sem::Type { return sem::Floating(Size::DWORD); },
-        [](const bool &) -> sem::Type { return sem::Boolean(); },
-        [](const uint32_t &) -> sem::Type { return sem::Integral(Size::DWORD, false); },
-        [](const int32_t &) -> sem::Type { return sem::Integral(Size::DWORD, true); },
-        [](const uint64_t &) -> sem::Type { return sem::Integral(Size::QWORD, false); },
-        [](const int64_t &) -> sem::Type { return sem::Integral(Size::QWORD, true); },
-    }, *this);
+    return std::visit(match {
+                          [](const double&) -> sem::Type { return sem::Floating(Size::QWORD); },
+                          [](const float&) -> sem::Type { return sem::Floating(Size::DWORD); },
+                          [](const bool&) -> sem::Type { return sem::Boolean(); },
+                          [](const uint32_t&) -> sem::Type { return sem::Integral(Size::DWORD, false); },
+                          [](const int32_t&) -> sem::Type { return sem::Integral(Size::DWORD, true); },
+                          [](const uint64_t&) -> sem::Type { return sem::Integral(Size::QWORD, false); },
+                          [](const int64_t&) -> sem::Type { return sem::Integral(Size::QWORD, true); },
+                      }, *this);
 }
 
-std::ostream &operator<<(std::ostream &os, const Immediate &operand) {
-    std::visit(match{
-        [&os](const bool &value) { os << (value ? "1" : "0"); },
-        [&os](const auto &value) { os << value; },
-    }, operand);
+std::ostream& operator<<(std::ostream& os, const Immediate& operand) {
+    std::visit(match {
+                   [&os](const bool& value) { os << (value ? "1" : "0"); },
+                   [&os](const auto& value) { os << value; },
+               }, operand);
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const Operand &operand) {
-    std::visit([&os](const auto &other) { os << other; }, operand);
+std::ostream& operator<<(std::ostream& os, const Operand& operand) {
+    std::visit([&os](const auto& other) { os << other; }, operand);
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const Variable &operand) {
+std::ostream& operator<<(std::ostream& os, const Variable& operand) {
     os << operand.name();
 
     if (operand.version() != 0) {
@@ -67,36 +67,36 @@ std::ostream &operator<<(std::ostream &os, const Variable &operand) {
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const Memory &operand) {
+std::ostream& operator<<(std::ostream& os, const Memory& operand) {
     os << "%" << std::setw(2) << std::setfill('0') << operand.index();
     return os;
 }
 
 sem::Type Operand::type() const {
-    return std::visit([](const auto &value) { return value.type(); }, *this);
+    return std::visit([](const auto& value) { return value.type(); }, *this);
 }
 
 namespace std {
 
-size_t hash<Variable>::operator()(const Variable &variable) const noexcept {
-    const size_t name_hash = std::hash<std::string>{}(variable.name());
-    const size_t generation_hash = std::hash<size_t>{}(variable.version());
+size_t hash<Variable>::operator()(const Variable& variable) const noexcept {
+    const size_t name_hash = std::hash<std::string> { }(variable.name());
+    const size_t generation_hash = std::hash<size_t> { }(variable.version());
     return name_hash ^ (generation_hash << 1);
 }
 
-size_t hash<Memory>::operator()(const Memory &memory) const noexcept {
-    return std::hash<size_t>{}(memory.index());
+size_t hash<Memory>::operator()(const Memory& memory) const noexcept {
+    return std::hash<size_t> { }(memory.index());
 }
 
-size_t hash<Immediate>::operator()(const Immediate &immediate) const noexcept {
-    return std::visit([]<typename T>(const T &value) -> size_t {
-        return std::hash<std::decay_t<T> >{}(value);
+size_t hash<Immediate>::operator()(const Immediate& immediate) const noexcept {
+    return std::visit([]<typename T>(const T& value) -> size_t {
+        return std::hash<std::decay_t<T>> { }(value);
     }, immediate);
 }
 
-size_t hash<Operand>::operator()(const Operand &operand) const noexcept {
-    return std::visit([]<typename T>(const T &value) -> size_t {
-        return std::hash<std::decay_t<T> >{}(value);
+size_t hash<Operand>::operator()(const Operand& operand) const noexcept {
+    return std::visit([]<typename T>(const T& value) -> size_t {
+        return std::hash<std::decay_t<T>> { }(value);
     }, operand);
 }
 

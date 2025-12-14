@@ -16,24 +16,23 @@ Binary::Operator Binary::node_to_instruction(const ast::Binary::Operator op) {
     std::unreachable();
 }
 
-void Instruction::accept(Visitor &visitor) {
-    std::visit([&](auto &item) { item.accept(visitor); }, *this);
+void Instruction::accept(Visitor& visitor) {
+    std::visit([&](auto& item) { item.accept(visitor); }, *this);
 }
 
 std::vector<Operand> Instruction::defs() const {
-    return std::visit([&](auto &item) { return item.defs(); }, *this);
+    return std::visit([&](auto& item) { return item.defs(); }, *this);
 }
 
 std::vector<Operand> Instruction::uses() const {
-    return std::visit([&](auto &item) { return item.uses(); }, *this);
+    return std::visit([&](auto& item) { return item.uses(); }, *this);
 }
 
 bool Instruction::is_constant() {
-    return std::visit([&](auto &item) { return item.is_constant(); }, *this);
+    return std::visit([&](auto& item) { return item.is_constant(); }, *this);
 }
 
-
-std::ostream &operator<<(std::ostream &os, const Binary::Operator &op) {
+std::ostream& operator<<(std::ostream& os, const Binary::Operator& op) {
     switch (op) {
         case Binary::Operator::Add: return os << "add";
         case Binary::Operator::Sub: return os << "sub";

@@ -20,31 +20,31 @@ class Visitor {
 public:
     virtual ~Visitor() = default;
 
-    virtual void visit(Program &node) = 0;
+    virtual void visit(Program& node) = 0;
 
-    virtual void visit(Function &node) = 0;
+    virtual void visit(Function& node) = 0;
 
-    virtual void visit(Block &node) = 0;
+    virtual void visit(Block& node) = 0;
 
-    virtual void visit(Parameter &node) = 0;
+    virtual void visit(Parameter& node) = 0;
 
-    virtual void visit(Immediate &node) = 0;
+    virtual void visit(Immediate& node) = 0;
 
-    virtual void visit(Variable &node) = 0;
+    virtual void visit(Variable& node) = 0;
 
-    virtual void visit(Return &node) = 0;
+    virtual void visit(Return& node) = 0;
 
-    virtual void visit(Identifier &node) = 0;
+    virtual void visit(Identifier& node) = 0;
 
-    virtual void visit(Binary &node) = 0;
+    virtual void visit(Binary& node) = 0;
 
-    virtual void visit(Cast &node) = 0;
+    virtual void visit(Cast& node) = 0;
 
-    virtual void visit(Assign &node) = 0;
+    virtual void visit(Assign& node) = 0;
 
-    virtual void visit(Call &node) = 0;
+    virtual void visit(Call& node) = 0;
 
-    virtual void visit(If &node) = 0;
+    virtual void visit(If& node) = 0;
 };
 
 } // namespace arkoi::ast

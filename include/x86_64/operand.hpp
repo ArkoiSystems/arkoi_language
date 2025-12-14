@@ -16,11 +16,12 @@ public:
     };
 
 public:
-    constexpr Register(Base base, Size size) : _size(size), _base(base) {}
+    constexpr Register(Base base, Size size) :
+        _size(size), _base(base) { }
 
-    bool operator==(const Register &other) const;
+    bool operator==(const Register& other) const;
 
-    bool operator!=(const Register &other) const;
+    bool operator!=(const Register& other) const;
 
     void set_size(Size size) { _size = size; }
 
@@ -40,22 +41,22 @@ public:
     };
 
 public:
-    Memory(Size size, Register address, int64_t index, int64_t scale, int64_t displacement)
-        : _index(index), _scale(scale), _displacement(displacement), _address(address), _size(size) {}
+    Memory(Size size, Register address, int64_t index, int64_t scale, int64_t displacement) :
+        _index(index), _scale(scale), _displacement(displacement), _address(address), _size(size) { }
 
-    Memory(Size size, Register address, int64_t displacement)
-        : _index(1), _scale(1), _displacement(displacement), _address(address), _size(size) {}
+    Memory(Size size, Register address, int64_t displacement) :
+        _index(1), _scale(1), _displacement(displacement), _address(address), _size(size) { }
 
-    Memory(Size size, Address address)
-        : _index(1), _scale(1), _displacement(0), _address(std::move(address)), _size(size) {}
+    Memory(Size size, Address address) :
+        _index(1), _scale(1), _displacement(0), _address(std::move(address)), _size(size) { }
 
-    bool operator==(const Memory &other) const;
+    bool operator==(const Memory& other) const;
 
-    bool operator!=(const Memory &other) const;
+    bool operator!=(const Memory& other) const;
 
     [[nodiscard]] auto displacement() const { return _displacement; }
 
-    [[nodiscard]] auto &address() const { return _address; }
+    [[nodiscard]] auto& address() const { return _address; }
 
     [[nodiscard]] auto scale() const { return _scale; }
 
@@ -79,33 +80,33 @@ struct Operand : std::variant<Memory, Register, Immediate> {
 
 } // namespace arkoi::x86_64
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Register &reg);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register& reg);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Register::Base &reg);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register::Base& reg);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Memory &memory);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Memory& memory);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Memory::Address &memory);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Memory::Address& memory);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Immediate &operand);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Immediate& operand);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::x86_64::Operand &mapping);
+std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Operand& mapping);
 
 namespace arkoi::x86_64 {
-    static constexpr std::array INTEGER_ARGUMENT_REGISTERS{
-        Register::Base::DI, Register::Base::SI, Register::Base::D,
-        Register::Base::C, Register::Base::R8, Register::Base::R9
-    };
+static constexpr std::array INTEGER_ARGUMENT_REGISTERS {
+    Register::Base::DI, Register::Base::SI, Register::Base::D,
+    Register::Base::C, Register::Base::R8, Register::Base::R9
+};
 
-    static constexpr std::array SSE_ARGUMENT_REGISTERS{
-        Register::Base::XMM0, Register::Base::XMM1, Register::Base::XMM2, Register::Base::XMM3,
-        Register::Base::XMM4, Register::Base::XMM5, Register::Base::XMM6, Register::Base::XMM7
-    };
+static constexpr std::array SSE_ARGUMENT_REGISTERS {
+    Register::Base::XMM0, Register::Base::XMM1, Register::Base::XMM2, Register::Base::XMM3,
+    Register::Base::XMM4, Register::Base::XMM5, Register::Base::XMM6, Register::Base::XMM7
+};
 
-    static constexpr Register RSP(Register::Base::SP, Size::QWORD);
-    static constexpr Register RBP(Register::Base::BP, Size::QWORD);
-    static constexpr Register RAX(Register::Base::A, Size::QWORD);
-    static constexpr Register RDI(Register::Base::DI, Size::QWORD);
+static constexpr Register RSP(Register::Base::SP, Size::QWORD);
+static constexpr Register RBP(Register::Base::BP, Size::QWORD);
+static constexpr Register RAX(Register::Base::A, Size::QWORD);
+static constexpr Register RDI(Register::Base::DI, Size::QWORD);
 } // namespace arkoi::x86_64
 
 //==============================================================================

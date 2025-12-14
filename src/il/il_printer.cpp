@@ -8,24 +8,24 @@
 
 using namespace arkoi::il;
 
-std::stringstream ILPrinter::print(Module &module) {
+std::stringstream ILPrinter::print(Module& module) {
     std::stringstream output;
     ILPrinter printer(output);
     printer.visit(module);
     return output;
 }
 
-void ILPrinter::visit(Module &module) {
-    for (auto &function: module) {
+void ILPrinter::visit(Module& module) {
+    for (auto& function : module) {
         function.accept(*this);
     }
 }
 
-void ILPrinter::visit(Function &function) {
+void ILPrinter::visit(Function& function) {
     _output << "fun " << function.name() << "(";
 
     for (size_t index = 0; index < function.parameters().size(); index++) {
-        auto &parameter = function.parameters()[index];
+        auto& parameter = function.parameters()[index];
         _output << parameter.name() << " @" << parameter.type();
 
         if (index != function.parameters().size() - 1) {
@@ -35,44 +35,44 @@ void ILPrinter::visit(Function &function) {
 
     _output << ") @" << function.type() << ":\n";
 
-    for (auto &block: function) {
+    for (auto& block : function) {
         block.accept(*this);
     }
 
     _output << "\n";
 }
 
-void ILPrinter::visit(BasicBlock &block) {
+void ILPrinter::visit(BasicBlock& block) {
     _output << block.label() << ":\n";
 
-    for (auto &instruction: block.instructions()) {
+    for (auto& instruction : block.instructions()) {
         _output << "  ";
         instruction.accept(*this);
         _output << "\n";
     }
 }
 
-void ILPrinter::visit(Return &instruction) {
+void ILPrinter::visit(Return& instruction) {
     _output << "ret " << instruction.value();
 }
 
-void ILPrinter::visit(Binary &instruction) {
+void ILPrinter::visit(Binary& instruction) {
     _output << instruction.result() << " @" << instruction.result().type() << " = "
             << to_string(instruction.op()) << " @" << instruction.op_type()
             << " " << instruction.left() << ", " << instruction.right();
 }
 
-void ILPrinter::visit(Cast &instruction) {
+void ILPrinter::visit(Cast& instruction) {
     _output << instruction.result() << " @" << instruction.result().type() << " = cast @"
             << instruction.from() << " " << instruction.source();
 }
 
-void ILPrinter::visit(Call &instruction) {
+void ILPrinter::visit(Call& instruction) {
     _output << instruction.result() << " @" << instruction.result().type()
             << " = call " << instruction.name() << "(";
 
     for (size_t index = 0; index < instruction.arguments().size(); index++) {
-        auto &argument = instruction.arguments()[index];
+        auto& argument = instruction.arguments()[index];
         _output << argument;
 
         if (index != instruction.arguments().size() - 1) {
@@ -83,27 +83,27 @@ void ILPrinter::visit(Call &instruction) {
     _output << ")";
 }
 
-void ILPrinter::visit(Goto &instruction) {
+void ILPrinter::visit(Goto& instruction) {
     _output << "goto " << instruction.label();
 }
 
-void ILPrinter::visit(If &instruction) {
+void ILPrinter::visit(If& instruction) {
     _output << "if " << instruction.condition() << " then " << instruction.branch() << " else " << instruction.next();
 }
 
-void ILPrinter::visit(Alloca &instruction) {
+void ILPrinter::visit(Alloca& instruction) {
     _output << instruction.result() << " @" << instruction.result().type() << " = alloca";
 }
 
-void ILPrinter::visit(Store &instruction) {
+void ILPrinter::visit(Store& instruction) {
     _output << "store @" << instruction.result().type() << " " << instruction.source() << ", " << instruction.result();
 }
 
-void ILPrinter::visit(Load &instruction) {
+void ILPrinter::visit(Load& instruction) {
     _output << instruction.result() << " @" << instruction.result().type() << " = load " << instruction.source();
 }
 
-void ILPrinter::visit(Constant &instruction) {
+void ILPrinter::visit(Constant& instruction) {
     _output << instruction.result() << " @" << instruction.result().type() << " = const " << instruction.immediate();
 }
 

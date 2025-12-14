@@ -11,17 +11,17 @@ namespace arkoi::driver {
 std::filesystem::path generate_temp_path();
 
 int32_t compile(
-    const std::shared_ptr<pretty_diagnostics::Source> &source,
-    std::ofstream *il_ostream,
-    std::ofstream *cfg_ostream,
-    std::ofstream *asm_ostream
-);
+        const std::shared_ptr<pretty_diagnostics::Source>& source,
+        std::ofstream* il_ostream,
+        std::ofstream* cfg_ostream,
+        std::ofstream* asm_ostream
+        );
 
-int32_t run_binary(const std::string &path);
+int32_t run_binary(const std::string& path);
 
-int32_t link(const std::vector<std::string> &object_files, std::ofstream &output, bool verbose = false);
+int32_t link(const std::vector<std::string>& object_files, std::ofstream& output, bool verbose = false);
 
-int32_t assemble(const std::string &input_file, std::ofstream &output, bool verbose = false);
+int32_t assemble(const std::string& input_file, std::ofstream& output, bool verbose = false);
 
 } // namespace arkoi::driver
 

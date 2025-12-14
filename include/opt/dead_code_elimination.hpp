@@ -8,15 +8,15 @@ namespace arkoi::opt {
 
 class DeadCodeElimination final : public Pass {
 public:
-    bool enter_module(il::Module &) override { return false; }
+    bool enter_module(il::Module&) override { return false; }
 
-    bool exit_module(il::Module &) override { return false; }
+    bool exit_module(il::Module&) override { return false; }
 
-    bool enter_function(il::Function &function) override;
+    bool enter_function(il::Function& function) override;
 
-    bool exit_function(il::Function &) override { return false; }
+    bool exit_function(il::Function&) override { return false; }
 
-    bool on_block(il::BasicBlock &block) override;
+    bool on_block(il::BasicBlock& block) override;
 
 private:
     std::unordered_set<il::Operand> _used;

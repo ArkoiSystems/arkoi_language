@@ -2,14 +2,14 @@
 
 #include <cassert>
 
-template<DataflowPassConcept Pass>
-void DataflowAnalysis<Pass>::run(Function &function) {
+template <DataflowPassConcept Pass>
+void DataflowAnalysis<Pass>::run(Function& function) {
     _out.clear();
     _in.clear();
 
-    std::stack<BasicBlock *> worklist;
+    std::stack<BasicBlock*> worklist;
 
-    for (auto &block: function) {
+    for (auto& block : function) {
         if constexpr (Pass::Granularity == DataflowGranularity::Block) {
             if constexpr (Pass::Direction == DataflowDirection::Forward) {
                 _out[&block] = _pass->initialize(function, block);
@@ -17,7 +17,7 @@ void DataflowAnalysis<Pass>::run(Function &function) {
                 _in[&block] = _pass->initialize(function, block);
             }
         } else {
-            for (auto &instruction: block) {
+            for (auto& instruction : block) {
                 if constexpr (Pass::Direction == DataflowDirection::Forward) {
                     _out[&instruction] = _pass->initialize(function, instruction);
                 } else {
@@ -30,19 +30,19 @@ void DataflowAnalysis<Pass>::run(Function &function) {
     }
 
     while (!worklist.empty()) {
-        auto *block = worklist.top();
+        auto* block = worklist.top();
         worklist.pop();
 
         // A requirement for every basic block.
         assert(!block->instructions().empty());
 
         if constexpr (Pass::Granularity == DataflowGranularity::Block) {
-            auto &old_out = _out[block];
-            auto &old_in = _in[block];
+            auto& old_out = _out[block];
+            auto& old_in = _in[block];
 
             if constexpr (Pass::Direction == DataflowDirection::Forward) {
                 std::vector<State> states;
-                for (auto *predecessor: block->predecessors()) {
+                for (auto* predecessor : block->predecessors()) {
                     states.push_back(_out[predecessor]);
                 }
 
@@ -67,21 +67,21 @@ void DataflowAnalysis<Pass>::run(Function &function) {
                 if (new_in == old_in) continue;
                 old_in = std::move(new_in);
 
-                for (auto *predecessor: block->predecessors()) {
+                for (auto* predecessor : block->predecessors()) {
                     worklist.push(predecessor);
                 }
             }
         } else {
             if constexpr (Pass::Direction == DataflowDirection::Forward) {
                 std::vector<State> states;
-                for (auto *predecessor: block->predecessors()) {
+                for (auto* predecessor : block->predecessors()) {
                     if (predecessor->instructions().empty()) continue;
 
-                    const auto &last_instruction = predecessor->instructions().back();
+                    const auto& last_instruction = predecessor->instructions().back();
                     states.push_back(_out[&last_instruction]);
                 }
 
-                auto &first_instruction = block->instructions().front();
+                auto& first_instruction = block->instructions().front();
                 auto new_in = _pass->merge(states);
                 auto new_out = _pass->transfer(first_instruction, new_in);
                 _in[&first_instruction] = std::move(new_in);
@@ -90,8 +90,8 @@ void DataflowAnalysis<Pass>::run(Function &function) {
                 _out[&first_instruction] = std::move(new_out);
 
                 for (auto it = block->instructions().begin() + 1; it != block->instructions().end(); ++it) {
-                    auto &previous_instruction = *(it - 1);
-                    auto &instruction = *it;
+                    auto& previous_instruction = *(it - 1);
+                    auto& instruction = *it;
 
                     std::vector<State> states;
                     states.push_back(_out[&previous_instruction]);
@@ -106,7 +106,7 @@ void DataflowAnalysis<Pass>::run(Function &function) {
 
                 if (!changed) continue;
 
-                for (auto *predecessor: block->predecessors()) {
+                for (auto* predecessor : block->predecessors()) {
                     worklist.push(predecessor);
                 }
             } else {
@@ -114,17 +114,17 @@ void DataflowAnalysis<Pass>::run(Function &function) {
                 if (block->next()) {
                     assert(!block->next()->instructions().empty());
 
-                    auto &first_instruction = block->next()->instructions().front();
+                    auto& first_instruction = block->next()->instructions().front();
                     states.push_back(_in[&first_instruction]);
                 }
                 if (block->branch()) {
                     assert(!block->branch()->instructions().empty());
 
-                    auto &first_instruction = block->branch()->instructions().front();
+                    auto& first_instruction = block->branch()->instructions().front();
                     states.push_back(_in[&first_instruction]);
                 }
 
-                auto &last_instruction = block->instructions().back();
+                auto& last_instruction = block->instructions().back();
                 auto new_out = _pass->merge(states);
                 auto new_in = _pass->transfer(last_instruction, new_out);
                 _out[&last_instruction] = std::move(new_out);
@@ -133,8 +133,8 @@ void DataflowAnalysis<Pass>::run(Function &function) {
                 _in[&last_instruction] = std::move(new_in);
 
                 for (auto it = block->instructions().rbegin() + 1; it != block->instructions().rend(); ++it) {
-                    auto &previous_instruction = *(it - 1);
-                    auto &instruction = *it;
+                    auto& previous_instruction = *(it - 1);
+                    auto& instruction = *it;
 
                     std::vector<State> states;
                     states.push_back(_in[&previous_instruction]);
@@ -149,7 +149,7 @@ void DataflowAnalysis<Pass>::run(Function &function) {
 
                 if (!changed) continue;
 
-                for (auto *predecessor: block->predecessors()) {
+                for (auto* predecessor : block->predecessors()) {
                     worklist.push(predecessor);
                 }
             }

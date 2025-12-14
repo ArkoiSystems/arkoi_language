@@ -8,13 +8,13 @@
 using namespace arkoi::opt;
 using namespace arkoi;
 
-bool ConstantPropagation::on_block(il::BasicBlock &block) {
+bool ConstantPropagation::on_block(il::BasicBlock& block) {
     bool changed = false;
 
     _constants.clear();
 
-    for (auto &instruction: block.instructions()) {
-        if (auto *constant = std::get_if<il::Constant>(&instruction)) {
+    for (auto& instruction : block.instructions()) {
+        if (auto* constant = std::get_if<il::Constant>(&instruction)) {
             _constants[constant->result()] = constant->immediate();
         }
 
@@ -24,42 +24,42 @@ bool ConstantPropagation::on_block(il::BasicBlock &block) {
     return changed;
 }
 
-bool ConstantPropagation::_can_propagate(il::Instruction &target) {
+bool ConstantPropagation::_can_propagate(il::Instruction& target) {
     auto propagated = false;
 
-    std::visit(match{
-        [&](il::Binary &instruction) {
-            propagated |= _propagate(instruction.left());
-            propagated |= _propagate(instruction.right());
-        },
-        [&](il::Return &instruction) {
-            propagated |= _propagate(instruction.value());
-        },
-        [&](il::Cast &instruction) {
-            propagated |= _propagate(instruction.source());
-        },
-        [&](il::If &instruction) {
-            propagated |= _propagate(instruction.condition());
-        },
-        [&](il::Store &instruction) {
-            propagated |= _propagate(instruction.source());
-        },
-        [&](il::Call &instruction) {
-            for (auto &argument: instruction.arguments()) {
-                propagated |= _propagate(argument);
-            }
-        },
-        [&](il::Constant &) {},
-        [&](il::Alloca &) {},
-        [&](il::Load &) {},
-        [&](il::Goto &) {},
-    }, target);
+    std::visit(match {
+                   [&](il::Binary& instruction) {
+                       propagated |= _propagate(instruction.left());
+                       propagated |= _propagate(instruction.right());
+                   },
+                   [&](il::Return& instruction) {
+                       propagated |= _propagate(instruction.value());
+                   },
+                   [&](il::Cast& instruction) {
+                       propagated |= _propagate(instruction.source());
+                   },
+                   [&](il::If& instruction) {
+                       propagated |= _propagate(instruction.condition());
+                   },
+                   [&](il::Store& instruction) {
+                       propagated |= _propagate(instruction.source());
+                   },
+                   [&](il::Call& instruction) {
+                       for (auto& argument : instruction.arguments()) {
+                           propagated |= _propagate(argument);
+                       }
+                   },
+                   [&](il::Constant&) { },
+                   [&](il::Alloca&) { },
+                   [&](il::Load&) { },
+                   [&](il::Goto&) { },
+               }, target);
 
     return propagated;
 }
 
-bool ConstantPropagation::_propagate(il::Operand &operand) {
-    const auto *variable = std::get_if<il::Variable>(&operand);
+bool ConstantPropagation::_propagate(il::Operand& operand) {
+    const auto* variable = std::get_if<il::Variable>(&operand);
     if (variable == nullptr) return false;
 
     const auto result = _constants.find(*variable);

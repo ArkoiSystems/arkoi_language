@@ -58,14 +58,14 @@ public:
     };
 
 public:
-    Token(const Type type, pretty_diagnostics::Span span)
-        : _span(std::move(span)), _type(type) {}
+    Token(const Type type, pretty_diagnostics::Span span) :
+        _span(std::move(span)), _type(type) { }
 
-    [[nodiscard]] auto &span() const { return _span; }
+    [[nodiscard]] auto& span() const { return _span; }
 
-    [[nodiscard]] auto &type() const { return _type; }
+    [[nodiscard]] auto& type() const { return _type; }
 
-    [[nodiscard]] static std::optional<Type> lookup_keyword(const std::string_view &value);
+    [[nodiscard]] static std::optional<Type> lookup_keyword(const std::string_view& value);
 
     [[nodiscard]] static std::optional<Type> lookup_special(char value);
 
@@ -76,9 +76,9 @@ private:
 
 } // namespace arkoi::front
 
-std::ostream &operator<<(std::ostream &os, const arkoi::front::Token::Type &type);
+std::ostream& operator<<(std::ostream& os, const arkoi::front::Token::Type& type);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::front::Token &token);
+std::ostream& operator<<(std::ostream& os, const arkoi::front::Token& token);
 
 //==============================================================================
 // BSD 3-Clause License

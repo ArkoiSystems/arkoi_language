@@ -6,28 +6,28 @@ namespace arkoi::opt {
 
 class SimplifyCFG final : public Pass {
 public:
-    bool enter_module(il::Module &) override { return false; }
+    bool enter_module(il::Module&) override { return false; }
 
-    bool exit_module(il::Module &) override { return false; }
+    bool exit_module(il::Module&) override { return false; }
 
-    bool enter_function(il::Function &function) override;
+    bool enter_function(il::Function& function) override;
 
-    bool exit_function(il::Function &function) override;
+    bool exit_function(il::Function& function) override;
 
-    bool on_block(il::BasicBlock &block) override;
-
-private:
-    static void _remove_proxy_block(il::Function &function, il::BasicBlock &block);
-
-    [[nodiscard]] static bool _is_proxy_block(il::BasicBlock &block);
-
-    static void _merge_block(il::Function &function, il::BasicBlock &block);
-
-    [[nodiscard]] static bool is_simple_block(il::BasicBlock &block);
+    bool on_block(il::BasicBlock& block) override;
 
 private:
-    std::unordered_set<il::BasicBlock *> _mergable_blocks;
-    std::unordered_set<il::BasicBlock *> _proxy_blocks;
+    static void _remove_proxy_block(il::Function& function, il::BasicBlock& block);
+
+    [[nodiscard]] static bool _is_proxy_block(il::BasicBlock& block);
+
+    static void _merge_block(il::Function& function, il::BasicBlock& block);
+
+    [[nodiscard]] static bool is_simple_block(il::BasicBlock& block);
+
+private:
+    std::unordered_set<il::BasicBlock*> _mergable_blocks;
+    std::unordered_set<il::BasicBlock*> _proxy_blocks;
 };
 
 } // namespace arkoi::opt

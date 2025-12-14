@@ -1,24 +1,24 @@
 #pragma once
 
-template<typename Node>
-void InterferenceGraph<Node>::add_node(const Node &node) {
+template <typename Node>
+void InterferenceGraph<Node>::add_node(const Node& node) {
     _adjacents.emplace(node, std::unordered_set<Node>());
 }
 
-template<typename Node>
-void InterferenceGraph<Node>::remove_node(const Node &node) {
+template <typename Node>
+void InterferenceGraph<Node>::remove_node(const Node& node) {
     auto found = _adjacents.find(node);
     if (found == _adjacents.end()) return;
 
-    for (const auto &adjacent: found->second) {
+    for (const auto& adjacent : found->second) {
         _adjacents[adjacent].erase(node);
     }
 
     _adjacents.erase(found);
 }
 
-template<typename Node>
-void InterferenceGraph<Node>::add_edge(const Node &first, const Node &second) {
+template <typename Node>
+void InterferenceGraph<Node>::add_edge(const Node& first, const Node& second) {
     if (first == second) return;
 
     add_node(first);
@@ -27,35 +27,35 @@ void InterferenceGraph<Node>::add_edge(const Node &first, const Node &second) {
     _adjacents[second].insert(first);
 }
 
-template<typename Node>
-bool InterferenceGraph<Node>::is_interfering(const Node &first, const Node &second) const {
+template <typename Node>
+bool InterferenceGraph<Node>::is_interfering(const Node& first, const Node& second) const {
     auto found = _adjacents.find(first);
     if (found == _adjacents.end()) return false;
     return found->second.count(second) > 0;
 }
 
-template<typename Node>
-std::unordered_set<Node> InterferenceGraph<Node>::interferences(const Node &node) const {
+template <typename Node>
+std::unordered_set<Node> InterferenceGraph<Node>::interferences(const Node& node) const {
     auto found = _adjacents.find(node);
-    if (found == _adjacents.end()) return {};
+    if (found == _adjacents.end()) return { };
     return found->second;
 }
 
-template<typename Node>
+template <typename Node>
 std::unordered_set<Node> InterferenceGraph<Node>::nodes() const {
     std::unordered_set<Node> nodes;
-    for (const auto &[node, _]: _adjacents) nodes.insert(node);
+    for (const auto& [node, _] : _adjacents) nodes.insert(node);
     return nodes;
 }
 
-template<typename Node>
-std::ostream &operator<<(std::ostream &os, const InterferenceGraph<Node> &graph) {
+template <typename Node>
+std::ostream& operator<<(std::ostream& os, const InterferenceGraph<Node>& graph) {
     os << "graph InterferenceGraph {\n";
 
-    for (const auto &[node, _]: graph.adjacents()) os << "    \"\\" << node << "\"\n";
+    for (const auto& [node, _] : graph.adjacents()) os << "    \"\\" << node << "\"\n";
 
-    for (const auto &[node, adjacents]: graph.adjacents()) {
-        for (const auto &adjacent: adjacents) {
+    for (const auto& [node, adjacents] : graph.adjacents()) {
+        for (const auto& adjacent : adjacents) {
             if (node < adjacent) continue;
 
             os << "    \"\\" << node << "\" -- \"\\" << adjacent << "\"\n";

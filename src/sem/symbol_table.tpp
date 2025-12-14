@@ -1,7 +1,7 @@
 #pragma once
 
-template<typename Type, typename... Args>
-std::shared_ptr<Symbol> &SymbolTable::insert(const std::string &name, Args &&... args) {
+template <typename Type, typename... Args>
+std::shared_ptr<Symbol>& SymbolTable::insert(const std::string& name, Args&&... args) {
     if (_symbols.contains(name)) throw IdentifierAlreadyTaken(name);
 
     auto symbol = std::make_shared<Symbol>(Type(name, std::forward<Args>(args)...));
@@ -10,8 +10,8 @@ std::shared_ptr<Symbol> &SymbolTable::insert(const std::string &name, Args &&...
     return result.first->second;
 }
 
-template<typename... Types>
-[[nodiscard]] std::shared_ptr<Symbol> &SymbolTable::lookup(const std::string &name) {
+template <typename... Types>
+[[nodiscard]] std::shared_ptr<Symbol>& SymbolTable::lookup(const std::string& name) {
     auto found = _symbols.find(name);
     if (found != _symbols.end() && (std::holds_alternative<Types>(*found->second) || ...)) {
         return found->second;

@@ -7,26 +7,26 @@ using namespace arkoi;
 
 using State = BlockLivenessAnalysis::State;
 
-State BlockLivenessAnalysis::merge(const std::vector<State> &predecessors) {
+State BlockLivenessAnalysis::merge(const std::vector<State>& predecessors) {
     State result;
-    for (const auto &state: predecessors) result.insert(state.begin(), state.end());
+    for (const auto& state : predecessors) result.insert(state.begin(), state.end());
     return result;
 }
 
-State BlockLivenessAnalysis::initialize(Function &, BasicBlock &) {
-    return {};
+State BlockLivenessAnalysis::initialize(Function&, BasicBlock&) {
+    return { };
 }
 
-State BlockLivenessAnalysis::transfer(BasicBlock &current, const State &state) {
+State BlockLivenessAnalysis::transfer(BasicBlock& current, const State& state) {
     State in = state;
 
-    for (auto &instruction: std::ranges::reverse_view(current.instructions())) {
-        for (const auto &definition: instruction.defs()) {
+    for (auto& instruction : std::ranges::reverse_view(current.instructions())) {
+        for (const auto& definition : instruction.defs()) {
             if (std::holds_alternative<Immediate>(definition)) continue;
             in.erase(definition);
         }
 
-        for (const auto &use: instruction.uses()) {
+        for (const auto& use : instruction.uses()) {
             if (std::holds_alternative<Immediate>(use)) continue;
             in.insert(use);
         }
@@ -35,25 +35,25 @@ State BlockLivenessAnalysis::transfer(BasicBlock &current, const State &state) {
     return in;
 }
 
-State InstructionLivenessAnalysis::merge(const std::vector<State> &predecessors) {
+State InstructionLivenessAnalysis::merge(const std::vector<State>& predecessors) {
     State result;
-    for (const auto &state: predecessors) result.insert(state.begin(), state.end());
+    for (const auto& state : predecessors) result.insert(state.begin(), state.end());
     return result;
 }
 
-State InstructionLivenessAnalysis::initialize(Function &, Instruction &) {
-    return {};
+State InstructionLivenessAnalysis::initialize(Function&, Instruction&) {
+    return { };
 }
 
-State InstructionLivenessAnalysis::transfer(Instruction &current, const State &state) {
+State InstructionLivenessAnalysis::transfer(Instruction& current, const State& state) {
     State in = state;
 
-    for (const auto &definition: current.defs()) {
+    for (const auto& definition : current.defs()) {
         if (std::holds_alternative<Immediate>(definition)) continue;
         in.erase(definition);
     }
 
-    for (const auto &use: current.uses()) {
+    for (const auto& use : current.uses()) {
         if (std::holds_alternative<Immediate>(use)) continue;
         in.insert(use);
     }

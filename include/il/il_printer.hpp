@@ -8,41 +8,42 @@ namespace arkoi::il {
 
 class ILPrinter final : public Visitor {
 public:
-    explicit ILPrinter(std::stringstream &output) : _output(output) {}
+    explicit ILPrinter(std::stringstream& output) :
+        _output(output) { }
 
 public:
-    [[nodiscard]] static std::stringstream print(Module &module);
+    [[nodiscard]] static std::stringstream print(Module& module);
 
-    void visit(Module &module) override;
+    void visit(Module& module) override;
 
-    void visit(Function &function) override;
+    void visit(Function& function) override;
 
-    void visit(BasicBlock &block) override;
+    void visit(BasicBlock& block) override;
 
-    void visit(Return &instruction) override;
+    void visit(Return& instruction) override;
 
-    void visit(Binary &instruction) override;
+    void visit(Binary& instruction) override;
 
-    void visit(Cast &instruction) override;
+    void visit(Cast& instruction) override;
 
-    void visit(Call &instruction) override;
+    void visit(Call& instruction) override;
 
-    void visit(Goto &instruction) override;
+    void visit(Goto& instruction) override;
 
-    void visit(If &instruction) override;
+    void visit(If& instruction) override;
 
-    void visit(Alloca &instruction) override;
+    void visit(Alloca& instruction) override;
 
-    void visit(Store &instruction) override;
+    void visit(Store& instruction) override;
 
-    void visit(Load &instruction) override;
+    void visit(Load& instruction) override;
 
-    void visit(Constant &instruction) override;
+    void visit(Constant& instruction) override;
 
-    [[nodiscard]] auto &output() const { return _output; }
+    [[nodiscard]] auto& output() const { return _output; }
 
 private:
-    std::stringstream &_output;
+    std::stringstream& _output;
 };
 
 } // namespace arkoi::il

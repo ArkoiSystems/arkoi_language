@@ -6,21 +6,21 @@
 
 using namespace arkoi::il;
 
-void BasicBlock::set_branch(BasicBlock *branch) {
+void BasicBlock::set_branch(BasicBlock* branch) {
     if (branch) branch->_predecessors.insert(this);
     _branch = branch;
 }
 
-void BasicBlock::set_next(BasicBlock *next) {
+void BasicBlock::set_next(BasicBlock* next) {
     if (next) next->_predecessors.insert(this);
     _next = next;
 }
 
-BlockIterator::BlockIterator(Function *function)
-    : _function(function), _current(nullptr) {
+BlockIterator::BlockIterator(Function* function) :
+    _function(function), _current(nullptr) {
     if (!function) return;
 
-    auto *start = function->entry();
+    auto* start = function->entry();
 
     _visited.insert(function->exit());
     _queue.push(start);
@@ -28,7 +28,7 @@ BlockIterator::BlockIterator(Function *function)
     ++(*this);
 }
 
-BlockIterator &BlockIterator::operator++() {
+BlockIterator& BlockIterator::operator++() {
     if (_current == _function->exit()) {
         _current = nullptr;
         return *this;
@@ -61,19 +61,18 @@ BlockIterator BlockIterator::operator++(int) {
 }
 
 Function::Function(std::string name, std::vector<Variable> parameters, sem::Type type, std::string entry_label,
-                   std::string exit_label)
-    : _parameters(std::move(parameters)), _name(std::move(name)), _type(std::move(type)) {
+                   std::string exit_label) :
+    _parameters(std::move(parameters)), _name(std::move(name)), _type(std::move(type)) {
     _entry = emplace_back(std::move(entry_label));
     _exit = emplace_back(std::move(exit_label));
 }
 
-Function::Function(const std::string &name, std::vector<Variable> parameters, sem::Type type)
-    : Function(name, std::move(parameters), std::move(type), name + "_entry", name + "_exit") {
-}
+Function::Function(const std::string& name, std::vector<Variable> parameters, sem::Type type) :
+    Function(name, std::move(parameters), std::move(type), name + "_entry", name + "_exit") { }
 
 bool Function::is_leaf() {
-    for (auto &block: *this) {
-        for (const auto &instruction: block) {
+    for (auto& block : *this) {
+        for (const auto& instruction : block) {
             if (std::holds_alternative<Call>(instruction)) return false;
         }
     }
@@ -81,13 +80,13 @@ bool Function::is_leaf() {
     return true;
 }
 
-bool Function::remove(BasicBlock *target) {
+bool Function::remove(BasicBlock* target) {
     assert(target->predecessors().empty());
 
     if (target->next()) target->next()->predecessors().erase(target);
     if (target->branch()) target->branch()->predecessors().erase(target);
 
-    return std::erase_if(_block_pool, [&](const auto &block) {
+    return std::erase_if(_block_pool, [&](const auto& block) {
         return block.get() == target;
     });
 }

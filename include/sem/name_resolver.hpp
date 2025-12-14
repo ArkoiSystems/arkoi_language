@@ -13,48 +13,48 @@ private:
     NameResolver() = default;
 
 public:
-    [[nodiscard]] static NameResolver resolve(ast::Program &node);
+    [[nodiscard]] static NameResolver resolve(ast::Program& node);
 
     [[nodiscard]] auto has_failed() const { return _failed; }
 
 private:
-    void visit(ast::Program &node) override;
+    void visit(ast::Program& node) override;
 
-    void visit_as_prototype(ast::Function &node);
+    void visit_as_prototype(ast::Function& node);
 
-    void visit(ast::Function &node) override;
+    void visit(ast::Function& node) override;
 
-    void visit(ast::Block &node) override;
+    void visit(ast::Block& node) override;
 
-    void visit(ast::Parameter &) override;
+    void visit(ast::Parameter&) override;
 
-    void visit(ast::Identifier &node) override;
+    void visit(ast::Identifier& node) override;
 
-    void visit(ast::Immediate &) override {}
+    void visit(ast::Immediate&) override { }
 
-    void visit(ast::Variable &node) override;
+    void visit(ast::Variable& node) override;
 
-    void visit(ast::Return &node) override;
+    void visit(ast::Return& node) override;
 
-    void visit(ast::Binary &node) override;
+    void visit(ast::Binary& node) override;
 
-    void visit(ast::Cast &node) override;
+    void visit(ast::Cast& node) override;
 
-    void visit(ast::Assign &node) override;
+    void visit(ast::Assign& node) override;
 
-    void visit(ast::Call &node) override;
+    void visit(ast::Call& node) override;
 
-    void visit(ast::If &node) override;
+    void visit(ast::If& node) override;
 
-    template<typename Type, typename... Args>
-    [[nodiscard]] std::shared_ptr<Symbol> _check_non_existence(const front::Token &token, Args &&... args);
+    template <typename Type, typename... Args>
+    [[nodiscard]] std::shared_ptr<Symbol> _check_non_existence(const front::Token& token, Args&&... args);
 
-    template<typename... Types>
-    [[nodiscard]] std::shared_ptr<Symbol> _check_existence(const front::Token &token);
+    template <typename... Types>
+    [[nodiscard]] std::shared_ptr<Symbol> _check_existence(const front::Token& token);
 
 private:
-    std::stack<std::shared_ptr<SymbolTable>> _scopes{};
-    bool _failed{};
+    std::stack<std::shared_ptr<SymbolTable>> _scopes { };
+    bool _failed { };
 };
 
 #include "../../src/sem/name_resolver.tpp"

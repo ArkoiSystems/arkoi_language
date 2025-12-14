@@ -17,7 +17,7 @@ enum class DataflowGranularity {
     Instruction
 };
 
-template<typename ResultType, DataflowDirection DirectionType, DataflowGranularity GranularityType>
+template <typename ResultType, DataflowDirection DirectionType, DataflowGranularity GranularityType>
 class DataflowPass {
 public:
     using Target = std::conditional_t<GranularityType == DataflowGranularity::Block, BasicBlock, Instruction>;
@@ -30,11 +30,11 @@ public:
 public:
     virtual ~DataflowPass() = default;
 
-    virtual State merge(const std::vector<State> &predecessors) = 0;
+    virtual State merge(const std::vector<State>& predecessors) = 0;
 
-    virtual State initialize(Function &, Target &) = 0;
+    virtual State initialize(Function&, Target&) = 0;
 
-    virtual State transfer(Target &, const State &state) = 0;
+    virtual State transfer(Target&, const State& state) = 0;
 };
 
 template <typename T>
@@ -44,25 +44,26 @@ concept DataflowPassConcept = requires {
     { T::Granularity } -> std::convertible_to<DataflowGranularity>;
 } && std::is_base_of_v<DataflowPass<typename T::Result, T::Direction, T::Granularity>, T>;
 
-template<DataflowPassConcept Pass>
+template <DataflowPassConcept Pass>
 class DataflowAnalysis {
 public:
-    using Key = std::conditional_t<Pass::Granularity == DataflowGranularity::Block, BasicBlock *, Instruction *>;
+    using Key = std::conditional_t<Pass::Granularity == DataflowGranularity::Block, BasicBlock*, Instruction*>;
     using State = std::unordered_set<typename Pass::Result>;
 
 public:
-    template<typename... Args>
-    explicit DataflowAnalysis(Args&&... args) : _pass(std::make_unique<Pass>(std::forward<Args>(args)...)) {}
+    template <typename... Args>
+    explicit DataflowAnalysis(Args&&... args) :
+        _pass(std::make_unique<Pass>(std::forward<Args>(args)...)) { }
 
-    void run(Function &function);
+    void run(Function& function);
 
-    [[nodiscard]] auto &out() const { return _out; }
+    [[nodiscard]] auto& out() const { return _out; }
 
-    [[nodiscard]] auto &in() const { return _in; }
+    [[nodiscard]] auto& in() const { return _in; }
 
 private:
-    std::unordered_map<Key, State> _out{};
-    std::unordered_map<Key, State> _in{};
+    std::unordered_map<Key, State> _out { };
+    std::unordered_map<Key, State> _in { };
     std::unique_ptr<Pass> _pass;
 };
 

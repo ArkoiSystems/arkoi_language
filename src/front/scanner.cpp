@@ -23,10 +23,10 @@ std::vector<Token> Scanner::tokenize() {
 
         while (leading_spaces > _indentation) {
             const auto span = pretty_diagnostics::Span(
-                _source,
-                _source->from_coords(_row, _indentation),
-                _source->from_coords(_row, _indentation + SPACE_INDENTATION)
-            );
+                    _source,
+                    _source->from_coords(_row, _indentation),
+                    _source->from_coords(_row, _indentation + SPACE_INDENTATION)
+                    );
             tokens.emplace_back(Token::Type::Indentation, span);
 
             _indentation += SPACE_INDENTATION;
@@ -44,15 +44,15 @@ std::vector<Token> Scanner::tokenize() {
             try {
                 auto token = _next_token();
                 tokens.push_back(token);
-            } catch (const UnexpectedEndOfLine &error) {
+            } catch (const UnexpectedEndOfLine& error) {
                 std::cerr << error.what() << std::endl;
                 _failed = true;
                 break;
-            } catch (const UnexpectedChar &error) {
+            } catch (const UnexpectedChar& error) {
                 std::cerr << error.what() << std::endl;
                 _failed = true;
                 _next();
-            } catch (const UnknownChar &error) {
+            } catch (const UnknownChar& error) {
                 std::cerr << error.what() << std::endl;
                 _failed = true;
                 _next();
@@ -79,7 +79,7 @@ std::vector<Token> Scanner::tokenize() {
 }
 
 Token Scanner::_next_token() {
-    while (_try_consume(_is_space)) {}
+    while (_try_consume(_is_space)) { }
 
     const auto current = _current_char();
     if (_is_ident_start(current)) {
@@ -107,24 +107,23 @@ Token Scanner::_lex_comment() {
     _consume('#');
     while (!_is_eol()) _next();
 
-    return {Token::Type::Comment, { _source, start_location, _current_location() }};
+    return { Token::Type::Comment, { _source, start_location, _current_location() } };
 }
 
 Token Scanner::_lex_identifier() {
     const auto start_location = _current_location();
 
     _consume(_is_ident_start, "_, a-z or A-Z");
-    while (_try_consume(_is_ident_inner)) {
-    }
+    while (_try_consume(_is_ident_inner)) { }
 
     const auto span = pretty_diagnostics::Span(_source, start_location, _current_location());
     const auto value = span.substr();
 
     if (auto keyword = Token::lookup_keyword(value)) {
-        return {*keyword, span};
+        return { *keyword, span };
     }
 
-    return {Token::Type::Identifier, span};
+    return { Token::Type::Identifier, span };
 }
 
 Token Scanner::_lex_number() {
@@ -140,13 +139,11 @@ Token Scanner::_lex_number() {
     if (consumed == '0' && _try_consume('x')) {
         _consume(_is_hex, "0-9, a-f or A-F");
 
-        while (_try_consume(_is_hex)) {
-        }
+        while (_try_consume(_is_hex)) { }
 
         floating = _try_consume('.');
 
-        while (_try_consume(_is_hex)) {
-        }
+        while (_try_consume(_is_hex)) { }
 
         if (_try_consume(_is_hex_expo)) {
             std::ignore = _try_consume(_is_decimal_sign);
@@ -154,13 +151,11 @@ Token Scanner::_lex_number() {
             while (_try_consume(_is_hex));
         }
     } else {
-        while (_try_consume(_is_digit)) {
-        }
+        while (_try_consume(_is_digit)) { }
 
         floating = _try_consume('.');
 
-        while (_try_consume(_is_digit)) {
-        }
+        while (_try_consume(_is_digit)) { }
 
         if (_try_consume(_is_expo)) {
             floating = true;
@@ -183,11 +178,11 @@ Token Scanner::_lex_number() {
         } else {
             std::stoull(number);
         }
-    } catch (const std::out_of_range &) {
+    } catch (const std::out_of_range&) {
         throw NumberOutOfRange(number);
     }
 
-    return {kind, span};
+    return { kind, span };
 }
 
 Token Scanner::_lex_char() {
@@ -206,7 +201,7 @@ Token Scanner::_lex_special() {
     const auto current = _current_char();
     if (auto special = Token::lookup_special(current)) {
         _next();
-        return {*special, { _source, start_location, _current_location() } };
+        return { *special, { _source, start_location, _current_location() } };
     }
 
     throw UnknownChar(current);
@@ -237,12 +232,12 @@ bool Scanner::_try_consume(const char expected) {
     try {
         _consume(expected);
         return true;
-    } catch (const ScannerError &) {
+    } catch (const ScannerError&) {
         return false;
     }
 }
 
-char Scanner::_consume(const std::function<bool(char)> &predicate, const std::string &expected) {
+char Scanner::_consume(const std::function<bool(char)>& predicate, const std::string& expected) {
     const auto current = _current_char();
     if (_is_eol()) {
         throw UnexpectedEndOfLine();
@@ -257,19 +252,19 @@ char Scanner::_consume(const std::function<bool(char)> &predicate, const std::st
     return current;
 }
 
-std::optional<char> Scanner::_try_consume(const std::function<bool(char)> &predicate) {
+std::optional<char> Scanner::_try_consume(const std::function<bool(char)>& predicate) {
     try {
         auto consumed = _consume(predicate, "");
         return consumed;
-    } catch (const ScannerError &) {
+    } catch (const ScannerError&) {
         return std::nullopt;
     }
 }
 
-size_t Scanner::_leading_spaces(const std::string &line) {
+size_t Scanner::_leading_spaces(const std::string& line) {
     size_t count = 0;
 
-    for (const auto &current: line) {
+    for (const auto& current : line) {
         if (current != ' ') break;
         count++;
     }

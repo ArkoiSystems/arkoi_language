@@ -20,31 +20,31 @@ class Visitor {
 public:
     virtual ~Visitor() = default;
 
-    virtual void visit(Module &module) = 0;
+    virtual void visit(Module& module) = 0;
 
-    virtual void visit(Function &function) = 0;
+    virtual void visit(Function& function) = 0;
 
-    virtual void visit(BasicBlock &block) = 0;
+    virtual void visit(BasicBlock& block) = 0;
 
-    virtual void visit(Return &instruction) = 0;
+    virtual void visit(Return& instruction) = 0;
 
-    virtual void visit(Binary &instruction) = 0;
+    virtual void visit(Binary& instruction) = 0;
 
-    virtual void visit(Cast &instruction) = 0;
+    virtual void visit(Cast& instruction) = 0;
 
-    virtual void visit(Call &instruction) = 0;
+    virtual void visit(Call& instruction) = 0;
 
-    virtual void visit(If &instruction) = 0;
+    virtual void visit(If& instruction) = 0;
 
-    virtual void visit(Goto &instruction) = 0;
+    virtual void visit(Goto& instruction) = 0;
 
-    virtual void visit(Alloca &instruction) = 0;
+    virtual void visit(Alloca& instruction) = 0;
 
-    virtual void visit(Store &instruction) = 0;
+    virtual void visit(Store& instruction) = 0;
 
-    virtual void visit(Load &instruction) = 0;
+    virtual void visit(Load& instruction) = 0;
 
-    virtual void visit(Constant &instruction) = 0;
+    virtual void visit(Constant& instruction) = 0;
 };
 
 } // namespace arkoi::il

@@ -6,20 +6,20 @@ namespace arkoi::opt {
 
 class ConstantPropagation final : public Pass {
 public:
-    bool enter_module(il::Module &) override { return false; }
+    bool enter_module(il::Module&) override { return false; }
 
-    bool exit_module(il::Module &) override { return false; }
+    bool exit_module(il::Module&) override { return false; }
 
-    bool enter_function(il::Function &) override { return false; }
+    bool enter_function(il::Function&) override { return false; }
 
-    bool exit_function(il::Function &) override { return false; }
+    bool exit_function(il::Function&) override { return false; }
 
-    bool on_block(il::BasicBlock &block) override;
+    bool on_block(il::BasicBlock& block) override;
 
 private:
-    [[nodiscard]] bool _can_propagate(il::Instruction &target);
+    [[nodiscard]] bool _can_propagate(il::Instruction& target);
 
-    [[nodiscard]] bool _propagate(il::Operand &operand);
+    [[nodiscard]] bool _propagate(il::Operand& operand);
 
 private:
     std::unordered_map<il::Operand, il::Immediate> _constants;

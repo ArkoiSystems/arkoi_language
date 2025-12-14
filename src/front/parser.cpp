@@ -6,11 +6,11 @@ using namespace arkoi::front;
 using namespace arkoi;
 
 ast::Program Parser::parse_program() {
-    std::vector<std::unique_ptr<ast::Node> > statements;
+    std::vector<std::unique_ptr<ast::Node>> statements;
     auto own_scope = _enter_scope();
 
     while (true) {
-        const auto &current = _current();
+        const auto& current = _current();
         if (current.type() == Token::Type::Comment || current.type() == Token::Type::Newline) {
             _next();
             continue;
@@ -22,11 +22,11 @@ ast::Program Parser::parse_program() {
 
         try {
             statements.push_back(_parse_program_statement());
-        } catch (const UnexpectedToken &error) {
+        } catch (const UnexpectedToken& error) {
             std::cout << error.what() << std::endl;
             _recover_program();
             _failed = true;
-        } catch (const UnexpectedEndOfTokens &error) {
+        } catch (const UnexpectedEndOfTokens& error) {
             std::cout << error.what() << std::endl;
             _failed = true;
             break;
@@ -35,11 +35,11 @@ ast::Program Parser::parse_program() {
 
     _exit_scope();
 
-    return {std::move(statements), own_scope};
+    return { std::move(statements), own_scope };
 }
 
 std::unique_ptr<ast::Node> Parser::_parse_program_statement() {
-    const auto &current = _consume_any();
+    const auto& current = _consume_any();
     if (current.type() == Token::Type::Fun) {
         return _parse_function(current);
     }
@@ -49,7 +49,7 @@ std::unique_ptr<ast::Node> Parser::_parse_program_statement() {
 
 void Parser::_recover_program() {
     while (true) {
-        const auto &current = _current();
+        const auto& current = _current();
         switch (current.type()) {
             case Token::Type::Fun:
             case Token::Type::EndOfFile: return;
@@ -58,10 +58,10 @@ void Parser::_recover_program() {
     }
 }
 
-std::unique_ptr<ast::Function> Parser::_parse_function(const Token &) {
+std::unique_ptr<ast::Function> Parser::_parse_function(const Token&) {
     auto own_scope = _enter_scope();
 
-    const auto &name = _consume(Token::Type::Identifier);
+    const auto& name = _consume(Token::Type::Identifier);
     auto identifier = ast::Identifier(name, ast::Identifier::Kind::Function);
 
     auto parameters = _parse_parameters();
@@ -85,7 +85,7 @@ std::vector<ast::Parameter> Parser::_parse_parameters() {
     _consume(Token::Type::LParent);
 
     while (true) {
-        const auto &current = _current();
+        const auto& current = _current();
         if (current.type() == Token::Type::EndOfFile) throw UnexpectedEndOfTokens();
         if (current.type() == Token::Type::RParent) break;
 
@@ -95,11 +95,11 @@ std::vector<ast::Parameter> Parser::_parse_parameters() {
 
         try {
             parameters.push_back(_parse_parameter());
-        } catch (const UnexpectedToken &error) {
+        } catch (const UnexpectedToken& error) {
             std::cout << error.what() << std::endl;
             _recover_parameters();
             _failed = true;
-        } catch (const UnexpectedEndOfTokens &error) {
+        } catch (const UnexpectedEndOfTokens& error) {
             std::cout << error.what() << std::endl;
             _failed = true;
             break;
@@ -113,7 +113,7 @@ std::vector<ast::Parameter> Parser::_parse_parameters() {
 
 void Parser::_recover_parameters() {
     while (true) {
-        const auto &current = _current();
+        const auto& current = _current();
         switch (current.type()) {
             case Token::Type::Comma:
             case Token::Type::RParent:
@@ -124,12 +124,12 @@ void Parser::_recover_parameters() {
 }
 
 ast::Parameter Parser::_parse_parameter() {
-    const auto &name = _consume(Token::Type::Identifier);
+    const auto& name = _consume(Token::Type::Identifier);
     auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable);
 
     auto type = _parse_type();
 
-    return {identifier, type};
+    return { identifier, type };
 }
 
 sem::Type Parser::_parse_type() {
@@ -155,23 +155,23 @@ sem::Type Parser::_parse_type() {
 }
 
 std::unique_ptr<ast::Block> Parser::_parse_block() {
-    std::vector<std::unique_ptr<ast::Node> > statements;
+    std::vector<std::unique_ptr<ast::Node>> statements;
 
     auto own_scope = _enter_scope();
     _consume(Token::Type::Indentation);
 
     while (true) {
-        const auto &current = _current();
+        const auto& current = _current();
         if (current.type() == Token::Type::EndOfFile) throw UnexpectedEndOfTokens();
         if (current.type() == Token::Type::Dedentation) break;
 
         try {
             statements.push_back(_parse_block_statement());
-        } catch (const UnexpectedToken &error) {
+        } catch (const UnexpectedToken& error) {
             std::cout << error.what() << std::endl;
             _recover_block();
             _failed = true;
-        } catch (const UnexpectedEndOfTokens &) {
+        } catch (const UnexpectedEndOfTokens&) {
             throw;
         }
     }
@@ -185,12 +185,12 @@ std::unique_ptr<ast::Block> Parser::_parse_block() {
 std::unique_ptr<ast::Node> Parser::_parse_block_statement() {
     std::unique_ptr<ast::Node> result;
 
-    const auto &consumed = _consume_any();
+    const auto& consumed = _consume_any();
     if (consumed.type() == Token::Type::Return) {
         result = _parse_return(consumed);
         _consume(Token::Type::Newline);
     } else if (consumed.type() == Token::Type::Identifier) {
-        auto &current = _current();
+        auto& current = _current();
         if (current.type() == Token::Type::LParent) {
             result = _parse_call(consumed);
         } else if (current.type() == Token::Type::Equal) {
@@ -211,7 +211,7 @@ std::unique_ptr<ast::Node> Parser::_parse_block_statement() {
 
 void Parser::_recover_block() {
     while (true) {
-        const auto &current = _current();
+        const auto& current = _current();
         switch (current.type()) {
             case Token::Type::Dedentation:
             case Token::Type::Return:
@@ -221,13 +221,13 @@ void Parser::_recover_block() {
     }
 }
 
-std::unique_ptr<ast::Return> Parser::_parse_return(const Token &) {
+std::unique_ptr<ast::Return> Parser::_parse_return(const Token&) {
     auto expression = _parse_expression();
 
     return std::make_unique<ast::Return>(std::move(expression));
 }
 
-std::unique_ptr<ast::If> Parser::_parse_if(const Token &) {
+std::unique_ptr<ast::If> Parser::_parse_if(const Token&) {
     auto expression = _parse_expression();
 
     _consume(Token::Type::Colon);
@@ -259,7 +259,7 @@ std::unique_ptr<ast::If> Parser::_parse_if(const Token &) {
     return std::make_unique<ast::If>(std::move(expression), std::move(branch), std::move(_next));
 }
 
-std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token &name) {
+std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token& name) {
     auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable);
 
     _consume(Token::Type::Equal);
@@ -269,7 +269,7 @@ std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token &name) {
     return std::make_unique<ast::Assign>(identifier, std::move(expression));
 }
 
-std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token &name) {
+std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token& name) {
     auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable);
 
     auto type = _parse_type();
@@ -281,14 +281,14 @@ std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token &name) {
     return std::make_unique<ast::Variable>(identifier, type, std::move(expression));
 }
 
-std::unique_ptr<ast::Call> Parser::_parse_call(const Token &name) {
+std::unique_ptr<ast::Call> Parser::_parse_call(const Token& name) {
     auto identifier = ast::Identifier(name, ast::Identifier::Kind::Function);
 
     _consume(Token::Type::LParent);
 
-    std::vector<std::unique_ptr<ast::Node> > arguments;
+    std::vector<std::unique_ptr<ast::Node>> arguments;
     while (true) {
-        const auto &current = _current();
+        const auto& current = _current();
         if (current.type() == Token::Type::EndOfFile) throw UnexpectedEndOfTokens();
         if (current.type() == Token::Type::RParent) break;
 
@@ -345,7 +345,7 @@ std::unique_ptr<ast::Node> Parser::_parse_factor() {
 }
 
 std::unique_ptr<ast::Node> Parser::_parse_primary() {
-    const auto &consumed = _consume_any();
+    const auto& consumed = _consume_any();
     if (consumed.type() == Token::Type::Integer) {
         auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Integer);
         if (_current().type() != Token::Type::At) return node;
@@ -396,7 +396,7 @@ void Parser::_exit_scope() {
     _scopes.pop();
 }
 
-const Token &Parser::_current() {
+const Token& Parser::_current() {
     return _tokens[_position];
 }
 
@@ -405,14 +405,14 @@ void Parser::_next() {
     _position++;
 }
 
-const Token &Parser::_consume_any() {
-    const auto &current = _current();
+const Token& Parser::_consume_any() {
+    const auto& current = _current();
     _next();
     return current;
 }
 
-const Token &Parser::_consume(const Token::Type type) {
-    const auto &current = _current();
+const Token& Parser::_consume(const Token::Type type) {
+    const auto& current = _current();
     _next();
 
     if (current.type() != type) throw UnexpectedToken(to_string(type), current);
@@ -420,8 +420,8 @@ const Token &Parser::_consume(const Token::Type type) {
     return current;
 }
 
-std::optional<Token> Parser::_try_consume(const std::function<bool(const Token &)> &predicate) {
-    const auto &current = _current();
+std::optional<Token> Parser::_try_consume(const std::function<bool(const Token&)>& predicate) {
+    const auto& current = _current();
 
     if (!predicate(current)) return std::nullopt;
 
@@ -431,7 +431,7 @@ std::optional<Token> Parser::_try_consume(const std::function<bool(const Token &
 }
 
 std::optional<Token> Parser::_try_consume(const Token::Type type) {
-    const auto &current = _current();
+    const auto& current = _current();
 
     if (current.type() != type) return std::nullopt;
 
@@ -440,7 +440,7 @@ std::optional<Token> Parser::_try_consume(const Token::Type type) {
     return current;
 }
 
-ast::Binary::Operator Parser::_to_binary_operator(const Token &token) {
+ast::Binary::Operator Parser::_to_binary_operator(const Token& token) {
     switch (token.type()) {
         case Token::Type::Slash: return ast::Binary::Operator::Div;
         case Token::Type::Asterisk: return ast::Binary::Operator::Mul;
@@ -452,15 +452,15 @@ ast::Binary::Operator Parser::_to_binary_operator(const Token &token) {
     }
 }
 
-bool Parser::_is_factor_operator(const Token &token) {
+bool Parser::_is_factor_operator(const Token& token) {
     return token.type() == Token::Type::Asterisk || token.type() == Token::Type::Slash;
 }
 
-bool Parser::_is_comparison_operator(const Token &token) {
+bool Parser::_is_comparison_operator(const Token& token) {
     return token.type() == Token::Type::GreaterThan || token.type() == Token::Type::LessThan;
 }
 
-bool Parser::_is_term_operator(const Token &token) {
+bool Parser::_is_term_operator(const Token& token) {
     return token.type() == Token::Type::Plus || token.type() == Token::Type::Minus;
 }
 

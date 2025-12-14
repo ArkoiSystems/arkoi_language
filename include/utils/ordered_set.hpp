@@ -3,18 +3,18 @@
 #include <unordered_set>
 #include <vector>
 
-template<typename T>
+template <typename T>
 class OrderedSet {
 public:
     using const_iterator = typename std::vector<T>::const_iterator;
     using iterator = typename std::vector<T>::iterator;
 
 public:
-    bool insert(const T &value);
+    bool insert(const T& value);
 
-    bool erase(const T &value);
+    bool erase(const T& value);
 
-    [[nodiscard]] bool contains(const T &value) const;
+    [[nodiscard]] bool contains(const T& value) const;
 
     void clear();
 

@@ -11,8 +11,8 @@ namespace arkoi::front {
 
 class Scanner {
 public:
-    explicit Scanner(const std::shared_ptr<pretty_diagnostics::Source> &source)
-        : _source(source) {}
+    explicit Scanner(const std::shared_ptr<pretty_diagnostics::Source>& source) :
+        _source(source) { }
 
     [[nodiscard]] std::vector<Token> tokenize();
 
@@ -41,13 +41,13 @@ private:
 
     void _consume(char expected);
 
-    char _consume(const std::function<bool(char)> &predicate, const std::string &expected);
+    char _consume(const std::function<bool(char)>& predicate, const std::string& expected);
 
     [[nodiscard]] bool _try_consume(char expected);
 
-    [[nodiscard]] std::optional<char> _try_consume(const std::function<bool(char)> &predicate);
+    [[nodiscard]] std::optional<char> _try_consume(const std::function<bool(char)>& predicate);
 
-    [[nodiscard]] static size_t _leading_spaces(const std::string &line);
+    [[nodiscard]] static size_t _leading_spaces(const std::string& line);
 
     [[nodiscard]] static bool _is_digit(char input);
 
@@ -69,36 +69,39 @@ private:
 
 private:
     std::shared_ptr<pretty_diagnostics::Source> _source;
-    size_t _row{}, _column{}, _indentation{};
+    size_t _row { }, _column { }, _indentation { };
     std::string _current_line;
-    bool _failed{};
+    bool _failed { };
 };
 
 class ScannerError : public std::runtime_error {
 public:
-    explicit ScannerError(const std::string &error) : std::runtime_error(error) {}
+    explicit ScannerError(const std::string& error) :
+        std::runtime_error(error) { }
 };
 
 class UnexpectedEndOfLine final : public ScannerError {
 public:
-    UnexpectedEndOfLine() : ScannerError("Unexpectedly reached the End Of Line") {}
+    UnexpectedEndOfLine() :
+        ScannerError("Unexpectedly reached the End Of Line") { }
 };
 
 class UnexpectedChar final : public ScannerError {
 public:
-    UnexpectedChar(const std::string &expected, char got)
-        : ScannerError("Expected " + expected + " but got " + std::string(1, got)) {}
+    UnexpectedChar(const std::string& expected, char got) :
+        ScannerError("Expected " + expected + " but got " + std::string(1, got)) { }
 };
 
 class UnknownChar final : public ScannerError {
 public:
-    explicit UnknownChar(char got) : ScannerError("Didn't expect " + std::string(1, got)) {}
+    explicit UnknownChar(char got) :
+        ScannerError("Didn't expect " + std::string(1, got)) { }
 };
 
 class NumberOutOfRange final : public ScannerError {
 public:
-    explicit NumberOutOfRange(const std::string &number)
-        : ScannerError("The number " + number + " exceeds the 64bit limitations.") {}
+    explicit NumberOutOfRange(const std::string& number) :
+        ScannerError("The number " + number + " exceeds the 64bit limitations.") { }
 };
 
 } // namespace arkoi::front

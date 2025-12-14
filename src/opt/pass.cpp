@@ -2,17 +2,17 @@
 
 using namespace arkoi::opt;
 
-void PassManager::run(il::Module &module) const {
+void PassManager::run(il::Module& module) const {
     while (true) {
         bool changed = false;
 
-        for (const auto &pass: _passes) {
+        for (const auto& pass : _passes) {
             changed |= pass->enter_module(module);
 
-            for (auto &function: module) {
+            for (auto& function : module) {
                 changed |= pass->enter_function(function);
 
-                for (auto &block: function) {
+                for (auto& block : function) {
                     changed |= pass->on_block(block);
                 }
 

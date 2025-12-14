@@ -12,7 +12,7 @@
 static const std::string SCANNER_FILES = TEST_PATH "/snapshot/scanner/";
 
 TEST(Snapshot, Scanner) {
-    for (const auto &entry: std::filesystem::directory_iterator(SCANNER_FILES)) {
+    for (const auto& entry : std::filesystem::directory_iterator(SCANNER_FILES)) {
         if (!entry.is_regular_file()) continue;
         if (entry.path().extension() != ".ark") continue;
 
@@ -23,7 +23,7 @@ TEST(Snapshot, Scanner) {
         auto scanner = arkoi::front::Scanner(source);
 
         std::stringstream output;
-        for (const auto &token: scanner.tokenize()) {
+        for (const auto& token : scanner.tokenize()) {
             output << token << "\n";
         }
 
@@ -35,7 +35,7 @@ TEST(Snapshot, Scanner) {
 static const std::string PARSER_FILES = TEST_PATH "/snapshot/parser/";
 
 TEST(Snapshot, Parser) {
-    for (const auto &entry: std::filesystem::directory_iterator(PARSER_FILES)) {
+    for (const auto& entry : std::filesystem::directory_iterator(PARSER_FILES)) {
         if (!entry.is_regular_file()) continue;
         if (entry.path().extension() != ".ark") continue;
 

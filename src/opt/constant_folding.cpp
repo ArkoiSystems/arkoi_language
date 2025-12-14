@@ -6,13 +6,13 @@
 using namespace arkoi::opt;
 using namespace arkoi;
 
-bool ConstantFolding::on_block(il::BasicBlock &block) {
+bool ConstantFolding::on_block(il::BasicBlock& block) {
     bool changed = false;
 
-    for (auto &instruction: block.instructions()) {
+    for (auto& instruction : block.instructions()) {
         if (!instruction.is_constant()) continue;
 
-        if (auto *const cast = std::get_if<il::Cast>(&instruction)) {
+        if (auto* const cast = std::get_if<il::Cast>(&instruction)) {
             const auto value = _cast(*cast);
             instruction = il::Constant(cast->result(), value);
             changed = true;
@@ -22,40 +22,36 @@ bool ConstantFolding::on_block(il::BasicBlock &block) {
     return changed;
 }
 
-il::Immediate ConstantFolding::_cast(il::Cast &instruction) {
+il::Immediate ConstantFolding::_cast(il::Cast& instruction) {
     auto expression = std::get<il::Immediate>(instruction.source());
 
-    return std::visit([&](const auto &value) {
+    return std::visit([&](const auto& value) {
         return _evaluate_cast(instruction.result().type(), value);
     }, expression);
 }
 
-il::Immediate ConstantFolding::_evaluate_cast(const sem::Type &to, auto expression) {
-    return std::visit(match{
-        [&](const sem::Integral &type) -> il::Immediate {
-            switch (type.size()) {
-                case Size::BYTE:
-                    return type.sign() ? static_cast<int8_t>(expression) : static_cast<uint8_t>(expression);
-                case Size::WORD:
-                    return type.sign() ? static_cast<int16_t>(expression) : static_cast<uint16_t>(expression);
-                case Size::DWORD:
-                    return type.sign() ? static_cast<int32_t>(expression) : static_cast<uint32_t>(expression);
-                case Size::QWORD:
-                    return type.sign() ? static_cast<int64_t>(expression) : static_cast<uint64_t>(expression);
-                default: std::unreachable();
-            }
-        },
-        [&](const sem::Floating &type) -> il::Immediate {
-            switch (type.size()) {
-                case Size::DWORD: return static_cast<float>(expression);
-                case Size::QWORD: return static_cast<double>(expression);
-                default: std::unreachable();
-            }
-        },
-        [&](const sem::Boolean &) -> il::Immediate {
-            return static_cast<bool>(expression);
-        }
-    }, to);
+il::Immediate ConstantFolding::_evaluate_cast(const sem::Type& to, auto expression) {
+    return std::visit(match {
+                          [&](const sem::Integral& type) -> il::Immediate {
+                              switch (type.size()) {
+                                  case Size::BYTE: return type.sign() ? static_cast<int8_t>(expression) : static_cast<uint8_t>(expression);
+                                  case Size::WORD: return type.sign() ? static_cast<int16_t>(expression) : static_cast<uint16_t>(expression);
+                                  case Size::DWORD: return type.sign() ? static_cast<int32_t>(expression) : static_cast<uint32_t>(expression);
+                                  case Size::QWORD: return type.sign() ? static_cast<int64_t>(expression) : static_cast<uint64_t>(expression);
+                                  default: std::unreachable();
+                              }
+                          },
+                          [&](const sem::Floating& type) -> il::Immediate {
+                              switch (type.size()) {
+                                  case Size::DWORD: return static_cast<float>(expression);
+                                  case Size::QWORD: return static_cast<double>(expression);
+                                  default: std::unreachable();
+                              }
+                          },
+                          [&](const sem::Boolean&) -> il::Immediate {
+                              return static_cast<bool>(expression);
+                          }
+                      }, to);
 }
 
 //==============================================================================

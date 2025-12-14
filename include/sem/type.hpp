@@ -16,13 +16,14 @@ public:
 
 class Integral final : public TypeBase {
 public:
-    constexpr Integral(const Size size, const bool sign) : _size(size), _sign(sign) {}
+    constexpr Integral(const Size size, const bool sign) :
+        _size(size), _sign(sign) { }
 
     [[nodiscard]] Size size() const override { return _size; }
 
-    bool operator==(const Integral &other) const;
+    bool operator==(const Integral& other) const;
 
-    bool operator!=(const Integral &other) const;
+    bool operator!=(const Integral& other) const;
 
     [[nodiscard]] uint64_t max() const;
 
@@ -35,13 +36,14 @@ private:
 
 class Floating final : public TypeBase {
 public:
-    explicit Floating(const Size size) : _size(size) {}
+    explicit Floating(const Size size) :
+        _size(size) { }
 
     [[nodiscard]] Size size() const override { return _size; }
 
-    bool operator==(const Floating &other) const;
+    bool operator==(const Floating& other) const;
 
-    bool operator!=(const Floating &other) const;
+    bool operator!=(const Floating& other) const;
 
 private:
     Size _size;
@@ -51,9 +53,9 @@ class Boolean final : public TypeBase {
 public:
     [[nodiscard]] Size size() const override { return Size::BYTE; }
 
-    bool operator==(const Boolean &other) const;
+    bool operator==(const Boolean& other) const;
 
-    bool operator!=(const Boolean &other) const;
+    bool operator!=(const Boolean& other) const;
 };
 
 struct Type final : TypeBase, std::variant<Integral, Floating, Boolean> {
@@ -64,13 +66,13 @@ struct Type final : TypeBase, std::variant<Integral, Floating, Boolean> {
 
 } // namespace arkoi::sem
 
-std::ostream &operator<<(std::ostream &os, const arkoi::sem::Integral &type);
+std::ostream& operator<<(std::ostream& os, const arkoi::sem::Integral& type);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::sem::Floating &type);
+std::ostream& operator<<(std::ostream& os, const arkoi::sem::Floating& type);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::sem::Boolean &type);
+std::ostream& operator<<(std::ostream& os, const arkoi::sem::Boolean& type);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::sem::Type &type);
+std::ostream& operator<<(std::ostream& os, const arkoi::sem::Type& type);
 
 //==============================================================================
 // BSD 3-Clause License

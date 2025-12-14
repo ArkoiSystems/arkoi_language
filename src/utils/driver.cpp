@@ -25,15 +25,14 @@ using namespace arkoi::driver;
 using namespace arkoi;
 
 std::string random_hex(size_t length) {
-    static std::mt19937_64 rng{std::random_device{}()};
+    static std::mt19937_64 rng { std::random_device { }() };
     static std::uniform_int_distribution dist(0, 15);
     const static auto HEX_CHARACTERS = "0123456789abcdef";
 
     std::string result;
     result.reserve(length);
 
-    while (length--)
-        result += HEX_CHARACTERS[dist(rng)];
+    while (length--) result += HEX_CHARACTERS[dist(rng)];
     return result;
 }
 
@@ -44,11 +43,11 @@ std::filesystem::path driver::generate_temp_path() {
 }
 
 int32_t driver::compile(
-    const std::shared_ptr<pretty_diagnostics::Source> &source,
-    std::ofstream *il_ostream,
-    std::ofstream *cfg_ostream,
-    std::ofstream *asm_ostream
-) {
+        const std::shared_ptr<pretty_diagnostics::Source>& source,
+        std::ofstream* il_ostream,
+        std::ofstream* cfg_ostream,
+        std::ofstream* asm_ostream
+        ) {
     front::Scanner scanner(source);
     auto tokens = scanner.tokenize();
     if (scanner.has_failed()) return 1;
@@ -90,7 +89,7 @@ int32_t driver::compile(
     return 0;
 }
 
-int32_t driver::run_binary(const std::string &path) {
+int32_t driver::run_binary(const std::string& path) {
     if (!std::filesystem::exists(path)) {
         std::cerr << "Binary does not exist: " << path << std::endl;
         return 1;
@@ -142,13 +141,12 @@ int32_t driver::run_binary(const std::string &path) {
     return 1;
 }
 
-int32_t driver::link(const std::vector<std::string>& object_files, std::ofstream &output, const bool verbose) {
+int32_t driver::link(const std::vector<std::string>& object_files, std::ofstream& output, const bool verbose) {
     const auto temp_path = generate_temp_path().string() + ".o";
 
     std::ostringstream command;
     command << "ld -o " << std::quoted(temp_path);
-    for (const auto& object_file : object_files)
-        command << " " << std::quoted(object_file);
+    for (const auto& object_file : object_files) command << " " << std::quoted(object_file);
 
     const auto link_command = command.str();
     if (verbose) std::cerr << "STAGE=LINKING: " << link_command << std::endl;

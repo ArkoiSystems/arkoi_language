@@ -1,7 +1,7 @@
 #pragma once
 
-template<typename T>
-bool OrderedSet<T>::insert(const T &value) {
+template <typename T>
+bool OrderedSet<T>::insert(const T& value) {
     if (this->contains(value)) return false;
 
     _vector.push_back(value);
@@ -10,24 +10,24 @@ bool OrderedSet<T>::insert(const T &value) {
     return true;
 }
 
-template<typename T>
-bool OrderedSet<T>::erase(const T &value) {
+template <typename T>
+bool OrderedSet<T>::erase(const T& value) {
     if (!this->contains(value)) return false;
 
     // This can be very inefficient, use something else in the future, maybe.
-    std::erase_if(_vector, [&](const auto &it) { return it == value; });
+    std::erase_if(_vector, [&](const auto& it) { return it == value; });
 
     _set.erase(value);
 
     return true;
 }
 
-template<typename T>
-bool OrderedSet<T>::contains(const T &value) const {
+template <typename T>
+bool OrderedSet<T>::contains(const T& value) const {
     return _set.contains(value);
 }
 
-template<typename T>
+template <typename T>
 void OrderedSet<T>::clear() {
     _vector.clear();
     _set.clear();

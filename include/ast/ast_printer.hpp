@@ -12,12 +12,13 @@ namespace arkoi::ast {
 
 class ASTPrinter : public Visitor {
 public:
-    explicit ASTPrinter(std::stringstream &output) : _output(output) {}
+    explicit ASTPrinter(std::stringstream& output) :
+        _output(output) { }
 
 public:
-    [[nodiscard]] static std::stringstream print(Program &program);
+    [[nodiscard]] static std::stringstream print(Program& program);
 
-    void print_child(const std::function<void()> &callback, bool is_last);
+    void print_child(const std::function<void()>& callback, bool is_last);
 
     void visit(Program& node) override;
 
@@ -45,10 +46,10 @@ public:
 
     void visit(If& node) override;
 
-    [[nodiscard]] auto &output() const { return _output; }
+    [[nodiscard]] auto& output() const { return _output; }
 
 private:
-    std::stringstream &_output;
+    std::stringstream& _output;
     std::string _indentation;
 };
 

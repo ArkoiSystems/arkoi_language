@@ -2,24 +2,24 @@
 
 #include <sstream>
 
-template<class... Ts>
-struct match : Ts ... {
+template <class... Ts>
+struct match : Ts... {
     using Ts::operator()...;
 };
 
-template<class... Ts>
+template <class... Ts>
 match(Ts...) -> match<Ts...>;
 
-template<typename T>
-std::string to_string(const T &value) {
+template <typename T>
+std::string to_string(const T& value) {
     std::ostringstream ss;
     ss << value;
     return ss.str();
 }
 
-std::string get_base_path(const std::string &path);
+std::string get_base_path(const std::string& path);
 
-std::string read_file(const std::string &path);
+std::string read_file(const std::string& path);
 
 //==============================================================================
 // BSD 3-Clause License

@@ -5,18 +5,18 @@
 
 using namespace arkoi::x86_64;
 
-static constexpr std::array INTEGER_REGISTERS{
+static constexpr std::array INTEGER_REGISTERS {
     Register::Base::B, Register::Base::R12, Register::Base::R13, Register::Base::R14,
     Register::Base::R15,
 };
 
-static constexpr std::array FLOATING_REGISTERS{
+static constexpr std::array FLOATING_REGISTERS {
     Register::Base::XMM8, Register::Base::XMM9, Register::Base::XMM12, Register::Base::XMM13,
     Register::Base::XMM14, Register::Base::XMM15,
 };
 
-RegisterAllocater::RegisterAllocater(il::Function &function, Mapping precolored)
-    : _function(function), _assigned(std::move(precolored)) {
+RegisterAllocater::RegisterAllocater(il::Function& function, Mapping precolored) :
+    _function(function), _assigned(std::move(precolored)) {
     _renumber();
     _build();
     _simplify();
@@ -30,21 +30,21 @@ void RegisterAllocater::_renumber() {
 void RegisterAllocater::_build() {
     _graph = InterferenceGraph<il::Variable>();
 
-    for (const auto &in_operands: std::views::values(_analysis.in())) {
-        for (const auto &operand: in_operands) {
-            const auto *op_variable = std::get_if<il::Variable>(&operand);
+    for (const auto& in_operands : std::views::values(_analysis.in())) {
+        for (const auto& operand : in_operands) {
+            const auto* op_variable = std::get_if<il::Variable>(&operand);
             if (!op_variable) continue;
             _graph.add_node(*op_variable);
         }
     }
 
-    for (const auto &[instruction, out_operands]: _analysis.out()) {
-        for (const auto &definition: instruction->defs()) {
-            const auto *def_variable = std::get_if<il::Variable>(&definition);
+    for (const auto& [instruction, out_operands] : _analysis.out()) {
+        for (const auto& definition : instruction->defs()) {
+            const auto* def_variable = std::get_if<il::Variable>(&definition);
             if (!def_variable) continue;
 
-            for (const auto &operand: out_operands) {
-                const auto *op_variable = std::get_if<il::Variable>(&operand);
+            for (const auto& operand : out_operands) {
+                const auto* op_variable = std::get_if<il::Variable>(&operand);
                 if (!op_variable) continue;
 
                 _graph.add_edge(*def_variable, *op_variable);
@@ -59,14 +59,14 @@ void RegisterAllocater::_simplify() {
     auto work_list = _graph.nodes();
 
     // Remove precolored variables.
-    for (const auto &variable: std::views::keys(_assigned)) {
+    for (const auto& variable : std::views::keys(_assigned)) {
         work_list.erase(variable);
     }
 
     while (!work_list.empty()) {
         auto found = false;
 
-        for (const auto &node: work_list) {
+        for (const auto& node : work_list) {
             const auto interferences = _graph.interferences(node);
 
             const auto is_floating = std::holds_alternative<sem::Floating>(node.type());
@@ -81,7 +81,7 @@ void RegisterAllocater::_simplify() {
 
         if (found) continue;
 
-        const auto &first = *work_list.begin();
+        const auto& first = *work_list.begin();
         _spilled.push_back(first);
         work_list.erase(first);
     }
@@ -91,7 +91,7 @@ void RegisterAllocater::_simplify() {
         stack.pop();
 
         std::unordered_set<Register::Base> colors;
-        for (const auto &interference: _graph.interferences(node)) {
+        for (const auto& interference : _graph.interferences(node)) {
             const auto found = _assigned.find(interference);
             if (found == _assigned.end()) continue;
             colors.insert(found->second);
@@ -99,14 +99,14 @@ void RegisterAllocater::_simplify() {
 
         auto found = false;
         if (std::holds_alternative<sem::Floating>(node.type())) {
-            for (const auto base: FLOATING_REGISTERS) {
+            for (const auto base : FLOATING_REGISTERS) {
                 if (colors.contains(base)) continue;
                 _assigned[node] = base;
                 found = true;
                 break;
             }
         } else {
-            for (const auto base: INTEGER_REGISTERS) {
+            for (const auto base : INTEGER_REGISTERS) {
                 if (colors.contains(base)) continue;
                 _assigned[node] = base;
                 found = true;

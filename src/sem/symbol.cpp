@@ -2,8 +2,8 @@
 
 using namespace arkoi::sem;
 
-std::ostream &operator<<(std::ostream &os, const std::shared_ptr<Symbol> &symbol) {
-    std::visit([&os](auto &value) { os << value.name(); }, *symbol);
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Symbol>& symbol) {
+    std::visit([&os](auto& value) { os << value.name(); }, *symbol);
     return os;
 }
 

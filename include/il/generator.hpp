@@ -11,56 +11,56 @@ private:
     Generator() = default;
 
 public:
-    [[nodiscard]] static Module generate(ast::Program &node);
+    [[nodiscard]] static Module generate(ast::Program& node);
 
-    void visit(ast::Program &node) override;
+    void visit(ast::Program& node) override;
 
-    void visit(ast::Function &node) override;
+    void visit(ast::Function& node) override;
 
-    void visit(ast::Block &node) override;
+    void visit(ast::Block& node) override;
 
-    void visit(ast::Parameter &) override {}
+    void visit(ast::Parameter&) override { }
 
-    void visit(ast::Immediate &node) override;
+    void visit(ast::Immediate& node) override;
 
-    void visit_integer(const ast::Immediate &node);
+    void visit_integer(const ast::Immediate& node);
 
-    void visit_floating(const ast::Immediate &node);
+    void visit_floating(const ast::Immediate& node);
 
-    void visit_boolean(const ast::Immediate &node);
+    void visit_boolean(const ast::Immediate& node);
 
-    void visit(ast::Variable &node) override;
+    void visit(ast::Variable& node) override;
 
-    void visit(ast::Return &node) override;
+    void visit(ast::Return& node) override;
 
-    void visit(ast::Identifier &node) override;
+    void visit(ast::Identifier& node) override;
 
-    void visit(ast::Binary &node) override;
+    void visit(ast::Binary& node) override;
 
-    void visit(ast::Cast &node) override;
+    void visit(ast::Cast& node) override;
 
-    void visit(ast::Assign &node) override;
+    void visit(ast::Assign& node) override;
 
-    void visit(ast::Call &node) override;
+    void visit(ast::Call& node) override;
 
-    void visit(ast::If &node) override;
+    void visit(ast::If& node) override;
 
-    [[nodiscard]] auto &module() { return _module; }
+    [[nodiscard]] auto& module() { return _module; }
 
 private:
     std::string _make_label_symbol();
 
-    Variable _make_temporary(const sem::Type &type);
+    Variable _make_temporary(const sem::Type& type);
 
-    Memory _make_memory(const sem::Type &type);
+    Memory _make_memory(const sem::Type& type);
 
 private:
-    std::unordered_map<std::shared_ptr<Symbol>, Memory> _allocas{};
-    std::optional<Memory> _return_temp{};
-    size_t _temp_index{}, _label_index{};
-    Function *_current_function{};
-    BasicBlock *_current_block{};
-    Operand _current_operand{};
+    std::unordered_map<std::shared_ptr<Symbol>, Memory> _allocas { };
+    std::optional<Memory> _return_temp { };
+    size_t _temp_index { }, _label_index { };
+    Function* _current_function { };
+    BasicBlock* _current_block { };
+    Operand _current_operand { };
     Module _module;
 };
 

@@ -5,15 +5,15 @@
 
 using namespace arkoi::x86_64;
 
-bool Register::operator==(const Register &other) const {
+bool Register::operator==(const Register& other) const {
     return _size == other._size && _base == other._base;
 }
 
-bool Register::operator!=(const Register &other) const {
+bool Register::operator!=(const Register& other) const {
     return !(other == *this);
 }
 
-std::ostream &operator<<(std::ostream &os, const Register &reg) {
+std::ostream& operator<<(std::ostream& os, const Register& reg) {
     if (reg.base() >= Register::Base::R8 && reg.base() <= Register::Base::R15) {
         switch (reg.size()) {
             case Size::BYTE: return os << reg.base() << "b";
@@ -48,7 +48,7 @@ std::ostream &operator<<(std::ostream &os, const Register &reg) {
     throw std::invalid_argument("This register is not implemented.");
 }
 
-std::ostream &operator<<(std::ostream &os, const Register::Base &reg) {
+std::ostream& operator<<(std::ostream& os, const Register::Base& reg) {
     switch (reg) {
         case Register::Base::A: return os << "a";
         case Register::Base::C: return os << "c";
@@ -88,21 +88,21 @@ std::ostream &operator<<(std::ostream &os, const Register::Base &reg) {
     std::unreachable();
 }
 
-bool Memory::operator==(const Memory &other) const {
+bool Memory::operator==(const Memory& other) const {
     return _index == other._index && _scale == other._scale && _displacement == other._displacement &&
            _address == other._address && _size == other._size;
 }
 
-bool Memory::operator!=(const Memory &other) const {
+bool Memory::operator!=(const Memory& other) const {
     return !(other == *this);
 }
 
-std::ostream &operator<<(std::ostream &os, const Memory::Address &memory) {
-    std::visit([&os](const auto &value) { os << value; }, memory);
+std::ostream& operator<<(std::ostream& os, const Memory::Address& memory) {
+    std::visit([&os](const auto& value) { os << value; }, memory);
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const Memory &memory) {
+std::ostream& operator<<(std::ostream& os, const Memory& memory) {
     os << memory.size() << " PTR ";
 
     os << "[" << memory.address();
@@ -125,13 +125,13 @@ std::ostream &operator<<(std::ostream &os, const Memory &memory) {
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const Immediate &operand) {
-    std::visit([&](const auto &value) { os << value; }, operand);
+std::ostream& operator<<(std::ostream& os, const Immediate& operand) {
+    std::visit([&](const auto& value) { os << value; }, operand);
     return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const Operand &mapping) {
-    std::visit([&](const auto &value) { os << value; }, mapping);
+std::ostream& operator<<(std::ostream& os, const Operand& mapping) {
+    std::visit([&](const auto& value) { os << value; }, mapping);
     return os;
 }
 

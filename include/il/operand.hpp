@@ -16,14 +16,14 @@ public:
 
 class Memory final : public OperandBase {
 public:
-    Memory(size_t version, sem::Type type)
-        : _type(std::move(type)), _index(version) {}
+    Memory(size_t version, sem::Type type) :
+        _type(std::move(type)), _index(version) { }
 
     bool operator<(const Memory& rhs) const;
 
-    bool operator==(const Memory &rhs) const;
+    bool operator==(const Memory& rhs) const;
 
-    bool operator!=(const Memory &rhs) const;
+    bool operator!=(const Memory& rhs) const;
 
     [[nodiscard]] sem::Type type() const override { return _type; }
 
@@ -36,20 +36,20 @@ private:
 
 class Variable final : public OperandBase {
 public:
-    Variable(std::string name, sem::Type type, size_t version = 0)
-        : _name(std::move(name)), _version(version), _type(std::move(type)) {}
+    Variable(std::string name, sem::Type type, size_t version = 0) :
+        _name(std::move(name)), _version(version), _type(std::move(type)) { }
 
     bool operator<(const Variable& rhs) const;
 
-    bool operator==(const Variable &rhs) const;
+    bool operator==(const Variable& rhs) const;
 
-    bool operator!=(const Variable &rhs) const;
+    bool operator!=(const Variable& rhs) const;
 
     [[nodiscard]] sem::Type type() const override { return _type; }
 
     [[nodiscard]] auto version() const { return _version; }
 
-    [[nodiscard]] auto &name() const { return _name; }
+    [[nodiscard]] auto& name() const { return _name; }
 
 private:
     std::string _name;
@@ -73,35 +73,35 @@ struct Operand final : OperandBase, std::variant<Immediate, Variable, Memory> {
 
 namespace std {
 
-template<>
+template <>
 struct hash<arkoi::il::Variable> {
-    size_t operator()(const arkoi::il::Variable &variable) const noexcept;
+    size_t operator()(const arkoi::il::Variable& variable) const noexcept;
 };
 
-template<>
+template <>
 struct hash<arkoi::il::Memory> {
-    size_t operator()(const arkoi::il::Memory &memory) const noexcept;
+    size_t operator()(const arkoi::il::Memory& memory) const noexcept;
 };
 
-template<>
+template <>
 struct hash<arkoi::il::Immediate> {
-    size_t operator()(const arkoi::il::Immediate &immediate) const noexcept;
+    size_t operator()(const arkoi::il::Immediate& immediate) const noexcept;
 };
 
-template<>
+template <>
 struct hash<arkoi::il::Operand> {
-    size_t operator()(const arkoi::il::Operand &operand) const noexcept;
+    size_t operator()(const arkoi::il::Operand& operand) const noexcept;
 };
 
 } // namespace std
 
-std::ostream &operator<<(std::ostream &os, const arkoi::il::Immediate &operand);
+std::ostream& operator<<(std::ostream& os, const arkoi::il::Immediate& operand);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::il::Variable &operand);
+std::ostream& operator<<(std::ostream& os, const arkoi::il::Variable& operand);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::il::Memory &operand);
+std::ostream& operator<<(std::ostream& os, const arkoi::il::Memory& operand);
 
-std::ostream &operator<<(std::ostream &os, const arkoi::il::Operand &operand);
+std::ostream& operator<<(std::ostream& os, const arkoi::il::Operand& operand);
 
 //==============================================================================
 // BSD 3-Clause License

@@ -11,23 +11,23 @@ class Pass {
 public:
     virtual ~Pass() = default;
 
-    virtual bool enter_module(il::Module &module) = 0;
+    virtual bool enter_module(il::Module& module) = 0;
 
-    virtual bool exit_module(il::Module &module) = 0;
+    virtual bool exit_module(il::Module& module) = 0;
 
-    virtual bool enter_function(il::Function &function) = 0;
+    virtual bool enter_function(il::Function& function) = 0;
 
-    virtual bool exit_function(il::Function &function) = 0;
+    virtual bool exit_function(il::Function& function) = 0;
 
-    virtual bool on_block(il::BasicBlock &block) = 0;
+    virtual bool on_block(il::BasicBlock& block) = 0;
 };
 
 class PassManager {
 public:
-    void run(il::Module &module) const;
+    void run(il::Module& module) const;
 
-    template<typename Type, typename... Args>
-    void add(Args &&... args);
+    template <typename Type, typename... Args>
+    void add(Args&&... args);
 
 private:
     std::vector<std::unique_ptr<Pass>> _passes;

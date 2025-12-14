@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include <ostream>
 
-template<typename Node>
+template <typename Node>
 class InterferenceGraph {
 public:
     InterferenceGraph() = default;
@@ -18,7 +18,7 @@ public:
      *
      * @param node The node to be added to the interference graph.
      */
-    void add_node(const Node &node);
+    void add_node(const Node& node);
 
     /**
      * Removes a node and all associated edges from the interference graph.
@@ -29,7 +29,7 @@ public:
      *
      * @param node The node to remove from the interference graph.
      */
-    void remove_node(const Node &node);
+    void remove_node(const Node& node);
 
     /**
      * Adds an edge between two nodes in the graph.
@@ -42,7 +42,7 @@ public:
      * @param first The first node of the edge.
      * @param second The second node of the edge.
      */
-    void add_edge(const Node &first, const Node &second);
+    void add_edge(const Node& first, const Node& second);
 
     /**
      * Checks if two nodes in the interference graph are interfering with each other.
@@ -57,7 +57,7 @@ public:
      * @return True if `first` and `second` are interfering (connected by an edge),
      *         false otherwise.
      */
-    [[nodiscard]] bool is_interfering(const Node &first, const Node &second) const;
+    [[nodiscard]] bool is_interfering(const Node& first, const Node& second) const;
 
     /**
      * Retrieves the set of nodes that interfere with the given node in the graph.
@@ -67,7 +67,7 @@ public:
      *         with the specified node. If the node is not found in the graph,
      *         returns an empty unordered_set.
      */
-    [[nodiscard]] std::unordered_set<Node> interferences(const Node &node) const;
+    [[nodiscard]] std::unordered_set<Node> interferences(const Node& node) const;
 
     /**
      * Retrieves all nodes within the interference graph.
@@ -76,14 +76,14 @@ public:
      */
     [[nodiscard]] std::unordered_set<Node> nodes() const;
 
-    [[nodiscard]] auto &adjacents() const { return _adjacents; }
+    [[nodiscard]] auto& adjacents() const { return _adjacents; }
 
 private:
     std::unordered_map<Node, std::unordered_set<Node>> _adjacents;
 };
 
-template<typename Node>
-std::ostream &operator<<(std::ostream &os, const InterferenceGraph<Node> &graph);
+template <typename Node>
+std::ostream& operator<<(std::ostream& os, const InterferenceGraph<Node>& graph);
 
 #include "../../src/utils/interference_graph.tpp"
 

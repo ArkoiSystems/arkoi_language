@@ -6,32 +6,32 @@
 
 using namespace arkoi::front;
 
-std::optional<Token::Type> Token::lookup_keyword(const std::string_view &value) {
+std::optional<Token::Type> Token::lookup_keyword(const std::string_view& value) {
     static const std::unordered_map<std::string_view, Type> KEYWORDS = {
-        {"if",     Type::If},
-        {"else",   Type::Else},
-        {"fun",    Type::Fun},
-        {"return", Type::Return},
-        {"u8",     Type::U8},
-        {"s8",     Type::S8},
-        {"u16",    Type::U16},
-        {"s16",    Type::S16},
-        {"u32",    Type::U32},
-        {"s32",    Type::S32},
-        {"u64",    Type::U64},
-        {"s64",    Type::S64},
-        {"usize",  Type::USize},
-        {"ssize",  Type::SSize},
-        {"f64",    Type::F64},
-        {"f32",    Type::F32},
-        {"bool",   Type::Bool},
-        {"true",   Type::True},
-        {"false",  Type::False},
+        { "if", Type::If },
+        { "else", Type::Else },
+        { "fun", Type::Fun },
+        { "return", Type::Return },
+        { "u8", Type::U8 },
+        { "s8", Type::S8 },
+        { "u16", Type::U16 },
+        { "s16", Type::S16 },
+        { "u32", Type::U32 },
+        { "s32", Type::S32 },
+        { "u64", Type::U64 },
+        { "s64", Type::S64 },
+        { "usize", Type::USize },
+        { "ssize", Type::SSize },
+        { "f64", Type::F64 },
+        { "f32", Type::F32 },
+        { "bool", Type::Bool },
+        { "true", Type::True },
+        { "false", Type::False },
     };
 
     const auto keyword = KEYWORDS.find(value);
     if (keyword != KEYWORDS.end()) {
-        return {keyword->second};
+        return { keyword->second };
     }
 
     return std::nullopt;
@@ -55,7 +55,7 @@ std::optional<Token::Type> Token::lookup_special(const char value) {
     }
 }
 
-std::ostream &operator<<(std::ostream &os, const Token::Type &type) {
+std::ostream& operator<<(std::ostream& os, const Token::Type& type) {
     switch (type) {
         case Token::Type::Indentation: return os << "Indentation";
         case Token::Type::Dedentation: return os << "Dedentation";
@@ -107,7 +107,7 @@ std::ostream &operator<<(std::ostream &os, const Token::Type &type) {
     std::unreachable();
 }
 
-std::ostream &operator<<(std::ostream &os, const Token &token) {
+std::ostream& operator<<(std::ostream& os, const Token& token) {
     os << "Token(";
     os << "kind=\"" << to_string(token.type()) << "\", ";
     os << "span=\"" << token.span() << "\"";

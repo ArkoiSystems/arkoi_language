@@ -15,38 +15,41 @@ class Function;
 
 class BasicBlock {
 public:
-    using Predecessors = std::unordered_set<BasicBlock *>;
+    using Predecessors = std::unordered_set<BasicBlock*>;
     using Instructions = std::vector<Instruction>;
 
 public:
-    explicit BasicBlock(std::string label) : _branch(), _next(), _label(std::move(label)) {}
+    explicit BasicBlock(std::string label) :
+        _branch(), _next(), _label(std::move(label)) { }
 
-    void accept(Visitor &visitor) { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
-    template<typename Type, typename... Args>
-    Instruction &emplace_back(Args &&... args);
+    template <typename Type, typename... Args>
+    Instruction& emplace_back(Args&&... args);
 
-    [[nodiscard]] auto &label() const { return _label; }
+    [[nodiscard]] auto& label() const { return _label; }
 
-    [[nodiscard]] auto *branch() const { return _branch; }
-    void set_branch(BasicBlock *branch);
+    [[nodiscard]] auto* branch() const { return _branch; }
 
-    [[nodiscard]] auto *next() const { return _next; }
-    void set_next(BasicBlock *next);
+    void set_branch(BasicBlock* branch);
 
-    [[nodiscard]] auto &predecessors() { return _predecessors; }
+    [[nodiscard]] auto* next() const { return _next; }
 
-    [[nodiscard]] auto &instructions() { return _instructions; }
+    void set_next(BasicBlock* next);
+
+    [[nodiscard]] auto& predecessors() { return _predecessors; }
+
+    [[nodiscard]] auto& instructions() { return _instructions; }
 
     Instructions::iterator begin() { return _instructions.begin(); }
 
     Instructions::iterator end() { return _instructions.end(); }
 
 private:
-    Instructions _instructions{};
+    Instructions _instructions { };
     Predecessors _predecessors;
-    BasicBlock *_branch;
-    BasicBlock *_next;
+    BasicBlock* _branch;
+    BasicBlock* _next;
     std::string _label;
 };
 
@@ -54,32 +57,32 @@ class BlockIterator {
 public:
     using iterator_category [[maybe_unused]] = std::input_iterator_tag;
     using value_type = BasicBlock;
-    using reference = value_type &;
-    using pointer = value_type *;
+    using reference = value_type&;
+    using pointer = value_type*;
 
 public:
-    explicit BlockIterator(Function *function);
+    explicit BlockIterator(Function* function);
 
     reference operator*() const { return *_current; }
 
     pointer operator->() const { return _current; }
 
-    BlockIterator &operator++();
+    BlockIterator& operator++();
 
     BlockIterator operator++(int);
 
-    friend bool operator==(const BlockIterator &left, const BlockIterator &right) {
+    friend bool operator==(const BlockIterator& left, const BlockIterator& right) {
         return left._current == right._current;
     }
 
-    friend bool operator!=(const BlockIterator &left, const BlockIterator &right) {
+    friend bool operator!=(const BlockIterator& left, const BlockIterator& right) {
         return left._current != right._current;
     }
 
 private:
-    std::unordered_set<BasicBlock *> _visited{};
-    std::stack<BasicBlock *> _queue{};
-    Function *_function;
+    std::unordered_set<BasicBlock*> _visited { };
+    std::stack<BasicBlock*> _queue { };
+    Function* _function;
     pointer _current;
 };
 
@@ -90,34 +93,35 @@ public:
     Function(std::string name, std::vector<Variable> parameters, sem::Type type,
              std::string entry_label, std::string exit_label);
 
-    void accept(Visitor &visitor) { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
-    template<typename... Args>
-    BasicBlock *emplace_back(Args &&... args);
+    template <typename... Args>
+    BasicBlock* emplace_back(Args&&... args);
 
     [[nodiscard]] bool is_leaf();
 
-    [[nodiscard]] bool remove(BasicBlock *target);
+    [[nodiscard]] bool remove(BasicBlock* target);
 
-    [[nodiscard]] auto &name() const { return _name; }
+    [[nodiscard]] auto& name() const { return _name; }
 
-    [[nodiscard]] auto &type() const { return _type; }
+    [[nodiscard]] auto& type() const { return _type; }
 
-    [[nodiscard]] auto *entry() const { return _entry; }
+    [[nodiscard]] auto* entry() const { return _entry; }
 
-    [[nodiscard]] auto *exit() const { return _exit; }
-    void set_exit(BasicBlock *exit) { _exit = exit; }
+    [[nodiscard]] auto* exit() const { return _exit; }
 
-    [[nodiscard]] auto &parameters() { return _parameters; }
+    void set_exit(BasicBlock* exit) { _exit = exit; }
+
+    [[nodiscard]] auto& parameters() { return _parameters; }
 
     BlockIterator begin() { return BlockIterator(this); }
 
     BlockIterator end() { return BlockIterator(nullptr); }
 
 private:
-    std::vector<std::shared_ptr<BasicBlock>> _block_pool{};
-    BasicBlock *_entry;
-    BasicBlock *_exit;
+    std::vector<std::shared_ptr<BasicBlock>> _block_pool { };
+    BasicBlock* _entry;
+    BasicBlock* _exit;
     std::vector<Variable> _parameters;
     std::string _name;
     sem::Type _type;
@@ -128,19 +132,19 @@ public:
     using Functions = std::vector<Function>;
 
 public:
-    Module() {}
+    Module() { }
 
-    void accept(Visitor &visitor) { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
-    template<typename... Args>
-    Function &emplace_back(Args &&... args);
+    template <typename... Args>
+    Function& emplace_back(Args&&... args);
 
     Functions::iterator begin() { return _functions.begin(); }
 
     Functions::iterator end() { return _functions.end(); }
 
 private:
-    Functions _functions{};
+    Functions _functions { };
 };
 
 #include "../../src/il/cfg.tpp"

@@ -6,24 +6,23 @@
 #include <string>
 
 #define EXPECT_SNAPSHOT_EQ(name, path, actual) \
-    expect_snapshot_eq(name, path, actual); \
-
+    expect_snapshot_eq(name, path, actual);
 inline bool UPDATE_SNAPSHOTS = false;
 
-void expect_snapshot_eq(const std::string &name, const std::filesystem::path &path, const std::string &actual);
+void expect_snapshot_eq(const std::string& name, const std::filesystem::path& path, const std::string& actual);
 
 class Snapshot {
 public:
-    Snapshot(std::string name, std::filesystem::path path)
-        : _path(std::move(path)), _name(std::move(name)) {}
+    Snapshot(std::string name, std::filesystem::path path) :
+        _path(std::move(path)), _name(std::move(name)) { }
 
-    void save(const std::string &data) const;
+    void save(const std::string& data) const;
 
     [[nodiscard]] std::string load() const;
 
-    [[nodiscard]] auto &path() const { return _path; }
+    [[nodiscard]] auto& path() const { return _path; }
 
-    [[nodiscard]] auto &name() const { return _name; }
+    [[nodiscard]] auto& name() const { return _name; }
 
 private:
     std::filesystem::path _path;
