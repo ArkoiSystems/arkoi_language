@@ -7,7 +7,6 @@
 
 #define EXPECT_SNAPSHOT_EQ(name, path, actual) \
     expect_snapshot_eq(name, path, actual);
-inline bool UPDATE_SNAPSHOTS = false;
 
 void expect_snapshot_eq(const std::string& name, const std::filesystem::path& path, const std::string& actual);
 

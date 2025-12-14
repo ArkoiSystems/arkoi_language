@@ -28,6 +28,10 @@ add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
 # Link the test binary with the main library and GoogleTest
 target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} gtest_main gtest gmock)
 # Add the path as a definition
-target_compile_definitions(${PROJECT_NAME}_tests PRIVATE TEST_PATH="${CMAKE_SOURCE_DIR}/tests")
+target_compile_definitions(${PROJECT_NAME}_tests PRIVATE TEST_PATH="${PROJECT_SOURCE_DIR}/tests")
+# When snapshots should get updated, pass it as a definition
+if(UPDATE_SNAPSHOTS)
+    target_compile_definitions(${PROJECT_NAME}_tests PRIVATE UPDATE_SNAPSHOTS)
+endif()
 # Automatically discover and register tests with CTest
 gtest_discover_tests(${PROJECT_NAME}_tests)

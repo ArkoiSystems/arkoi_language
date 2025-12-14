@@ -36,7 +36,7 @@ bool SimplifyCFG::exit_function(il::Function& function) {
     return changed;
 }
 
-void SimplifyCFG::_remove_proxy_block(const il::Function& function, il::BasicBlock& block) {
+void SimplifyCFG::_remove_proxy_block(il::Function& function, il::BasicBlock& block) {
     const auto& target = std::get<il::Goto>(block.instructions().front());
     auto* target_block = block.next();
 

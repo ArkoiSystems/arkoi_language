@@ -14,6 +14,8 @@ option(BUILD_EXECUTABLE "Create executable" ON)
 option(MAKE_INSTALLABLE "Make the library installable" ON)
 # Option to control static vs shared library
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+# Option to update all the snapshots
+option(UPDATE_SNAPSHOTS "Regenerate snapshot tests" OFF)
 
 # Add some flags to ensure consistency
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -Wswitch -fsanitize=address,undefined,leak -Wno-maybe-uninitialized")
