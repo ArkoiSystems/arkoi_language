@@ -16,7 +16,7 @@ option(MAKE_INSTALLABLE "Make the library installable" ON)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 # Add some flags to ensure consistency
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -Wswitch -fsanitize=address,undefined,leak")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -Wswitch -fsanitize=address,undefined,leak -Wno-maybe-uninitialized")
 
 # Find pretty diagnostics on the system
 find_package(pretty_diagnostics CONFIG REQUIRED)

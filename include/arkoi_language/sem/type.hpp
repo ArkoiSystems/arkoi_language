@@ -46,7 +46,7 @@ public:
     bool operator!=(const Floating& other) const;
 
 private:
-    Size _size;
+    Size _size { };
 };
 
 class Boolean final : public TypeBase {

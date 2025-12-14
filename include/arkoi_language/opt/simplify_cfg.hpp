@@ -17,7 +17,7 @@ public:
     bool on_block(il::BasicBlock& block) override;
 
 private:
-    static void _remove_proxy_block(il::Function& function, il::BasicBlock& block);
+    static void _remove_proxy_block(const il::Function& function, il::BasicBlock& block);
 
     [[nodiscard]] static bool _is_proxy_block(il::BasicBlock& block);
 
