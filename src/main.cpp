@@ -7,8 +7,8 @@
 
 #include "argparse/argparse.hpp"
 
-#include "utils/driver.hpp"
-#include "utils/utils.hpp"
+#include "arkoi_language/utils/driver.hpp"
+#include "arkoi_language/utils/utils.hpp"
 
 using namespace arkoi;
 

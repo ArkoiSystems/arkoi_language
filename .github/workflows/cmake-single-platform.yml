@@ -7,24 +7,52 @@ on:
     branches: [ $default-branch ]
   workflow_dispatch:
 
+env:
+  BUILD_TYPE: Release
+  BUILD_SHARED_LIBS: ON
+  MAKE_INSTALLABLE: ON
+  BUILD_EXECUTABLE: ON
+  BUILD_TESTING: ON
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up CMake
+      - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v2
         with:
-          cmake-version: '3.29.6'
+          cmake-version: '4.2.x'
 
-      - name: Configure CMake project
-        run: cmake -S . -B build
+      - name: Build pretty_diagnostics
+        run: |
+          git clone https://github.com/user/pretty_diagnostics.git
+          cd pretty_diagnostics
+          cmake -S . -B own_build Release -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_EXECUTABLE=OFF -DMAKE_INSTALLABLE=ON -DBUILD_SHARED_LIBS=OFF
+          cmake --build own_build --config Release
+          sudo cmake --install own_build --config Release
 
-      - name: Build with CMake
-        run: cmake --build build
+      - name: Configure CMake
+        run: |
+          cmake -S . -B ${{github.workspace}}/build                    \
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}                     \
+            -DBUILD_TESTING=${{env.BUILD_TESTING}}                     \
+            -DBUILD_EXECUTABLE=${{env.BUILD_EXECUTABLE}}               \
+            -DMAKE_INSTALLABLE=${{env.MAKE_INSTALLABLE}}               \
+            -DBUILD_SHARED_LIBS=${{env.BUILD_SHARED_LIBS}}             \
+            -DCMAKE_INSTALL_PREFIX:PATH=$GITHUB_WORKSPACE/test_install \
+            -DFETCHCONTENT_UPDATES_DISCONNECTED=ON
 
-      - name: Run GoogleTest tests
-        run: ctest --test-dir build --output-on-failure
+      - name: Build
+        working-directory: ${{github.workspace}}/build
+        run: cmake --build . --config ${{env.BUILD_TYPE}}
+
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+
+      - name: Test Install
+        working-directory: ${{github.workspace}}/build
+        run: cmake --install . --config ${{env.BUILD_TYPE}}
