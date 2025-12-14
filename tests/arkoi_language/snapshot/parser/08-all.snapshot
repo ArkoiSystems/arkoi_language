@@ -1,0 +1,50 @@
+Program
+└─ Statements
+   ├─ Function
+   │  ├─ Identifier[value=main, kind=Function]
+   │  ├─ Parameters
+   │  └─ Block
+   │     └─ Statements
+   │        └─ Return
+   │           └─ Binary[op=Sub]
+   │              ├─ Binary[op=Mul]
+   │              │  ├─ Call
+   │              │  │  └─ Arguments
+   │              │  │     ├─ Binary[op=Add]
+   │              │  │     │  ├─ Binary[op=Mul]
+   │              │  │     │  │  ├─ Immediate[value=true, kind=Boolean]
+   │              │  │     │  │  └─ Call
+   │              │  │     │  │     └─ Arguments
+   │              │  │     │  │        └─ Immediate[value=true, kind=Boolean]
+   │              │  │     │  └─ Immediate[value=true, kind=Boolean]
+   │              │  │     └─ Immediate[value=10.5, kind=Floating]
+   │              │  └─ Immediate[value=2.01, kind=Floating]
+   │              └─ Immediate[value='*', kind=Integer]
+   ├─ Function
+   │  ├─ Identifier[value=ok, kind=Function]
+   │  ├─ Parameters
+   │  │  └─ Parameter
+   │  │     └─ Identifier[value=foo1, kind=Variable]
+   │  └─ Block
+   │     └─ Statements
+   │        ├─ If
+   │        │  ├─ Identifier[value=foo1, kind=Variable]
+   │        │  └─ Return
+   │        │     └─ Binary[op=Add]
+   │        │        ├─ Immediate[value=21, kind=Integer]
+   │        │        └─ Immediate[value=21, kind=Integer]
+   │        └─ Return
+   │           └─ Immediate[value=0.0, kind=Floating]
+   └─ Function
+      ├─ Identifier[value=test, kind=Function]
+      ├─ Parameters
+      │  ├─ Parameter
+      │  │  └─ Identifier[value=foo2, kind=Variable]
+      │  └─ Parameter
+      │     └─ Identifier[value=bar, kind=Variable]
+      └─ Block
+         └─ Statements
+            └─ Return
+               └─ Binary[op=Mul]
+                  ├─ Identifier[value=bar, kind=Variable]
+                  └─ Identifier[value=foo2, kind=Variable]
