@@ -37,7 +37,7 @@ std::optional<Token::Type> Token::lookup_keyword(const std::string_view &value) 
     return std::nullopt;
 }
 
-std::optional<Token::Type> Token::lookup_special(char value) {
+std::optional<Token::Type> Token::lookup_special(const char value) {
     switch (value) {
         case '(': return Type::LParent;
         case ')': return Type::RParent;
@@ -108,10 +108,10 @@ std::ostream &operator<<(std::ostream &os, const Token::Type &type) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Token &token) {
-    os << to_string(token.type());
-    os << "(contents=\"" << token.contents() << "\"";
-    os << ", column=" << token.column();
-    os << ", row=" << token.row() << ")";
+    os << "Token(";
+    os << "kind=\"" << to_string(token.type()) << "\", ";
+    os << "span=\"" << token.span() << "\"";
+    os << ")";
     return os;
 }
 

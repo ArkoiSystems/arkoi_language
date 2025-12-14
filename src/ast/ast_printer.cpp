@@ -86,7 +86,7 @@ void ASTPrinter::visit(Parameter &node) {
 }
 
 void ASTPrinter::visit(Immediate &node) {
-    _output << "Immediate[value=" << node.value().contents() << ", kind=" << node.to_string(node.kind()) << "]" << std::endl;
+    _output << "Immediate[value=" << node.value().span().substr() << ", kind=" << Immediate::to_string(node.kind()) << "]" << std::endl;
 }
 
 void ASTPrinter::visit(Variable &node) {
@@ -103,11 +103,11 @@ void ASTPrinter::visit(Return &node) {
 }
 
 void ASTPrinter::visit(Identifier &node) {
-    _output << "Identifier[value=" << node.value().contents() << ", kind=" << node.to_string(node.kind()) << "]" << std::endl;
+    _output << "Identifier[value=" << node.value().span().substr() << ", kind=" << Identifier::to_string(node.kind()) << "]" << std::endl;
 }
 
 void ASTPrinter::visit(Binary &node) {
-    _output << "Binary[op=" << node.to_string(node.op()) << "]" << std::endl;
+    _output << "Binary[op=" << Binary::to_string(node.op()) << "]" << std::endl;
 
     print_child([&]() { node.left()->accept(*this); }, false);
     print_child([&]() { node.right()->accept(*this); }, true);

@@ -97,8 +97,8 @@ int main(const int argc, const char *argv[]) {
 
     std::vector<std::string> object_files;
     for (const auto &input_path: input_paths) {
+        const auto source = std::make_shared<pretty_diagnostics::FileSource>(input_path);
         const auto base_path = get_base_path(input_path);
-        const auto source = read_file(input_path);
 
         const auto il_path  = base_path + ".il";
         const auto cfg_path = base_path + ".dot";

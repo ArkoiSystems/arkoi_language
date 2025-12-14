@@ -44,7 +44,7 @@ std::filesystem::path driver::generate_temp_path() {
 }
 
 int32_t driver::compile(
-    const std::string &source,
+    const std::shared_ptr<pretty_diagnostics::Source> &source,
     std::ofstream *il_ostream,
     std::ofstream *cfg_ostream,
     std::ofstream *asm_ostream

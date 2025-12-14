@@ -3,7 +3,7 @@
 template<typename Type, typename... Args>
 std::shared_ptr<Symbol> NameResolver::_check_non_existence(const front::Token &token, Args &&... args) {
     try {
-        return _scopes.top()->insert<Type>(token.contents(), std::forward<Args>(args)...);
+        return _scopes.top()->insert<Type>(token.span().substr(), std::forward<Args>(args)...);
     } catch (const IdentifierAlreadyTaken &error) {
         std::cout << error.what() << std::endl;
         _failed = true;
@@ -14,7 +14,7 @@ std::shared_ptr<Symbol> NameResolver::_check_non_existence(const front::Token &t
 template<typename... Types>
 std::shared_ptr<Symbol> NameResolver::_check_existence(const front::Token &token) {
     try {
-        return _scopes.top()->lookup<Types...>(token.contents());
+        return _scopes.top()->lookup<Types...>(token.span().substr());
     } catch (const IdentifierNotFound &error) {
         std::cout << error.what() << std::endl;
         _failed = true;

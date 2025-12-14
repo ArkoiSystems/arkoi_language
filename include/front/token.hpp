@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iostream>
+#include "pretty_diagnostics/span.h"
+
 #include <optional>
 #include <utility>
 
@@ -57,24 +58,19 @@ public:
     };
 
 public:
-    Token(Type type, size_t column, size_t row, std::string contents)
-        : _contents(std::move(contents)), _column(column), _row(row), _type(type) {}
+    Token(const Type type, pretty_diagnostics::Span span)
+        : _span(std::move(span)), _type(type) {}
 
-    [[nodiscard]] auto &contents() const { return _contents; }
-
-    [[nodiscard]] auto column() const { return _column; }
+    [[nodiscard]] auto &span() const { return _span; }
 
     [[nodiscard]] auto &type() const { return _type; }
-
-    [[nodiscard]] auto row() const { return _row; }
 
     [[nodiscard]] static std::optional<Type> lookup_keyword(const std::string_view &value);
 
     [[nodiscard]] static std::optional<Type> lookup_special(char value);
 
 private:
-    std::string _contents;
-    size_t _column, _row;
+    pretty_diagnostics::Span _span;
     Type _type;
 };
 

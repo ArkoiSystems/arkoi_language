@@ -10,13 +10,9 @@
 namespace arkoi::front {
 
 class Scanner {
-private:
-    struct Location {
-        size_t column, row;
-    };
-
 public:
-    explicit Scanner(std::string data) : _data(std::move(data)) {}
+    explicit Scanner(const std::shared_ptr<pretty_diagnostics::Source> &source)
+        : _source(source) {}
 
     [[nodiscard]] std::vector<Token> tokenize();
 
@@ -35,17 +31,13 @@ private:
 
     [[nodiscard]] Token _lex_special();
 
-    [[nodiscard]] std::string _current_view() const;
-
     [[nodiscard]] char _current_char() const;
 
     [[nodiscard]] bool _is_eol() const;
 
-    [[nodiscard]] Location _mark_start();
+    [[nodiscard]] pretty_diagnostics::Location _current_location() const;
 
     void _next();
-
-    char _peek() const;
 
     void _consume(char expected);
 
@@ -63,8 +55,6 @@ private:
 
     [[nodiscard]] static bool _is_ident_inner(char input);
 
-    [[nodiscard]] static bool _is_not_newline(char input);
-
     [[nodiscard]] static bool _is_ascii(char input);
 
     [[nodiscard]] static bool _is_space(char input);
@@ -78,9 +68,9 @@ private:
     [[nodiscard]] static bool _is_decimal_sign(char input);
 
 private:
-    size_t _start{}, _row{}, _column{}, _indentation{};
-    std::string_view _current_line;
-    std::string _data;
+    std::shared_ptr<pretty_diagnostics::Source> _source;
+    size_t _row{}, _column{}, _indentation{};
+    std::string _current_line;
     bool _failed{};
 };
 

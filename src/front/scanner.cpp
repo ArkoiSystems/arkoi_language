@@ -1,5 +1,6 @@
 #include "front/scanner.hpp"
 
+#include <iostream>
 #include <sstream>
 
 using namespace arkoi::front;
@@ -9,15 +10,11 @@ static constexpr size_t SPACE_INDENTATION = 4;
 
 std::vector<Token> Scanner::tokenize() {
     std::vector<Token> tokens;
+    if (_source->contents().empty()) return tokens;
 
-    std::istringstream stream(_data);
-    std::string line;
-
-    while (std::getline(stream, line)) {
-        if (line.empty()) continue;
-        _current_line = line;
-
-        const auto leading_spaces = _leading_spaces(line);
+    std::istringstream stream(_source->contents());
+    while (std::getline(stream, _current_line)) {
+        const auto leading_spaces = _leading_spaces(_current_line);
         if (leading_spaces % SPACE_INDENTATION != 0) {
             std::cerr << "Leading spaces are not of a multiple of 4" << std::endl;
             _failed = true;
@@ -25,18 +22,25 @@ std::vector<Token> Scanner::tokenize() {
         }
 
         while (leading_spaces > _indentation) {
-            tokens.emplace_back(Token::Type::Indentation, _column, _row, "");
+            const auto span = pretty_diagnostics::Span(
+                _source,
+                _source->from_coords(_row, _indentation),
+                _source->from_coords(_row, _indentation + SPACE_INDENTATION)
+            );
+            tokens.emplace_back(Token::Type::Indentation, span);
+
             _indentation += SPACE_INDENTATION;
             _column += SPACE_INDENTATION;
         }
 
         while (leading_spaces < _indentation) {
-            tokens.emplace_back(Token::Type::Dedentation, _column, _row, "");
+            tokens.emplace_back(Token::Type::Dedentation, pretty_diagnostics::Span(_source, 0, 0));
+
             _indentation -= SPACE_INDENTATION;
             _column -= SPACE_INDENTATION;
         }
 
-        while (!_is_eol()) {
+        while (!_is_eol() && !_current_line.empty()) {
             try {
                 auto token = _next_token();
                 tokens.push_back(token);
@@ -55,18 +59,21 @@ std::vector<Token> Scanner::tokenize() {
             }
         }
 
-        tokens.emplace_back(Token::Type::Newline, _column, _row, "");
+        const auto start_location = _source->from_coords(_row, _column);
+        const auto end_location = _source->from_coords(_row, _column + 1);
+        tokens.emplace_back(Token::Type::Newline, pretty_diagnostics::Span(_source, start_location, end_location));
 
         _column = _indentation;
         _row++;
     }
 
     while (_indentation) {
-        tokens.emplace_back(Token::Type::Dedentation, _column, _row, "");
+        tokens.emplace_back(Token::Type::Dedentation, pretty_diagnostics::Span(_source, 0, 0));
+
         _indentation -= SPACE_INDENTATION;
     }
 
-    tokens.emplace_back(Token::Type::EndOfFile, 0, 0, "");
+    tokens.emplace_back(Token::Type::EndOfFile, pretty_diagnostics::Span(_source, 0, 0));
 
     return tokens;
 }
@@ -95,35 +102,36 @@ Token Scanner::_next_token() {
 }
 
 Token Scanner::_lex_comment() {
-    auto [column, row] = _mark_start();
+    const auto start_location = _current_location();
 
     _consume('#');
-    while (_try_consume(_is_not_newline)) {
-    }
+    while (!_is_eol()) _next();
 
-    return {Token::Type::Comment, column, row, _current_view()};
+    return {Token::Type::Comment, { _source, start_location, _current_location() }};
 }
 
 Token Scanner::_lex_identifier() {
-    auto [column, row] = _mark_start();
+    const auto start_location = _current_location();
 
     _consume(_is_ident_start, "_, a-z or A-Z");
     while (_try_consume(_is_ident_inner)) {
     }
 
-    auto value = _current_view();
+    const auto span = pretty_diagnostics::Span(_source, start_location, _current_location());
+    const auto value = span.substr();
+
     if (auto keyword = Token::lookup_keyword(value)) {
-        return {*keyword, column, row, value};
+        return {*keyword, span};
     }
 
-    return {Token::Type::Identifier, column, row, value};
+    return {Token::Type::Identifier, span};
 }
 
 Token Scanner::_lex_number() {
-    auto [column, row] = _mark_start();
+    const auto start_location = _current_location();
 
-    if (_try_consume('-') && !_is_digit(_peek())) {
-        return {Token::Type::Minus, column, row, _current_view()};
+    if (_try_consume('-') && !_is_digit(_current_char())) {
+        return { Token::Type::Minus, { _source, start_location, _current_location() } };
     }
 
     const auto consumed = _consume(_is_digit, "0-9");
@@ -163,7 +171,10 @@ Token Scanner::_lex_number() {
         }
     }
 
-    auto number = _current_view();
+    const auto span = pretty_diagnostics::Span(_source, start_location, _current_location());
+    const auto kind = (floating ? Token::Type::Floating : Token::Type::Integer);
+    const auto number = span.substr();
+
     try {
         if (floating) {
             std::stold(number);
@@ -176,34 +187,33 @@ Token Scanner::_lex_number() {
         throw NumberOutOfRange(number);
     }
 
-    auto kind = (floating ? Token::Type::Floating : Token::Type::Integer);
-
-    return {kind, column, row, number};
+    return {kind, span};
 }
 
 Token Scanner::_lex_char() {
-    auto [column, row] = _mark_start();
+    const auto start_location = _current_location();
 
     _consume('\'');
-    const auto consumed = _consume(_is_ascii, "'");
+    std::ignore = _consume(_is_ascii, "'");
     _consume('\'');
 
-    return {Token::Type::Integer, column, row, std::to_string(consumed)};
+    return { Token::Type::Integer, { _source, start_location, _current_location() } };
 }
 
 Token Scanner::_lex_special() {
-    auto [column, row] = _mark_start();
+    const auto start_location = _current_location();
 
     const auto current = _current_char();
     if (auto special = Token::lookup_special(current)) {
         _next();
-        return {*special, column, row, _current_view()};
+        return {*special, { _source, start_location, _current_location() } };
     }
 
     throw UnknownChar(current);
 }
 
 char Scanner::_current_char() const {
+    if (_is_eol()) return 0;
     return _current_line[_column];
 }
 
@@ -211,22 +221,12 @@ bool Scanner::_is_eol() const {
     return _column >= _current_line.size();
 }
 
-Scanner::Location Scanner::_mark_start() {
-    _start = _column;
-    return Location{_column, _row};
-}
-
-std::string Scanner::_current_view() const {
-    return std::string(_current_line.substr(_start, (_column - _start)));
+pretty_diagnostics::Location Scanner::_current_location() const {
+    return _source->from_coords(_row, _column);
 }
 
 void Scanner::_next() {
     _column += 1;
-}
-
-char Scanner::_peek() const {
-    if (_column >= _current_line.size()) return 0;
-    return _current_line[_column];
 }
 
 void Scanner::_consume(const char expected) {
@@ -244,7 +244,7 @@ bool Scanner::_try_consume(const char expected) {
 
 char Scanner::_consume(const std::function<bool(char)> &predicate, const std::string &expected) {
     const auto current = _current_char();
-    if (_column >= _current_line.size()) {
+    if (_is_eol()) {
         throw UnexpectedEndOfLine();
     }
 
@@ -287,10 +287,6 @@ bool Scanner::_is_ident_start(const char input) {
 
 bool Scanner::_is_ident_inner(const char input) {
     return std::isalnum(static_cast<unsigned char>(input)) || input == '_';
-}
-
-bool Scanner::_is_not_newline(const char input) {
-    return input != '\n';
 }
 
 bool Scanner::_is_ascii(const char input) {

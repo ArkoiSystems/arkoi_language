@@ -208,11 +208,11 @@ test2:
 	mov ebx, DWORD PTR [rsp - 8]
 	# $05 @f64 = cast @s32 $04
 	cvtsi2sd xmm10, ebx
-	movsd xmm8, xmm10
+	movsd xmm9, xmm10
 	# $06 @f64 = load %03
-	movsd xmm9, QWORD PTR [rsp - 16]
+	movsd xmm8, QWORD PTR [rsp - 16]
 	# $07 @bool = lth @f64 $05, $06
-	ucomisd xmm8, xmm9
+	ucomisd xmm9, xmm8
 	setb bl
 	# if $07 then L17 else L18
 	test bl, bl
@@ -223,12 +223,11 @@ L18:
 	mov ebx, DWORD PTR [rsp - 8]
 	# $14 @f64 = cast @s32 $13
 	cvtsi2sd xmm10, ebx
-	movsd xmm9, xmm10
+	movsd xmm8, xmm10
 	# $15 @f64 = load %03
-	movsd xmm8, QWORD PTR [rsp - 16]
+	movsd xmm9, QWORD PTR [rsp - 16]
 	# $16 @f64 = mul @f64 $14, $15
-	mulsd xmm9, xmm8
-	movsd xmm8, xmm9
+	mulsd xmm8, xmm9
 	# store @f64 $16, %03
 	movsd QWORD PTR [rsp - 16], xmm8
 	# $17 @f64 = load %03

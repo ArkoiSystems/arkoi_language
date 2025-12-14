@@ -67,11 +67,13 @@ void TypeResolver::visit(ast::Immediate &node) {
 }
 
 void TypeResolver::visit_integer(ast::Immediate &node) {
-    const auto &number_string = node.value().contents();
+    const auto &number_string = node.value().span().substr();
     const auto sign = !number_string.starts_with('-');
 
     Size size;
-    if (sign) {
+    if (number_string.front() == '\'' && number_string.back() == '\'') {
+        size = Size::BYTE;
+    } else if (sign) {
         size = std::stoll(number_string) > std::numeric_limits<int32_t>::max() ? Size::QWORD : Size::DWORD;
     } else {
         size = std::stoull(number_string) > std::numeric_limits<uint32_t>::max() ? Size::QWORD : Size::DWORD;
@@ -82,7 +84,7 @@ void TypeResolver::visit_integer(ast::Immediate &node) {
 }
 
 void TypeResolver::visit_floating(ast::Immediate &node) {
-    const auto &number_string = node.value().contents();
+    const auto &number_string = node.value().span().substr();
 
     const auto size = std::stold(number_string) > std::numeric_limits<float>::max() ? Size::QWORD : Size::DWORD;
 

@@ -54,7 +54,7 @@ void Generator::visit(ast::Function &node) {
 
     for (auto &parameter: node.parameters()) {
         auto destination = _allocas.at(parameter.name().symbol());
-        auto source = Variable(parameter.name().value().contents(), parameter.type());
+        auto source = Variable(parameter.name().value().span().substr(), parameter.type());
         _current_block->emplace_back<Store>(destination, source);
     }
 
@@ -94,12 +94,14 @@ void Generator::visit(ast::Immediate &node) {
 }
 
 void Generator::visit_integer(const ast::Immediate &node) {
-    const auto &number_string = node.value().contents();
+    const auto &number_string = node.value().span().substr();
 
     const auto sign = !number_string.starts_with('-');
 
     Immediate immediate;
-    if (sign) {
+    if (number_string.front() == '\'' && number_string.back() == '\'') {
+        immediate = static_cast<char>(number_string[1]);
+    } else if (sign) {
         const auto value = std::stoll(number_string);
         if (value > std::numeric_limits<int32_t>::max()) {
             immediate = static_cast<int64_t>(value);
@@ -121,7 +123,7 @@ void Generator::visit_integer(const ast::Immediate &node) {
 }
 
 void Generator::visit_floating(const ast::Immediate &node) {
-    const auto &number_string = node.value().contents();
+    const auto &number_string = node.value().span().substr();
 
     const auto value = std::stold(number_string);
 

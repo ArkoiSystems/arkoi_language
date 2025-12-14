@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pretty_diagnostics/source.h"
+
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -9,7 +11,7 @@ namespace arkoi::driver {
 std::filesystem::path generate_temp_path();
 
 int32_t compile(
-    const std::string &source,
+    const std::shared_ptr<pretty_diagnostics::Source> &source,
     std::ofstream *il_ostream,
     std::ofstream *cfg_ostream,
     std::ofstream *asm_ostream

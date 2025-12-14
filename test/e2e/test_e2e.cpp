@@ -17,7 +17,8 @@ TEST(EndToEnd, AllPrograms) {
 
         const auto file_path = entry.path().string();
         const auto base_path = get_base_path(file_path);
-        const auto source = read_file(file_path);
+
+        const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path);
 
         const auto asm_path = base_path + ".s";
         { // Compile the source to assembly

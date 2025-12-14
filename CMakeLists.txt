@@ -9,6 +9,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 include(FetchContent)
 
 # =====================
+# Pretty Diagnostics
+# =====================
+find_package(pretty_diagnostics CONFIG REQUIRED)
+
+# =====================
 # Library
 # =====================
 
@@ -51,7 +56,7 @@ add_library(${PROJECT_NAME}_lib
     src/utils/size.cpp
 )
 
-target_link_libraries(${PROJECT_NAME}_lib)
+target_link_libraries(${PROJECT_NAME}_lib pretty_diagnostics::pretty_diagnostics)
 
 # =====================
 # Executable
