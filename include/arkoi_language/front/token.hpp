@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pretty_diagnostics/span.h"
+#include "pretty_diagnostics/span.hpp"
 
 #include <optional>
 #include <utility>
