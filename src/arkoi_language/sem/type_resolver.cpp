@@ -360,7 +360,7 @@ bool TypeResolver::_can_implicit_convert(const Type& from, const Type& destinati
 }
 
 std::unique_ptr<ast::Node> TypeResolver::_cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to) {
-    return std::make_unique<ast::Cast>(std::move(node), from, to);
+    return std::make_unique<ast::Cast>(std::move(node), from, to, node->span());
 }
 
 //==============================================================================

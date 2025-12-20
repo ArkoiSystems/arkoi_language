@@ -8,12 +8,14 @@
 #include "arkoi_language/front/token.hpp"
 #include "arkoi_language/utils/utils.hpp"
 
+#include "pretty_diagnostics/source.hpp"
+
 namespace arkoi::front {
 
 class Parser {
 public:
-    explicit Parser(std::vector<Token>&& tokens) :
-        _tokens(std::move(tokens)) { }
+    explicit Parser(const std::shared_ptr<pretty_diagnostics::Source> &source, std::vector<Token>&& tokens) :
+        _source(source), _tokens(std::move(tokens)) { }
 
     [[nodiscard]] ast::Program parse_program();
 
@@ -88,6 +90,7 @@ private:
 
 private:
     std::stack<std::shared_ptr<sem::SymbolTable>> _scopes { };
+    std::shared_ptr<pretty_diagnostics::Source> _source;
     std::vector<Token> _tokens;
     size_t _position { };
     bool _failed { };

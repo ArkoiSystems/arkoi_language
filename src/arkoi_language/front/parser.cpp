@@ -35,7 +35,14 @@ ast::Program Parser::parse_program() {
 
     _exit_scope();
 
-    return { std::move(statements), own_scope };
+    // Catch the case where the statement list is empty and thus can't return a valid span.
+    if (statements.empty()) {
+        return { std::move(statements), pretty_diagnostics::Span(_source, 0, 0), own_scope };
+    }
+
+    const auto span = statements.front()->span().join(statements.back()->span());
+
+    return { std::move(statements), span, own_scope };
 }
 
 std::unique_ptr<ast::Node> Parser::_parse_program_statement() {
@@ -58,7 +65,7 @@ void Parser::_recover_program() {
     }
 }
 
-std::unique_ptr<ast::Function> Parser::_parse_function(const Token&) {
+std::unique_ptr<ast::Function> Parser::_parse_function(const Token& keyword) {
     auto own_scope = _enter_scope();
 
     const auto& name = _consume(Token::Type::Identifier);
@@ -76,7 +83,9 @@ std::unique_ptr<ast::Function> Parser::_parse_function(const Token&) {
 
     _exit_scope();
 
-    return std::make_unique<ast::Function>(identifier, std::move(parameters), return_type, std::move(block), own_scope);
+    const auto span = keyword.span().join(block->span());
+
+    return std::make_unique<ast::Function>(identifier, std::move(parameters), return_type, std::move(block), span, own_scope);
 }
 
 std::vector<ast::Parameter> Parser::_parse_parameters() {
@@ -129,7 +138,10 @@ ast::Parameter Parser::_parse_parameter() {
 
     auto type = _parse_type();
 
-    return { identifier, type };
+    // TODO: This is not quite right yet. The end span must be the consumed one not the current one.
+    const auto span = name.span().join(_current().span());
+
+    return { identifier, type, span };
 }
 
 sem::Type Parser::_parse_type() {
@@ -179,7 +191,14 @@ std::unique_ptr<ast::Block> Parser::_parse_block() {
     _consume(Token::Type::Dedentation);
     _exit_scope();
 
-    return std::make_unique<ast::Block>(std::move(statements), own_scope);
+    // Catch the case where the statement list is empty and thus can't return a valid span.
+    if (statements.empty()) {
+        return std::make_unique<ast::Block>(std::move(statements), pretty_diagnostics::Span(_source, 0, 0), own_scope);
+    }
+
+    const auto span = statements.front()->span().join(statements.back()->span());
+
+    return std::make_unique<ast::Block>(std::move(statements), span, own_scope);
 }
 
 std::unique_ptr<ast::Node> Parser::_parse_block_statement() {
@@ -221,13 +240,15 @@ void Parser::_recover_block() {
     }
 }
 
-std::unique_ptr<ast::Return> Parser::_parse_return(const Token&) {
+std::unique_ptr<ast::Return> Parser::_parse_return(const Token& keyword) {
     auto expression = _parse_expression();
 
-    return std::make_unique<ast::Return>(std::move(expression));
+    const auto span = keyword.span().join(expression->span());
+
+    return std::make_unique<ast::Return>(std::move(expression), span);
 }
 
-std::unique_ptr<ast::If> Parser::_parse_if(const Token&) {
+std::unique_ptr<ast::If> Parser::_parse_if(const Token& keyword) {
     auto expression = _parse_expression();
 
     _consume(Token::Type::Colon);
@@ -239,12 +260,14 @@ std::unique_ptr<ast::If> Parser::_parse_if(const Token&) {
         branch = _parse_block_statement();
     }
 
+    auto span = keyword.span().join(branch->span());
+
     if (!_try_consume(Token::Type::Else)) {
-        return std::make_unique<ast::If>(std::move(expression), std::move(branch), nullptr);
+        return std::make_unique<ast::If>(std::move(expression), std::move(branch), nullptr, span);
     }
 
     if (const auto token = _try_consume(Token::Type::If)) {
-        return std::make_unique<ast::If>(std::move(expression), std::move(branch), _parse_if(*token));
+        return std::make_unique<ast::If>(std::move(expression), std::move(branch), _parse_if(*token), span);
     }
 
     _consume(Token::Type::Colon);
@@ -256,7 +279,9 @@ std::unique_ptr<ast::If> Parser::_parse_if(const Token&) {
         _next = _parse_block_statement();
     }
 
-    return std::make_unique<ast::If>(std::move(expression), std::move(branch), std::move(_next));
+    span = keyword.span().join(_next->span());
+
+    return std::make_unique<ast::If>(std::move(expression), std::move(branch), std::move(_next), span);
 }
 
 std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token& name) {
@@ -266,7 +291,9 @@ std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token& name) {
 
     auto expression = _parse_expression();
 
-    return std::make_unique<ast::Assign>(identifier, std::move(expression));
+    const auto span = name.span().join(expression->span());
+
+    return std::make_unique<ast::Assign>(identifier, std::move(expression), span);
 }
 
 std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token& name) {
@@ -278,7 +305,9 @@ std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token& name) {
 
     auto expression = _parse_expression();
 
-    return std::make_unique<ast::Variable>(identifier, type, std::move(expression));
+    const auto span = name.span().join(expression->span());
+
+    return std::make_unique<ast::Variable>(identifier, type, std::move(expression), span);
 }
 
 std::unique_ptr<ast::Call> Parser::_parse_call(const Token& name) {
@@ -299,9 +328,11 @@ std::unique_ptr<ast::Call> Parser::_parse_call(const Token& name) {
         arguments.push_back(_parse_expression());
     }
 
-    _consume(Token::Type::RParent);
+    const auto end_token = _consume(Token::Type::RParent);
 
-    return std::make_unique<ast::Call>(identifier, std::move(arguments));
+    const auto span = name.span().join(end_token.span());
+
+    return std::make_unique<ast::Call>(identifier, std::move(arguments), span);
 }
 
 std::unique_ptr<ast::Node> Parser::_parse_expression() {
@@ -314,7 +345,11 @@ std::unique_ptr<ast::Node> Parser::_parse_comparison() {
     while (auto op = _try_consume(_is_comparison_operator)) {
         auto type = _to_binary_operator(op.value());
 
-        expression = std::make_unique<ast::Binary>(std::move(expression), type, _parse_term());
+        auto rhs = _parse_term();
+
+        const auto span = expression->span().join(rhs->span());
+
+        expression = std::make_unique<ast::Binary>(std::move(expression), type, std::move(rhs), span);
     }
 
     return expression;
@@ -326,7 +361,11 @@ std::unique_ptr<ast::Node> Parser::_parse_term() {
     while (auto op = _try_consume(_is_term_operator)) {
         auto type = _to_binary_operator(op.value());
 
-        expression = std::make_unique<ast::Binary>(std::move(expression), type, _parse_factor());
+        auto rhs = _parse_factor();
+
+        const auto span = expression->span().join(rhs->span());
+
+        expression = std::make_unique<ast::Binary>(std::move(expression), type, std::move(rhs), span);
     }
 
     return expression;
@@ -338,7 +377,11 @@ std::unique_ptr<ast::Node> Parser::_parse_factor() {
     while (auto op = _try_consume(_is_factor_operator)) {
         auto type = _to_binary_operator(op.value());
 
-        expression = std::make_unique<ast::Binary>(std::move(expression), type, _parse_primary());
+        auto rhs = _parse_primary();
+
+        const auto span = expression->span().join(rhs->span());
+
+        expression = std::make_unique<ast::Binary>(std::move(expression), type, std::move(rhs), span);
     }
 
     return expression;
@@ -350,14 +393,24 @@ std::unique_ptr<ast::Node> Parser::_parse_primary() {
         auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Integer);
         if (_current().type() != Token::Type::At) return node;
 
-        return std::make_unique<ast::Cast>(std::move(node), _parse_type());
+        const auto type = _parse_type();
+
+        // TODO: This is not quite right yet. The end span must be the consumed one not the current one.
+        const auto span = node->span().join(_current().span());
+
+        return std::make_unique<ast::Cast>(std::move(node), type, span);
     }
 
     if (consumed.type() == Token::Type::Floating) {
         auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Floating);
         if (_current().type() != Token::Type::At) return node;
 
-        return std::make_unique<ast::Cast>(std::move(node), _parse_type());
+        const auto type = _parse_type();
+
+        // TODO: This is not quite right yet. The end span must be the consumed one not the current one.
+        const auto span = node->span().join(_current().span());
+
+        return std::make_unique<ast::Cast>(std::move(node), type, span);
     }
 
     if (consumed.type() == Token::Type::Identifier) {

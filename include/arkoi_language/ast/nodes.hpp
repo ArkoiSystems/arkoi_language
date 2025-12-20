@@ -7,6 +7,8 @@
 #include "arkoi_language/sem/symbol_table.hpp"
 #include "arkoi_language/sem/type.hpp"
 
+#include "pretty_diagnostics/span.hpp"
+
 namespace arkoi::ast {
 
 class Node {
@@ -14,14 +16,20 @@ public:
     virtual ~Node() = default;
 
     virtual void accept(Visitor& visitor) = 0;
+
+    [[nodiscard]] virtual pretty_diagnostics::Span span() = 0;
 };
 
 class Program final : public Node {
 public:
-    Program(std::vector<std::unique_ptr<Node>>&& statements, std::shared_ptr<sem::SymbolTable> table) :
-        _statements(std::move(statements)), _table(std::move(table)) { }
+    Program(std::vector<std::unique_ptr<Node>>&& statements,
+            pretty_diagnostics::Span span,
+            std::shared_ptr<sem::SymbolTable> table) :
+        _statements(std::move(statements)), _table(std::move(table)), _span(std::move(span)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& statements() const { return _statements; }
 
@@ -30,14 +38,19 @@ public:
 private:
     std::vector<std::unique_ptr<Node>> _statements;
     std::shared_ptr<sem::SymbolTable> _table;
+    pretty_diagnostics::Span _span;
 };
 
 class Block final : public Node {
 public:
-    Block(std::vector<std::unique_ptr<Node>>&& statements, std::shared_ptr<sem::SymbolTable> table) :
-        _statements(std::move(statements)), _table(std::move(table)) { }
+    Block(std::vector<std::unique_ptr<Node>>&& statements,
+            pretty_diagnostics::Span span,
+            std::shared_ptr<sem::SymbolTable> table) :
+        _statements(std::move(statements)), _table(std::move(table)), _span(std::move(span)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& statements() const { return _statements; }
 
@@ -46,6 +59,7 @@ public:
 private:
     std::vector<std::unique_ptr<Node>> _statements;
     std::shared_ptr<sem::SymbolTable> _table;
+    pretty_diagnostics::Span _span;
 };
 
 class Identifier final : public Node {
@@ -61,10 +75,12 @@ public:
     };
 
 public:
-    Identifier(front::Token value, Kind kind) :
-        _value(std::move(value)), _kind(kind) { }
+    Identifier(front::Token value, const Kind kind) :
+        _span(value.span()), _value(std::move(value)), _kind(kind) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& symbol() const { return _symbol.value(); }
 
@@ -85,22 +101,26 @@ public:
 
 private:
     std::optional<std::shared_ptr<Symbol>> _symbol { };
+    pretty_diagnostics::Span _span;
     front::Token _value;
     Kind _kind;
 };
 
 class Parameter final : public Node {
 public:
-    Parameter(Identifier name, sem::Type type) :
-        _name(std::move(name)), _type(std::move(type)) { }
+    Parameter(Identifier name, sem::Type type, pretty_diagnostics::Span span) :
+        _span(std::move(span)), _name(std::move(name)), _type(std::move(type)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& type() const { return _type; }
 
     [[nodiscard]] auto& name() { return _name; }
 
 private:
+    pretty_diagnostics::Span _span;
     Identifier _name;
     sem::Type _type;
 };
@@ -108,17 +128,20 @@ private:
 class Function final : public Node {
 public:
     Function(Identifier name, std::vector<Parameter>&& parameters, sem::Type type,
-             std::unique_ptr<Block>&& block, std::shared_ptr<sem::SymbolTable> table) :
-        _table(std::move(table)), _parameters(std::move(parameters)), _block(std::move(block)),
-        _name(std::move(name)), _type(std::move(type)) { }
+             std::unique_ptr<Block>&& block, pretty_diagnostics::Span span,
+             std::shared_ptr<sem::SymbolTable> table) :
+        _table(std::move(table)), _parameters(std::move(parameters)), _span(std::move(span)),
+        _block(std::move(block)), _name(std::move(name)), _type(std::move(type)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+
+    [[nodiscard]] auto& parameters() { return _parameters; }
 
     [[nodiscard]] auto& table() const { return _table; }
 
     [[nodiscard]] auto& type() const { return _type; }
-
-    [[nodiscard]] auto& parameters() { return _parameters; }
 
     [[nodiscard]] auto& block() { return _block; }
 
@@ -127,6 +150,7 @@ public:
 private:
     std::shared_ptr<sem::SymbolTable> _table;
     std::vector<Parameter> _parameters;
+    pretty_diagnostics::Span _span;
     std::unique_ptr<Block> _block;
     Identifier _name;
     sem::Type _type;
@@ -134,10 +158,12 @@ private:
 
 class Return final : public Node {
 public:
-    explicit Return(std::unique_ptr<Node>&& expression) :
-        _expression(std::move(expression)) { }
+    explicit Return(std::unique_ptr<Node>&& expression, pretty_diagnostics::Span span) :
+        _expression(std::move(expression)), _span(std::move(span)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& type() const { return _type.value(); }
 
@@ -148,16 +174,21 @@ public:
     void set_expression(std::unique_ptr<Node>&& node) { _expression = std::move(node); }
 
 private:
-    std::unique_ptr<Node> _expression;
     std::optional<sem::Type> _type { };
+    std::unique_ptr<Node> _expression;
+    pretty_diagnostics::Span _span;
 };
 
 class If final : public Node {
 public:
-    If(std::unique_ptr<Node>&& condition, std::unique_ptr<Node>&& branch, std::unique_ptr<Node>&& next) :
-        _next(std::move(next)), _branch(std::move(branch)), _condition(std::move(condition)) { }
+    If(std::unique_ptr<Node>&& condition, std::unique_ptr<Node>&& branch, std::unique_ptr<Node>&& next,
+        pretty_diagnostics::Span span) :
+        _next(std::move(next)), _branch(std::move(branch)), _condition(std::move(condition)),
+        _span(std::move(span)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& branch() const { return _branch; }
 
@@ -170,14 +201,17 @@ public:
 private:
     std::unique_ptr<Node> _next, _branch;
     std::unique_ptr<Node> _condition;
+    pretty_diagnostics::Span _span;
 };
 
 class Assign final : public Node {
 public:
-    Assign(Identifier name, std::unique_ptr<Node>&& expression) :
-        _expression(std::move(expression)), _name(std::move(name)) { }
+    Assign(Identifier name, std::unique_ptr<Node>&& expression, pretty_diagnostics::Span span) :
+        _expression(std::move(expression)), _span(std::move(span)), _name(std::move(name)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& expression() { return _expression; }
 
@@ -187,15 +221,20 @@ public:
 
 private:
     std::unique_ptr<Node> _expression;
+    pretty_diagnostics::Span _span;
     Identifier _name;
 };
 
 class Variable final : public Node {
 public:
-    Variable(Identifier name, sem::Type type, std::unique_ptr<Node>&& expression) :
-        _expression(std::move(expression)), _name(std::move(name)), _type(std::move(type)) { }
+    Variable(Identifier name, sem::Type type, std::unique_ptr<Node>&& expression,
+            pretty_diagnostics::Span span) :
+        _expression(std::move(expression)), _span(std::move(span)), _name(std::move(name)),
+        _type(std::move(type)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& expression() { return _expression; }
 
@@ -207,16 +246,19 @@ public:
 
 private:
     std::unique_ptr<Node> _expression;
+    pretty_diagnostics::Span _span;
     Identifier _name;
     sem::Type _type;
 };
 
 class Call final : public Node {
 public:
-    Call(Identifier name, std::vector<std::unique_ptr<Node>>&& arguments) :
-        _arguments(std::move(arguments)), _name(std::move(name)) { }
+    Call(Identifier name, std::vector<std::unique_ptr<Node>>&& arguments, pretty_diagnostics::Span span) :
+        _arguments(std::move(arguments)), _span(std::move(span)), _name(std::move(name)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& arguments() { return _arguments; }
 
@@ -224,6 +266,7 @@ public:
 
 private:
     std::vector<std::unique_ptr<Node>> _arguments;
+    pretty_diagnostics::Span _span;
     Identifier _name;
 };
 
@@ -241,10 +284,12 @@ public:
     };
 
 public:
-    Immediate(front::Token value, Kind kind) :
-        _value(std::move(value)), _kind(kind) { }
+    Immediate(front::Token value, const Kind kind) :
+        _span(value.span()), _value(std::move(value)), _kind(kind) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& value() const { return _value; }
 
@@ -265,6 +310,7 @@ public:
 
 private:
     std::optional<sem::Type> _type;
+    pretty_diagnostics::Span _span;
     front::Token _value;
     Kind _kind;
 };
@@ -286,10 +332,12 @@ public:
     };
 
 public:
-    Binary(std::unique_ptr<Node>&& left, Operator op, std::unique_ptr<Node>&& right) :
-        _left(std::move(left)), _right(std::move(right)), _op(op) { }
+    Binary(std::unique_ptr<Node>&& left, const Operator op, std::unique_ptr<Node>&& right, pretty_diagnostics::Span span) :
+        _left(std::move(left)), _right(std::move(right)), _span(std::move(span)), _op(op) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& op() const { return _op; }
 
@@ -321,18 +369,21 @@ public:
 private:
     std::optional<sem::Type> _result_type { }, _op_type { };
     std::unique_ptr<Node> _left, _right;
+    pretty_diagnostics::Span _span;
     Operator _op;
 };
 
 class Cast final : public Node {
 public:
-    Cast(std::unique_ptr<Node>&& expression, sem::Type from, sem::Type to) :
-        _expression(std::move(expression)), _from(from), _to(std::move(to)) { }
+    Cast(std::unique_ptr<Node>&& expression, sem::Type from, sem::Type to, pretty_diagnostics::Span span) :
+        _from(from), _expression(std::move(expression)), _span(std::move(span)), _to(std::move(to)) { }
 
-    Cast(std::unique_ptr<Node>&& expression, sem::Type to) :
-        _expression(std::move(expression)), _to(std::move(to)) { }
+    Cast(std::unique_ptr<Node>&& expression, sem::Type to, pretty_diagnostics::Span span) :
+        _expression(std::move(expression)), _span(std::move(span)), _to(std::move(to)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     [[nodiscard]] auto& expression() const { return _expression; }
 
@@ -343,8 +394,9 @@ public:
     [[nodiscard]] auto& to() const { return _to; }
 
 private:
-    std::unique_ptr<Node> _expression;
     std::optional<sem::Type> _from { };
+    std::unique_ptr<Node> _expression;
+    pretty_diagnostics::Span _span;
     sem::Type _to;
 };
 

@@ -52,7 +52,7 @@ int32_t driver::compile(
     auto tokens = scanner.tokenize();
     if (scanner.has_failed()) return 1;
 
-    front::Parser parser(std::move(tokens));
+    front::Parser parser(source, std::move(tokens));
     auto program = parser.parse_program();
     if (parser.has_failed()) return 1;
 
