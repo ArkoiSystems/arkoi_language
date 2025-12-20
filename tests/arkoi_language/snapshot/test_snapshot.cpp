@@ -48,7 +48,7 @@ TEST(Snapshot, Parser) {
         source->set_working_path(TEST_PATH);
 
         auto scanner = arkoi::front::Scanner(source);
-        auto parser = arkoi::front::Parser(scanner.tokenize());
+        auto parser = arkoi::front::Parser(source, scanner.tokenize());
         auto program = parser.parse_program();
 
         auto ast_printer = arkoi::ast::ASTPrinter::print(program);
