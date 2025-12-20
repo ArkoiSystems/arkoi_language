@@ -7,7 +7,6 @@
 #include "arkoi_language/utils/size.hpp"
 
 namespace arkoi::x86_64 {
-
 class Register {
 public:
     enum class Base {
@@ -77,7 +76,6 @@ struct Immediate : std::variant<std::string, uint64_t, int64_t, uint32_t, int32_
 struct Operand : std::variant<Memory, Register, Immediate> {
     using variant::variant;
 };
-
 } // namespace arkoi::x86_64
 
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register& reg);
@@ -93,12 +91,12 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Immediate& opera
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Operand& mapping);
 
 namespace arkoi::x86_64 {
-static constexpr std::array INTEGER_ARGUMENT_REGISTERS {
+static constexpr std::array INTEGER_ARGUMENT_REGISTERS{
     Register::Base::DI, Register::Base::SI, Register::Base::D,
     Register::Base::C, Register::Base::R8, Register::Base::R9
 };
 
-static constexpr std::array SSE_ARGUMENT_REGISTERS {
+static constexpr std::array SSE_ARGUMENT_REGISTERS{
     Register::Base::XMM0, Register::Base::XMM1, Register::Base::XMM2, Register::Base::XMM3,
     Register::Base::XMM4, Register::Base::XMM5, Register::Base::XMM6, Register::Base::XMM7
 };

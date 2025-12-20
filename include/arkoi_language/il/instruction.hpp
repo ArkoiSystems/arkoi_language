@@ -7,7 +7,6 @@
 #include "arkoi_language/il/visitor.hpp"
 
 namespace arkoi::il {
-
 class InstructionBase {
 public:
     virtual ~InstructionBase() = default;
@@ -265,7 +264,6 @@ struct Instruction final : InstructionBase, std::variant<
 
     [[nodiscard]] bool is_constant() override;
 };
-
 } // namespace arkoi::il
 
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Binary::Operator& op);

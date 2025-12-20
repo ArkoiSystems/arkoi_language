@@ -33,22 +33,28 @@ bool Variable::operator!=(const Variable& rhs) const {
 }
 
 sem::Type Immediate::type() const {
-    return std::visit(match {
-                          [](const double&) -> sem::Type { return sem::Floating(Size::QWORD); },
-                          [](const float&) -> sem::Type { return sem::Floating(Size::DWORD); },
-                          [](const bool&) -> sem::Type { return sem::Boolean(); },
-                          [](const uint32_t&) -> sem::Type { return sem::Integral(Size::DWORD, false); },
-                          [](const int32_t&) -> sem::Type { return sem::Integral(Size::DWORD, true); },
-                          [](const uint64_t&) -> sem::Type { return sem::Integral(Size::QWORD, false); },
-                          [](const int64_t&) -> sem::Type { return sem::Integral(Size::QWORD, true); },
-                      }, *this);
+    return std::visit(
+        match{
+            [](const double&) -> sem::Type { return sem::Floating(Size::QWORD); },
+            [](const float&) -> sem::Type { return sem::Floating(Size::DWORD); },
+            [](const bool&) -> sem::Type { return sem::Boolean(); },
+            [](const uint32_t&) -> sem::Type { return sem::Integral(Size::DWORD, false); },
+            [](const int32_t&) -> sem::Type { return sem::Integral(Size::DWORD, true); },
+            [](const uint64_t&) -> sem::Type { return sem::Integral(Size::QWORD, false); },
+            [](const int64_t&) -> sem::Type { return sem::Integral(Size::QWORD, true); },
+        },
+        *this
+    );
 }
 
 std::ostream& operator<<(std::ostream& os, const Immediate& operand) {
-    std::visit(match {
-                   [&os](const bool& value) { os << (value ? "1" : "0"); },
-                   [&os](const auto& value) { os << value; },
-               }, operand);
+    std::visit(
+        match{
+            [&os](const bool& value) { os << (value ? "1" : "0"); },
+            [&os](const auto& value) { os << value; },
+        },
+        operand
+    );
     return os;
 }
 
@@ -77,29 +83,33 @@ sem::Type Operand::type() const {
 }
 
 namespace std {
-
 size_t hash<Variable>::operator()(const Variable& variable) const noexcept {
-    const size_t name_hash = std::hash<std::string> { }(variable.name());
-    const size_t generation_hash = std::hash<size_t> { }(variable.version());
+    const size_t name_hash = std::hash<std::string>{ }(variable.name());
+    const size_t generation_hash = std::hash<size_t>{ }(variable.version());
     return name_hash ^ (generation_hash << 1);
 }
 
 size_t hash<Memory>::operator()(const Memory& memory) const noexcept {
-    return std::hash<size_t> { }(memory.index());
+    return std::hash<size_t>{ }(memory.index());
 }
 
 size_t hash<Immediate>::operator()(const Immediate& immediate) const noexcept {
-    return std::visit([]<typename T>(const T& value) -> size_t {
-        return std::hash<std::decay_t<T>> { }(value);
-    }, immediate);
+    return std::visit(
+        []<typename T>(const T& value) -> size_t {
+            return std::hash<std::decay_t<T>>{ }(value);
+        },
+        immediate
+    );
 }
 
 size_t hash<Operand>::operator()(const Operand& operand) const noexcept {
-    return std::visit([]<typename T>(const T& value) -> size_t {
-        return std::hash<std::decay_t<T>> { }(value);
-    }, operand);
+    return std::visit(
+        []<typename T>(const T& value) -> size_t {
+            return std::hash<std::decay_t<T>>{ }(value);
+        },
+        operand
+    );
 }
-
 } // namespace std
 
 //==============================================================================

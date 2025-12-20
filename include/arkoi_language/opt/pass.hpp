@@ -6,7 +6,6 @@
 #include "arkoi_language/il/cfg.hpp"
 
 namespace arkoi::opt {
-
 class Pass {
 public:
     virtual ~Pass() = default;
@@ -34,7 +33,6 @@ private:
 };
 
 #include "../../../src/arkoi_language/opt/pass.tpp"
-
 } // namespace arkoi::opt
 
 //==============================================================================

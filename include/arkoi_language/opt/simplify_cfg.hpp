@@ -3,7 +3,6 @@
 #include "arkoi_language/opt/pass.hpp"
 
 namespace arkoi::opt {
-
 class SimplifyCFG final : public Pass {
 public:
     bool enter_module(il::Module&) override { return false; }
@@ -29,7 +28,6 @@ private:
     std::unordered_set<il::BasicBlock*> _mergable_blocks;
     std::unordered_set<il::BasicBlock*> _proxy_blocks;
 };
-
 } // namespace arkoi::opt
 
 //==============================================================================

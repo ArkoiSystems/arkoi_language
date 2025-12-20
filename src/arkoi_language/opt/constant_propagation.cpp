@@ -27,33 +27,36 @@ bool ConstantPropagation::on_block(il::BasicBlock& block) {
 bool ConstantPropagation::_can_propagate(il::Instruction& target) {
     auto propagated = false;
 
-    std::visit(match {
-                   [&](il::Binary& instruction) {
-                       propagated |= _propagate(instruction.left());
-                       propagated |= _propagate(instruction.right());
-                   },
-                   [&](il::Return& instruction) {
-                       propagated |= _propagate(instruction.value());
-                   },
-                   [&](il::Cast& instruction) {
-                       propagated |= _propagate(instruction.source());
-                   },
-                   [&](il::If& instruction) {
-                       propagated |= _propagate(instruction.condition());
-                   },
-                   [&](il::Store& instruction) {
-                       propagated |= _propagate(instruction.source());
-                   },
-                   [&](il::Call& instruction) {
-                       for (auto& argument : instruction.arguments()) {
-                           propagated |= _propagate(argument);
-                       }
-                   },
-                   [&](il::Constant&) { },
-                   [&](il::Alloca&) { },
-                   [&](il::Load&) { },
-                   [&](il::Goto&) { },
-               }, target);
+    std::visit(
+        match{
+            [&](il::Binary& instruction) {
+                propagated |= _propagate(instruction.left());
+                propagated |= _propagate(instruction.right());
+            },
+            [&](il::Return& instruction) {
+                propagated |= _propagate(instruction.value());
+            },
+            [&](il::Cast& instruction) {
+                propagated |= _propagate(instruction.source());
+            },
+            [&](il::If& instruction) {
+                propagated |= _propagate(instruction.condition());
+            },
+            [&](il::Store& instruction) {
+                propagated |= _propagate(instruction.source());
+            },
+            [&](il::Call& instruction) {
+                for (auto& argument : instruction.arguments()) {
+                    propagated |= _propagate(argument);
+                }
+            },
+            [&](il::Constant&) { },
+            [&](il::Alloca&) { },
+            [&](il::Load&) { },
+            [&](il::Goto&) { },
+        },
+        target
+    );
 
     return propagated;
 }

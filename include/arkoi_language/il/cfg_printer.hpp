@@ -7,7 +7,6 @@
 #include "arkoi_language/il/visitor.hpp"
 
 namespace arkoi::il {
-
 class CFGPrinter final : Visitor {
 public:
     explicit CFGPrinter(std::stringstream& output) :
@@ -45,12 +44,11 @@ public:
     [[nodiscard]] auto& output() const { return _output; }
 
 private:
-    DataflowAnalysis<BlockLivenessAnalysis> _liveness { };
+    DataflowAnalysis<BlockLivenessAnalysis> _liveness{ };
     Function* _current_function;
     std::stringstream& _output;
     ILPrinter _printer;
 };
-
 } // namespace arkoi::il
 
 //==============================================================================

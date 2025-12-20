@@ -10,7 +10,6 @@
 #include "arkoi_language/il/instruction.hpp"
 
 namespace arkoi::il {
-
 class Function;
 
 class BasicBlock {
@@ -46,7 +45,7 @@ public:
     Instructions::iterator end() { return _instructions.end(); }
 
 private:
-    Instructions _instructions { };
+    Instructions _instructions{ };
     Predecessors _predecessors;
     BasicBlock* _branch;
     BasicBlock* _next;
@@ -80,8 +79,8 @@ public:
     }
 
 private:
-    std::unordered_set<BasicBlock*> _visited { };
-    std::stack<BasicBlock*> _queue { };
+    std::unordered_set<BasicBlock*> _visited{ };
+    std::stack<BasicBlock*> _queue{ };
     Function* _function;
     pointer _current;
 };
@@ -90,8 +89,10 @@ class Function {
 public:
     Function(const std::string& name, std::vector<Variable> parameters, sem::Type type);
 
-    Function(std::string name, std::vector<Variable> parameters, sem::Type type,
-             std::string entry_label, std::string exit_label);
+    Function(
+        std::string name, std::vector<Variable> parameters, sem::Type type,
+        std::string entry_label, std::string exit_label
+    );
 
     void accept(Visitor& visitor) { visitor.visit(*this); }
 
@@ -119,7 +120,7 @@ public:
     BlockIterator end() { return BlockIterator(nullptr); }
 
 private:
-    std::vector<std::shared_ptr<BasicBlock>> _block_pool { };
+    std::vector<std::shared_ptr<BasicBlock>> _block_pool{ };
     BasicBlock* _entry;
     BasicBlock* _exit;
     std::vector<Variable> _parameters;
@@ -144,11 +145,10 @@ public:
     Functions::iterator end() { return _functions.end(); }
 
 private:
-    Functions _functions { };
+    Functions _functions{ };
 };
 
 #include "../../../src/arkoi_language/il/cfg.tpp"
-
 } // namespace arkoi::il
 
 //==============================================================================

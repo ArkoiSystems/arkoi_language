@@ -3,9 +3,8 @@
 #include "arkoi_language/il/dataflow.hpp"
 
 namespace arkoi::il {
-
 class BlockLivenessAnalysis final :
-        public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Block> {
+    public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Block> {
 public:
     BlockLivenessAnalysis() = default;
 
@@ -17,7 +16,7 @@ public:
 };
 
 class InstructionLivenessAnalysis final :
-        public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Instruction> {
+    public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Instruction> {
 public:
     InstructionLivenessAnalysis() = default;
 
@@ -27,7 +26,6 @@ public:
 
     State transfer(Instruction& current, const State& state) override;
 };
-
 } // namespace arkoi::il
 
 //==============================================================================

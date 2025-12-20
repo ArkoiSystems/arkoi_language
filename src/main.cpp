@@ -16,24 +16,28 @@ int main(const int argc, const char* argv[]) {
     argparse::ArgumentParser argument_parser(PROJECT_NAME, PROJECT_VERSION, argparse::default_arguments::none);
 
     argument_parser.add_description(
-            "The Arkoi Compiler is a lightweight experimental compiler for the Arkoi\n"
-            "Programming Language, designed to explore a mix of Python and C programming\n"
-            "principles. It is primarily a learning and experimentation tool for testing\n"
-            "new language features, compiler techniques, and language design concepts."
-            );
+        "The Arkoi Compiler is a lightweight experimental compiler for the Arkoi\n"
+        "Programming Language, designed to explore a mix of Python and C programming\n"
+        "principles. It is primarily a learning and experimentation tool for testing\n"
+        "new language features, compiler techniques, and language design concepts."
+    );
 
     argument_parser.add_argument("-h", "--help")
-                   .action([&](const auto&) {
-                        std::cout << argument_parser.help().str();
-                        std::exit(0);
-                    })
+                   .action(
+                        [&](const auto&) {
+                            std::cout << argument_parser.help().str();
+                            std::exit(0);
+                        }
+                    )
                    .help("Shows the help message and exits")
                    .flag();
     argument_parser.add_argument("--version")
-                   .action([&](const auto&) {
-                        std::cout << PROJECT_VERSION << std::endl;
-                        std::exit(0);
-                    })
+                   .action(
+                        [&](const auto&) {
+                            std::cout << PROJECT_VERSION << std::endl;
+                            std::exit(0);
+                        }
+                    )
                    .help("Prints version information and exits")
                    .flag();
 
@@ -112,11 +116,11 @@ int main(const int argc, const char* argv[]) {
             auto asm_ostream = std::ofstream(asm_path);
 
             const auto compile_exit = driver::compile(
-                    source,
-                    print_il ? &il_ostream : nullptr,
-                    print_cfg ? &cfg_ostream : nullptr,
-                    print_asm ? &asm_ostream : nullptr
-                    );
+                source,
+                print_il ? &il_ostream : nullptr,
+                print_cfg ? &cfg_ostream : nullptr,
+                print_asm ? &asm_ostream : nullptr
+            );
             if (compile_exit != 0) return compile_exit;
         }
 

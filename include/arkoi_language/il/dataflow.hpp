@@ -6,7 +6,6 @@
 #include "arkoi_language/il/instruction.hpp"
 
 namespace arkoi::il {
-
 enum class DataflowDirection {
     Forward,
     Backward
@@ -62,13 +61,12 @@ public:
     [[nodiscard]] auto& in() const { return _in; }
 
 private:
-    std::unordered_map<Key, State> _out { };
-    std::unordered_map<Key, State> _in { };
+    std::unordered_map<Key, State> _out{ };
+    std::unordered_map<Key, State> _in{ };
     std::unique_ptr<Pass> _pass;
 };
 
 #include "../../../src/arkoi_language/il/dataflow.tpp"
-
 } // namespace arkoi::il
 
 //==============================================================================

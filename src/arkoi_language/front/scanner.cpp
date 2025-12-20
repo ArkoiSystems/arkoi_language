@@ -23,10 +23,10 @@ std::vector<Token> Scanner::tokenize() {
 
         while (leading_spaces > _indentation) {
             const auto span = pretty_diagnostics::Span(
-                    _source,
-                    _source->from_coords(_row, _indentation),
-                    _source->from_coords(_row, _indentation + SPACE_INDENTATION)
-                    );
+                _source,
+                _source->from_coords(_row, _indentation),
+                _source->from_coords(_row, _indentation + SPACE_INDENTATION)
+            );
             tokens.emplace_back(Token::Type::Indentation, span);
 
             _indentation += SPACE_INDENTATION;

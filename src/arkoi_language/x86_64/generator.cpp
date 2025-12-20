@@ -262,21 +262,27 @@ void Generator::visit(il::Cast& instruction) {
     const auto result = _load(instruction.result());
     const auto source = _load(instruction.source());
 
-    std::visit(match {
-                   [&](const sem::Floating& from, const sem::Floating& to) { _float_to_float(result, source, from, to); },
-                   [&](const sem::Floating& from, const sem::Integral& to) { _float_to_int(result, source, from, to); },
-                   [&](const sem::Floating& from, const sem::Boolean& to) { _float_to_bool(result, source, from, to); },
-                   [&](const sem::Integral& from, const sem::Integral& to) { _int_to_int(result, source, from, to); },
-                   [&](const sem::Integral& from, const sem::Floating& to) { _int_to_float(result, source, from, to); },
-                   [&](const sem::Integral& from, const sem::Boolean& to) { _int_to_bool(result, source, from, to); },
-                   [&](const sem::Boolean& from, const sem::Floating& to) { _bool_to_float(result, source, from, to); },
-                   [&](const sem::Boolean& from, const sem::Integral& to) { _bool_to_int(result, source, from, to); },
-                   [&](const sem::Boolean&, const sem::Boolean& to) { _store(source, result, to); },
-               }, instruction.from(), instruction.result().type());
+    std::visit(
+        match{
+            [&](const sem::Floating& from, const sem::Floating& to) { _float_to_float(result, source, from, to); },
+            [&](const sem::Floating& from, const sem::Integral& to) { _float_to_int(result, source, from, to); },
+            [&](const sem::Floating& from, const sem::Boolean& to) { _float_to_bool(result, source, from, to); },
+            [&](const sem::Integral& from, const sem::Integral& to) { _int_to_int(result, source, from, to); },
+            [&](const sem::Integral& from, const sem::Floating& to) { _int_to_float(result, source, from, to); },
+            [&](const sem::Integral& from, const sem::Boolean& to) { _int_to_bool(result, source, from, to); },
+            [&](const sem::Boolean& from, const sem::Floating& to) { _bool_to_float(result, source, from, to); },
+            [&](const sem::Boolean& from, const sem::Integral& to) { _bool_to_int(result, source, from, to); },
+            [&](const sem::Boolean&, const sem::Boolean& to) { _store(source, result, to); },
+        },
+        instruction.from(),
+        instruction.result().type()
+    );
 }
 
-void Generator::_float_to_float(const Operand& result, Operand source, const sem::Floating& from,
-                                const sem::Floating& to) {
+void Generator::_float_to_float(
+    const Operand& result, Operand source, const sem::Floating& from,
+    const sem::Floating& to
+) {
     // If both are the same, a simple move will fulfill
     if (from == to) return _store(source, result, to);
 
@@ -292,8 +298,10 @@ void Generator::_float_to_float(const Operand& result, Operand source, const sem
     _store(converted_source, result, to);
 }
 
-void Generator::_int_to_int(const Operand& result, Operand source, const sem::Integral& from,
-                            const sem::Integral& to) {
+void Generator::_int_to_int(
+    const Operand& result, Operand source, const sem::Integral& from,
+    const sem::Integral& to
+) {
     // If both are the same exact type, store the source in the result.
     if (from == to) return _store(source, result, to);
 
@@ -355,8 +363,10 @@ void Generator::_int_to_int(const Operand& result, Operand source, const sem::In
     }
 }
 
-void Generator::_float_to_int(const Operand& result, const Operand& source, const sem::Floating& from,
-                              const sem::Integral& to) {
+void Generator::_float_to_int(
+    const Operand& result, const Operand& source, const sem::Floating& from,
+    const sem::Integral& to
+) {
     // Get an int register that is at least 32bit big.
     const auto temp_size = (to.size() < Size::DWORD) ? Size::DWORD : to.size();
     const auto temp_1_int = _temp_1_register(sem::Integral(temp_size, to.sign()));
@@ -372,8 +382,10 @@ void Generator::_float_to_int(const Operand& result, const Operand& source, cons
     _store(temp_sized, result, to);
 }
 
-void Generator::_float_to_bool(const Operand& result, const Operand& source, const sem::Floating& from,
-                               const sem::Boolean& to) {
+void Generator::_float_to_bool(
+    const Operand& result, const Operand& source, const sem::Floating& from,
+    const sem::Boolean& to
+) {
     // We need temp registers to evaluate if it's a bool or not.
     const auto temp_2_sse = _temp_2_register(from);
     const auto temp_1_int = _temp_1_register(to);
@@ -397,8 +409,10 @@ void Generator::_float_to_bool(const Operand& result, const Operand& source, con
     _store(temp_1_int, result, to);
 }
 
-void Generator::_int_to_float(const Operand& result, Operand source, const sem::Integral& from,
-                              const sem::Floating& to) {
+void Generator::_int_to_float(
+    const Operand& result, Operand source, const sem::Integral& from,
+    const sem::Floating& to
+) {
     if (!from.sign() && from.size() == Size::QWORD) {
         // TODO(timo): Converting a unsigned 64bit integer to float is a bit more complex, thus this is excluded for now.
         throw std::runtime_error("This is not implemented yet.");
@@ -434,8 +448,10 @@ void Generator::_int_to_float(const Operand& result, Operand source, const sem::
     _store(temp_1_sse, result, to);
 }
 
-void Generator::_int_to_bool(const Operand& result, Operand source, const sem::Integral& from,
-                             const sem::Boolean& to) {
+void Generator::_int_to_bool(
+    const Operand& result, Operand source, const sem::Integral& from,
+    const sem::Boolean& to
+) {
     // If the source holds an immediate, instead turn it into a register.
     if (std::holds_alternative<Immediate>(source)) {
         source = _adjust_to_reg(result, source, from);
@@ -452,8 +468,10 @@ void Generator::_int_to_bool(const Operand& result, Operand source, const sem::I
     _store(temp_1_int, result, to);
 }
 
-void Generator::_bool_to_float(const Operand& result, Operand source, const sem::Boolean& from,
-                               const sem::Floating& to) {
+void Generator::_bool_to_float(
+    const Operand& result, Operand source, const sem::Boolean& from,
+    const sem::Floating& to
+) {
     // If the source holds an immediate, instead turn it into a register.
     if (std::holds_alternative<Immediate>(source)) {
         source = _store_temp_1(source, from);
@@ -474,8 +492,10 @@ void Generator::_bool_to_float(const Operand& result, Operand source, const sem:
     _store(temp_1_sse, result, to);
 }
 
-void Generator::_bool_to_int(const Operand& result, Operand source, const sem::Boolean& from,
-                             const sem::Integral& to) {
+void Generator::_bool_to_int(
+    const Operand& result, Operand source, const sem::Boolean& from,
+    const sem::Integral& to
+) {
     if (to.size() == Size::BYTE) {
         // If we want to store a boolean in a 8bit integer we do not need to change anything.
 
@@ -612,31 +632,34 @@ void Generator::visit(il::Constant& instruction) {
 }
 
 Operand Generator::_load(const il::Operand& operand) {
-    return std::visit(match {
-                          [&](const il::Immediate& immediate) -> Operand {
-                              if (std::holds_alternative<double>(immediate)) {
-                                  const auto name = "float" + std::to_string(_constants++);
-                                  const auto value = std::to_string(std::get<double>(immediate));
-                                  _directive("\t" + name + ": .double\t" + value, _data);
-                                  return Memory(Size::QWORD, name);
-                              }
+    return std::visit(
+        match{
+            [&](const il::Immediate& immediate) -> Operand {
+                if (std::holds_alternative<double>(immediate)) {
+                    const auto name = "float" + std::to_string(_constants++);
+                    const auto value = std::to_string(std::get<double>(immediate));
+                    _directive("\t" + name + ": .double\t" + value, _data);
+                    return Memory(Size::QWORD, name);
+                }
 
-                              if (std::holds_alternative<float>(immediate)) {
-                                  auto name = "float" + std::to_string(_constants++);
-                                  const auto value = std::to_string(std::get<float>(immediate));
-                                  _directive("\t" + name + ": .float\t" + value, _data);
-                                  return Memory(Size::DWORD, name);
-                              }
+                if (std::holds_alternative<float>(immediate)) {
+                    auto name = "float" + std::to_string(_constants++);
+                    const auto value = std::to_string(std::get<float>(immediate));
+                    _directive("\t" + name + ": .float\t" + value, _data);
+                    return Memory(Size::DWORD, name);
+                }
 
-                              return std::visit([](const auto& value) -> Immediate { return value; }, immediate);
-                          },
-                          [&](const il::Memory& memory) -> Operand {
-                              return (*_current_mapper)[memory];
-                          },
-                          [&](const il::Variable& variable) -> Operand {
-                              return (*_current_mapper)[variable];
-                          },
-                      }, operand);
+                return std::visit([](const auto& value) -> Immediate { return value; }, immediate);
+            },
+            [&](const il::Memory& memory) -> Operand {
+                return (*_current_mapper)[memory];
+            },
+            [&](const il::Variable& variable) -> Operand {
+                return (*_current_mapper)[variable];
+            },
+        },
+        operand
+    );
 }
 
 void Generator::_store(Operand source, const Operand& destination, const sem::Type& type) {

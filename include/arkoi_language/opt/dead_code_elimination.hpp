@@ -5,7 +5,6 @@
 #include "arkoi_language/opt/pass.hpp"
 
 namespace arkoi::opt {
-
 class DeadCodeElimination final : public Pass {
 public:
     bool enter_module(il::Module&) override { return false; }
@@ -21,7 +20,6 @@ public:
 private:
     std::unordered_set<il::Operand> _used;
 };
-
 } // namespace arkoi::opt
 
 //==============================================================================

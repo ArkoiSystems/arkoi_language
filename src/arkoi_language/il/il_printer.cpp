@@ -58,18 +58,18 @@ void ILPrinter::visit(Return& instruction) {
 
 void ILPrinter::visit(Binary& instruction) {
     _output << instruction.result() << " @" << instruction.result().type() << " = "
-            << to_string(instruction.op()) << " @" << instruction.op_type()
-            << " " << instruction.left() << ", " << instruction.right();
+        << to_string(instruction.op()) << " @" << instruction.op_type()
+        << " " << instruction.left() << ", " << instruction.right();
 }
 
 void ILPrinter::visit(Cast& instruction) {
     _output << instruction.result() << " @" << instruction.result().type() << " = cast @"
-            << instruction.from() << " " << instruction.source();
+        << instruction.from() << " " << instruction.source();
 }
 
 void ILPrinter::visit(Call& instruction) {
     _output << instruction.result() << " @" << instruction.result().type()
-            << " = call " << instruction.name() << "(";
+        << " = call " << instruction.name() << "(";
 
     for (size_t index = 0; index < instruction.arguments().size(); index++) {
         auto& argument = instruction.arguments()[index];

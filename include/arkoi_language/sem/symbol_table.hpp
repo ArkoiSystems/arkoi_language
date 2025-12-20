@@ -7,7 +7,6 @@
 #include "arkoi_language/sem/symbol.hpp"
 
 namespace arkoi::sem {
-
 class SymbolTable {
 public:
     explicit SymbolTable(std::shared_ptr<SymbolTable> parent = nullptr) :
@@ -20,7 +19,7 @@ public:
     [[nodiscard]] std::shared_ptr<Symbol>& lookup(const std::string& name);
 
 private:
-    std::unordered_map<std::string, std::shared_ptr<Symbol>> _symbols { };
+    std::unordered_map<std::string, std::shared_ptr<Symbol>> _symbols{ };
     std::shared_ptr<SymbolTable> _parent;
 };
 
@@ -37,7 +36,6 @@ public:
 };
 
 #include "../../../src/arkoi_language/sem/symbol_table.tpp"
-
 } // namespace arkoi::sem
 
 //==============================================================================

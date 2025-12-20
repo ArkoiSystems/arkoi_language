@@ -3,7 +3,6 @@
 #include "arkoi_language/opt/pass.hpp"
 
 namespace arkoi::opt {
-
 class ConstantFolding final : public Pass {
 public:
     bool enter_module(il::Module&) override { return false; }
@@ -21,7 +20,6 @@ private:
 
     [[nodiscard]] static il::Immediate _evaluate_cast(const sem::Type& to, auto expression);
 };
-
 } // namespace arkoi::opt
 
 //==============================================================================

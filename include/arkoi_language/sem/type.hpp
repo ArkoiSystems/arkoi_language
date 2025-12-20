@@ -6,7 +6,6 @@
 #include "arkoi_language/utils/size.hpp"
 
 namespace arkoi::sem {
-
 class TypeBase {
 public:
     virtual ~TypeBase() = default;
@@ -46,7 +45,7 @@ public:
     bool operator!=(const Floating& other) const;
 
 private:
-    Size _size { };
+    Size _size{ };
 };
 
 class Boolean final : public TypeBase {
@@ -63,7 +62,6 @@ struct Type final : TypeBase, std::variant<Integral, Floating, Boolean> {
 
     [[nodiscard]] Size size() const override;
 };
-
 } // namespace arkoi::sem
 
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Integral& type);

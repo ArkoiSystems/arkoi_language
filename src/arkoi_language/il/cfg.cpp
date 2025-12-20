@@ -60,8 +60,10 @@ BlockIterator BlockIterator::operator++(int) {
     return temp;
 }
 
-Function::Function(std::string name, std::vector<Variable> parameters, sem::Type type, std::string entry_label,
-                   std::string exit_label) :
+Function::Function(
+    std::string name, std::vector<Variable> parameters, sem::Type type, std::string entry_label,
+    std::string exit_label
+) :
     _parameters(std::move(parameters)), _name(std::move(name)), _type(std::move(type)) {
     _entry = emplace_back(std::move(entry_label));
     _exit = emplace_back(std::move(exit_label));
@@ -86,9 +88,12 @@ bool Function::remove(BasicBlock* target) {
     if (target->next()) target->next()->predecessors().erase(target);
     if (target->branch()) target->branch()->predecessors().erase(target);
 
-    return std::erase_if(_block_pool, [&](const auto& block) {
-        return block.get() == target;
-    });
+    return std::erase_if(
+        _block_pool,
+        [&](const auto& block) {
+            return block.get() == target;
+        }
+    );
 }
 
 //==============================================================================

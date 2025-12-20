@@ -10,7 +10,6 @@
 #include "pretty_diagnostics/span.hpp"
 
 namespace arkoi::ast {
-
 class Node {
 public:
     virtual ~Node() = default;
@@ -22,9 +21,11 @@ public:
 
 class Program final : public Node {
 public:
-    Program(std::vector<std::unique_ptr<Node>>&& statements,
-            pretty_diagnostics::Span span,
-            std::shared_ptr<sem::SymbolTable> table) :
+    Program(
+        std::vector<std::unique_ptr<Node>>&& statements,
+        pretty_diagnostics::Span span,
+        std::shared_ptr<sem::SymbolTable> table
+    ) :
         _statements(std::move(statements)), _table(std::move(table)), _span(std::move(span)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
@@ -43,9 +44,11 @@ private:
 
 class Block final : public Node {
 public:
-    Block(std::vector<std::unique_ptr<Node>>&& statements,
-            pretty_diagnostics::Span span,
-            std::shared_ptr<sem::SymbolTable> table) :
+    Block(
+        std::vector<std::unique_ptr<Node>>&& statements,
+        pretty_diagnostics::Span span,
+        std::shared_ptr<sem::SymbolTable> table
+    ) :
         _statements(std::move(statements)), _table(std::move(table)), _span(std::move(span)) { }
 
     void accept(Visitor& visitor) override { visitor.visit(*this); }
@@ -100,7 +103,7 @@ public:
     }
 
 private:
-    std::optional<std::shared_ptr<Symbol>> _symbol { };
+    std::optional<std::shared_ptr<Symbol>> _symbol{ };
     pretty_diagnostics::Span _span;
     front::Token _value;
     Kind _kind;
@@ -127,9 +130,11 @@ private:
 
 class Function final : public Node {
 public:
-    Function(Identifier name, std::vector<Parameter>&& parameters, sem::Type type,
-             std::unique_ptr<Block>&& block, pretty_diagnostics::Span span,
-             std::shared_ptr<sem::SymbolTable> table) :
+    Function(
+        Identifier name, std::vector<Parameter>&& parameters, sem::Type type,
+        std::unique_ptr<Block>&& block, pretty_diagnostics::Span span,
+        std::shared_ptr<sem::SymbolTable> table
+    ) :
         _table(std::move(table)), _parameters(std::move(parameters)), _span(std::move(span)),
         _block(std::move(block)), _name(std::move(name)), _type(std::move(type)) { }
 
@@ -174,15 +179,17 @@ public:
     void set_expression(std::unique_ptr<Node>&& node) { _expression = std::move(node); }
 
 private:
-    std::optional<sem::Type> _type { };
+    std::optional<sem::Type> _type{ };
     std::unique_ptr<Node> _expression;
     pretty_diagnostics::Span _span;
 };
 
 class If final : public Node {
 public:
-    If(std::unique_ptr<Node>&& condition, std::unique_ptr<Node>&& branch, std::unique_ptr<Node>&& next,
-        pretty_diagnostics::Span span) :
+    If(
+        std::unique_ptr<Node>&& condition, std::unique_ptr<Node>&& branch, std::unique_ptr<Node>&& next,
+        pretty_diagnostics::Span span
+    ) :
         _next(std::move(next)), _branch(std::move(branch)), _condition(std::move(condition)),
         _span(std::move(span)) { }
 
@@ -227,8 +234,10 @@ private:
 
 class Variable final : public Node {
 public:
-    Variable(Identifier name, sem::Type type, std::unique_ptr<Node>&& expression,
-            pretty_diagnostics::Span span) :
+    Variable(
+        Identifier name, sem::Type type, std::unique_ptr<Node>&& expression,
+        pretty_diagnostics::Span span
+    ) :
         _expression(std::move(expression)), _span(std::move(span)), _name(std::move(name)),
         _type(std::move(type)) { }
 
@@ -367,7 +376,7 @@ public:
     }
 
 private:
-    std::optional<sem::Type> _result_type { }, _op_type { };
+    std::optional<sem::Type> _result_type{ }, _op_type{ };
     std::unique_ptr<Node> _left, _right;
     pretty_diagnostics::Span _span;
     Operator _op;
@@ -394,12 +403,11 @@ public:
     [[nodiscard]] auto& to() const { return _to; }
 
 private:
-    std::optional<sem::Type> _from { };
+    std::optional<sem::Type> _from{ };
     std::unique_ptr<Node> _expression;
     pretty_diagnostics::Span _span;
     sem::Type _to;
 };
-
 } // namespace arkoi::ast
 
 //==============================================================================

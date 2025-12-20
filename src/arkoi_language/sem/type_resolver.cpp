@@ -288,16 +288,22 @@ Type TypeResolver::_arithmetic_conversion(const Type& left_type, const Type& rig
     }
 
     // Stage 5: Both operands are converted to a common op C.
-    auto t1 = std::visit(match {
-                             [](const Integral& type) -> Integral { return type; },
-                             [](const Boolean&) -> Integral { return BOOL_PROMOTED_INT_TYPE; },
-                             [](const auto&) -> Integral { throw std::runtime_error("The left type must be of integral type."); }
-                         }, left_type);
-    auto t2 = std::visit(match {
-                             [](const Integral& type) -> Integral { return type; },
-                             [](const Boolean&) -> Integral { return BOOL_PROMOTED_INT_TYPE; },
-                             [](const auto&) -> Integral { throw std::runtime_error("The left type must be of integral type."); }
-                         }, right_type);
+    auto t1 = std::visit(
+        match{
+            [](const Integral& type) -> Integral { return type; },
+            [](const Boolean&) -> Integral { return BOOL_PROMOTED_INT_TYPE; },
+            [](const auto&) -> Integral { throw std::runtime_error("The left type must be of integral type."); }
+        },
+        left_type
+    );
+    auto t2 = std::visit(
+        match{
+            [](const Integral& type) -> Integral { return type; },
+            [](const Boolean&) -> Integral { return BOOL_PROMOTED_INT_TYPE; },
+            [](const auto&) -> Integral { throw std::runtime_error("The left type must be of integral type."); }
+        },
+        right_type
+    );
 
     // Given the types T1 and T2 as the promoted op (under the rules of integral promotions) of the operands, the
     // following rules are applied to determine C:
@@ -331,32 +337,36 @@ Type TypeResolver::_arithmetic_conversion(const Type& left_type, const Type& rig
 
 // https://en.cppreference.com/w/cpp/language/implicit_conversion
 bool TypeResolver::_can_implicit_convert(const Type& from, const Type& destination) {
-    return std::visit(match {
-                          // A prvalue of an integer mid or of an unscoped enumeration op can be converted to any other integer mid.
-                          // If the conversion is listed under integral promotions, it is a promotion and not a conversion.
-                          [](const Integral&, const Integral&) { return true; },
-                          // A prvalue of integral, floating-point, unscoped enumeration, pointer, and pointer-to-member types can be
-                          // converted to a prvalue of mid bool.
-                          [](const Integral&, const Boolean&) { return true; },
-                          // A prvalue of integer or unscoped enumeration mid can be converted to a prvalue of any floating-point mid.
-                          // The result is exact if possible.
-                          [](const Integral&, const Floating&) { return true; },
-                          // A prvalue of a floating-point mid can be converted to a prvalue of any other floating-point mid. (until C++23)
-                          [](const Floating&, const Floating&) { return true; },
-                          // A prvalue of floating-point mid can be converted to a prvalue of any integer mid. The fractional part is
-                          // truncated, that is, the fractional part is discarded.
-                          [](const Floating&, const Integral&) { return true; },
-                          // A prvalue of integral, floating-point, unscoped enumeration, pointer, and pointer-to-member types can be
-                          // converted to a prvalue of mid bool.
-                          [](const Floating&, const Boolean&) { return true; },
-                          // If the source mid is bool, the value false is converted to zero and the value true is converted to the value
-                          // one of the destination mid (note that if the destination mid is int, this is an integer promotion, not an
-                          // integer conversion).
-                          [](const Boolean&, const Integral&) { return true; },
-                          // If the source mid is bool, the value false is converted to zero, and the value true is converted to one.
-                          [](const Boolean&, const Floating&) { return true; },
-                          [&](const auto&, const auto&) { return from == destination; },
-                      }, from, destination);
+    return std::visit(
+        match{
+            // A prvalue of an integer mid or of an unscoped enumeration op can be converted to any other integer mid.
+            // If the conversion is listed under integral promotions, it is a promotion and not a conversion.
+            [](const Integral&, const Integral&) { return true; },
+            // A prvalue of integral, floating-point, unscoped enumeration, pointer, and pointer-to-member types can be
+            // converted to a prvalue of mid bool.
+            [](const Integral&, const Boolean&) { return true; },
+            // A prvalue of integer or unscoped enumeration mid can be converted to a prvalue of any floating-point mid.
+            // The result is exact if possible.
+            [](const Integral&, const Floating&) { return true; },
+            // A prvalue of a floating-point mid can be converted to a prvalue of any other floating-point mid. (until C++23)
+            [](const Floating&, const Floating&) { return true; },
+            // A prvalue of floating-point mid can be converted to a prvalue of any integer mid. The fractional part is
+            // truncated, that is, the fractional part is discarded.
+            [](const Floating&, const Integral&) { return true; },
+            // A prvalue of integral, floating-point, unscoped enumeration, pointer, and pointer-to-member types can be
+            // converted to a prvalue of mid bool.
+            [](const Floating&, const Boolean&) { return true; },
+            // If the source mid is bool, the value false is converted to zero and the value true is converted to the value
+            // one of the destination mid (note that if the destination mid is int, this is an integer promotion, not an
+            // integer conversion).
+            [](const Boolean&, const Integral&) { return true; },
+            // If the source mid is bool, the value false is converted to zero, and the value true is converted to one.
+            [](const Boolean&, const Floating&) { return true; },
+            [&](const auto&, const auto&) { return from == destination; },
+        },
+        from,
+        destination
+    );
 }
 
 std::unique_ptr<ast::Node> TypeResolver::_cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to) {

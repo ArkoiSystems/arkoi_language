@@ -3,7 +3,6 @@
 #include "arkoi_language/opt/pass.hpp"
 
 namespace arkoi::opt {
-
 class ConstantPropagation final : public Pass {
 public:
     bool enter_module(il::Module&) override { return false; }
@@ -24,7 +23,6 @@ private:
 private:
     std::unordered_map<il::Operand, il::Immediate> _constants;
 };
-
 } // namespace arkoi::opt
 
 //==============================================================================

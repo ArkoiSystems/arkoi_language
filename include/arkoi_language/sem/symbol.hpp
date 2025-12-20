@@ -10,7 +10,6 @@
 struct Symbol;
 
 namespace arkoi::sem {
-
 class Variable;
 
 class Function {
@@ -29,8 +28,8 @@ public:
     void set_return_type(Type type) { _return_type = type; }
 
 private:
-    std::vector<std::shared_ptr<Variable>> _parameters { };
-    std::optional<Type> _return_type { };
+    std::vector<std::shared_ptr<Variable>> _parameters{ };
+    std::optional<Type> _return_type{ };
     std::string _name;
 };
 
@@ -49,10 +48,9 @@ public:
     [[nodiscard]] auto& name() const { return _name; }
 
 private:
-    std::optional<Type> _type { };
+    std::optional<Type> _type{ };
     std::string _name;
 };
-
 } // namespace arkoi::sem
 
 struct Symbol : std::variant<arkoi::sem::Function, arkoi::sem::Variable> {

@@ -33,16 +33,19 @@ void ASTPrinter::print_child(const std::function<void()>& callback, const bool i
 void ASTPrinter::visit(Program& node) {
     _output << "Program" << std::endl;
 
-    print_child([&]() {
-        _output << "Statements" << std::endl;
+    print_child(
+        [&]() {
+            _output << "Statements" << std::endl;
 
-        for (size_t index = 0; index < node.statements().size(); ++index) {
-            const bool is_last = (index == node.statements().size() - 1);
+            for (size_t index = 0; index < node.statements().size(); ++index) {
+                const bool is_last = (index == node.statements().size() - 1);
 
-            const auto& statement = node.statements()[index];
-            print_child([&]() { statement->accept(*this); }, is_last);
-        }
-    }, true);
+                const auto& statement = node.statements()[index];
+                print_child([&]() { statement->accept(*this); }, is_last);
+            }
+        },
+        true
+    );
 }
 
 void ASTPrinter::visit(Function& node) {
@@ -50,16 +53,19 @@ void ASTPrinter::visit(Function& node) {
 
     print_child([&]() { node.name().accept(*this); }, false);
 
-    print_child([&]() {
-        _output << "Parameters" << std::endl;
+    print_child(
+        [&]() {
+            _output << "Parameters" << std::endl;
 
-        for (size_t index = 0; index < node.parameters().size(); ++index) {
-            const bool is_last = (index == node.parameters().size() - 1);
+            for (size_t index = 0; index < node.parameters().size(); ++index) {
+                const bool is_last = (index == node.parameters().size() - 1);
 
-            auto& parameter = node.parameters()[index];
-            print_child([&]() { parameter.accept(*this); }, is_last);
-        }
-    }, false);
+                auto& parameter = node.parameters()[index];
+                print_child([&]() { parameter.accept(*this); }, is_last);
+            }
+        },
+        false
+    );
 
     print_child([&]() { node.block()->accept(*this); }, true);
 }
@@ -67,16 +73,19 @@ void ASTPrinter::visit(Function& node) {
 void ASTPrinter::visit(Block& node) {
     _output << "Block" << std::endl;
 
-    print_child([&]() {
-        _output << "Statements" << std::endl;
+    print_child(
+        [&]() {
+            _output << "Statements" << std::endl;
 
-        for (size_t index = 0; index < node.statements().size(); ++index) {
-            const bool is_last = (index == node.statements().size() - 1);
+            for (size_t index = 0; index < node.statements().size(); ++index) {
+                const bool is_last = (index == node.statements().size() - 1);
 
-            const auto& statement = node.statements()[index];
-            print_child([&]() { statement->accept(*this); }, is_last);
-        }
-    }, true);
+                const auto& statement = node.statements()[index];
+                print_child([&]() { statement->accept(*this); }, is_last);
+            }
+        },
+        true
+    );
 }
 
 void ASTPrinter::visit(Parameter& node) {
@@ -129,16 +138,19 @@ void ASTPrinter::visit(Assign& node) {
 void ASTPrinter::visit(Call& node) {
     _output << "Call" << std::endl;
 
-    print_child([&]() {
-        _output << "Arguments" << std::endl;
+    print_child(
+        [&]() {
+            _output << "Arguments" << std::endl;
 
-        for (size_t index = 0; index < node.arguments().size(); ++index) {
-            const bool is_last = (index == node.arguments().size() - 1);
+            for (size_t index = 0; index < node.arguments().size(); ++index) {
+                const bool is_last = (index == node.arguments().size() - 1);
 
-            const auto& argument = node.arguments()[index];
-            print_child([&]() { argument->accept(*this); }, is_last);
-        }
-    }, true);
+                const auto& argument = node.arguments()[index];
+                print_child([&]() { argument->accept(*this); }, is_last);
+            }
+        },
+        true
+    );
 }
 
 void ASTPrinter::visit(If& node) {

@@ -5,7 +5,6 @@
 #include "arkoi_language/il/visitor.hpp"
 
 namespace arkoi::il {
-
 class ILPrinter final : public Visitor {
 public:
     explicit ILPrinter(std::stringstream& output) :
@@ -45,7 +44,6 @@ public:
 private:
     std::stringstream& _output;
 };
-
 } // namespace arkoi::il
 
 //==============================================================================

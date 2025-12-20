@@ -7,7 +7,6 @@
 #include "arkoi_language/ast/nodes.hpp"
 
 namespace arkoi::ast {
-
 class ASTPrinter : public Visitor {
 public:
     explicit ASTPrinter(std::stringstream& output) :
@@ -50,7 +49,6 @@ private:
     std::stringstream& _output;
     std::string _indentation;
 };
-
 } // namespace arkoi::ast
 
 //==============================================================================

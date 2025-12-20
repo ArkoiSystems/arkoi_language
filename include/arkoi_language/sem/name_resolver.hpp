@@ -7,7 +7,6 @@
 #include "arkoi_language/sem/symbol_table.hpp"
 
 namespace arkoi::sem {
-
 class NameResolver final : ast::Visitor {
 private:
     NameResolver() = default;
@@ -53,12 +52,11 @@ private:
     [[nodiscard]] std::shared_ptr<Symbol> _check_existence(const front::Token& token);
 
 private:
-    std::stack<std::shared_ptr<SymbolTable>> _scopes { };
-    bool _failed { };
+    std::stack<std::shared_ptr<SymbolTable>> _scopes{ };
+    bool _failed{ };
 };
 
 #include "../../../src/arkoi_language/sem/name_resolver.tpp"
-
 } // namespace arkoi::sem
 
 //==============================================================================

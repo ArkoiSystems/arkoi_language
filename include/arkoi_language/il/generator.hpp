@@ -5,7 +5,6 @@
 #include "arkoi_language/sem/type.hpp"
 
 namespace arkoi::il {
-
 class Generator final : ast::Visitor {
 private:
     Generator() = default;
@@ -55,15 +54,14 @@ private:
     Memory _make_memory(const sem::Type& type);
 
 private:
-    std::unordered_map<std::shared_ptr<Symbol>, Memory> _allocas { };
-    std::optional<Memory> _return_temp { };
-    size_t _temp_index { }, _label_index { };
-    Function* _current_function { };
-    BasicBlock* _current_block { };
-    Operand _current_operand { };
+    std::unordered_map<std::shared_ptr<Symbol>, Memory> _allocas{ };
+    std::optional<Memory> _return_temp{ };
+    size_t _temp_index{ }, _label_index{ };
+    Function* _current_function{ };
+    BasicBlock* _current_block{ };
+    Operand _current_operand{ };
     Module _module;
 };
-
 } // namespace arkoi::il
 
 //==============================================================================

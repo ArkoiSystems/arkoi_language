@@ -43,11 +43,14 @@ TEST(ControlFlowGraph, IteratorRightOrder) {
     il::Function function = create_example_cfg();
 
     std::vector<std::string> labels;
-    std::transform(function.begin(), function.end(),
-                   std::back_inserter(labels),
-                   [](const il::BasicBlock& block) {
-                       return block.label();
-                   });
+    std::transform(
+        function.begin(),
+        function.end(),
+        std::back_inserter(labels),
+        [](const il::BasicBlock& block) {
+            return block.label();
+        }
+    );
 
     ASSERT_EQ(labels.size(), 6);
     EXPECT_THAT(labels, ElementsAre("main_entry", "next_1", "next_2", "branch_2", "branch_1", "main_exit"));

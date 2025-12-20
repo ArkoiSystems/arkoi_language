@@ -7,7 +7,6 @@
 #include "arkoi_language/x86_64/operand.hpp"
 
 namespace arkoi::x86_64 {
-
 class Mapper final : il::Visitor {
 public:
     explicit Mapper(il::Function& function);
@@ -60,11 +59,10 @@ private:
     void _add_memory(const il::Variable& variable, const Memory& memory);
 
 private:
-    std::unordered_map<il::Operand, Operand> _mappings { };
-    OrderedSet<il::Operand> _locals { };
+    std::unordered_map<il::Operand, Operand> _mappings{ };
+    OrderedSet<il::Operand> _locals{ };
     il::Function& _function;
 };
-
 } // namespace arkoi::x86_64
 
 //==============================================================================

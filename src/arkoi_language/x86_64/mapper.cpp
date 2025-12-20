@@ -19,17 +19,20 @@ Operand& Mapper::operator[](const il::Variable& variable) {
 }
 
 Operand Mapper::operator[](const il::Operand& operand) {
-    return std::visit(match {
-                          [&](const il::Variable& variable) -> Operand {
-                              return _mappings.at(variable);
-                          },
-                          [&](const il::Memory& memory) -> Operand {
-                              return _mappings.at(memory);
-                          },
-                          [&](const il::Immediate& immediate) -> Operand {
-                              return std::visit([](const auto& value) -> Immediate { return value; }, immediate);
-                          }
-                      }, operand);
+    return std::visit(
+        match{
+            [&](const il::Variable& variable) -> Operand {
+                return _mappings.at(variable);
+            },
+            [&](const il::Memory& memory) -> Operand {
+                return _mappings.at(memory);
+            },
+            [&](const il::Immediate& immediate) -> Operand {
+                return std::visit([](const auto& value) -> Immediate { return value; }, immediate);
+            }
+        },
+        operand
+    );
 }
 
 void Mapper::visit(il::Function& function) {
@@ -163,17 +166,20 @@ size_t Mapper::stack_size() const {
 }
 
 Register Mapper::return_register(const sem::Type& target) {
-    return std::visit(match {
-                          [&](const sem::Integral& type) -> Register {
-                              return { Register::Base::A, type.size() };
-                          },
-                          [&](const sem::Floating& type) -> Register {
-                              return { Register::Base::XMM0, type.size() };
-                          },
-                          [&](const sem::Boolean&) -> Register {
-                              return { Register::Base::A, Size::BYTE };
-                          }
-                      }, target);
+    return std::visit(
+        match{
+            [&](const sem::Integral& type) -> Register {
+                return { Register::Base::A, type.size() };
+            },
+            [&](const sem::Floating& type) -> Register {
+                return { Register::Base::XMM0, type.size() };
+            },
+            [&](const sem::Boolean&) -> Register {
+                return { Register::Base::A, Size::BYTE };
+            }
+        },
+        target
+    );
 }
 
 size_t Mapper::align_size(const size_t input) {

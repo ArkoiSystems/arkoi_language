@@ -1,7 +1,6 @@
 #pragma once
 
 namespace arkoi::ast {
-
 class Identifier;
 class Parameter;
 class Immediate;
@@ -46,7 +45,6 @@ public:
 
     virtual void visit(If& node) = 0;
 };
-
 } // namespace arkoi::ast
 
 //==============================================================================

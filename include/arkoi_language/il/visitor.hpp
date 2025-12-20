@@ -1,7 +1,6 @@
 #pragma once
 
 namespace arkoi::il {
-
 class BasicBlock;
 class Function;
 class Constant;
@@ -46,7 +45,6 @@ public:
 
     virtual void visit(Constant& instruction) = 0;
 };
-
 } // namespace arkoi::il
 
 //==============================================================================

@@ -42,12 +42,15 @@ void SimplifyCFG::_remove_proxy_block(il::Function& function, il::BasicBlock& bl
 
     // Replace every predecessor goto with a copy of the current one. Also delete the predecessor, as a
     // empty predecessor vector is needed to delete a BasicBlock from a function.
-    std::erase_if(block.predecessors(), [&](il::BasicBlock* predecessor) {
-        auto& instruction = std::get<il::Goto>(predecessor->instructions().back());
-        instruction = target;
-        predecessor->set_next(target_block);
-        return true;
-    });
+    std::erase_if(
+        block.predecessors(),
+        [&](il::BasicBlock* predecessor) {
+            auto& instruction = std::get<il::Goto>(predecessor->instructions().back());
+            instruction = target;
+            predecessor->set_next(target_block);
+            return true;
+        }
+    );
 
     // Be sure to delete the current block from the function.
     assert(function.remove(&block));
@@ -77,9 +80,11 @@ void SimplifyCFG::_merge_block(il::Function& function, il::BasicBlock& block) {
     instructions.erase(instructions.end());
 
     // Move all the instructions from the current block to the predecessor
-    instructions.insert(instructions.end(),
-                        std::make_move_iterator(block.instructions().begin()),
-                        std::make_move_iterator(block.instructions().end()));
+    instructions.insert(
+        instructions.end(),
+        std::make_move_iterator(block.instructions().begin()),
+        std::make_move_iterator(block.instructions().end())
+    );
 
     // Link the predecessor with the current next block
     auto* target_block = block.next();

@@ -6,7 +6,6 @@
 #include "arkoi_language/sem/type.hpp"
 
 namespace arkoi::il {
-
 class OperandBase {
 public:
     virtual ~OperandBase() = default;
@@ -68,11 +67,9 @@ struct Operand final : OperandBase, std::variant<Immediate, Variable, Memory> {
 
     [[nodiscard]] sem::Type type() const override;
 };
-
 } // namespace arkoi::il
 
 namespace std {
-
 template <>
 struct hash<arkoi::il::Variable> {
     size_t operator()(const arkoi::il::Variable& variable) const noexcept;
@@ -92,7 +89,6 @@ template <>
 struct hash<arkoi::il::Operand> {
     size_t operator()(const arkoi::il::Operand& operand) const noexcept;
 };
-
 } // namespace std
 
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Immediate& operand);

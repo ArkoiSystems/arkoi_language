@@ -7,11 +7,10 @@
 #include "arkoi_language/x86_64/mapper.hpp"
 
 namespace arkoi::x86_64 {
-
 struct ClassifiedArguments {
-    std::vector<il::Operand> floating { };
-    std::vector<il::Operand> integer { };
-    std::vector<il::Operand> stack { };
+    std::vector<il::Operand> floating{ };
+    std::vector<il::Operand> integer{ };
+    std::vector<il::Operand> stack{ };
 };
 
 class Generator final : il::Visitor {
@@ -186,13 +185,12 @@ private:
     static void _newline(std::vector<AssemblyItem>& output);
 
 private:
-    std::unique_ptr<Mapper> _current_mapper { };
-    std::vector<AssemblyItem> _data { };
-    std::vector<AssemblyItem> _text { };
-    size_t _constants { };
+    std::unique_ptr<Mapper> _current_mapper{ };
+    std::vector<AssemblyItem> _data{ };
+    std::vector<AssemblyItem> _text{ };
+    size_t _constants{ };
     il::Module& _module;
 };
-
 } // namespace arkoi::x86_64
 
 //==============================================================================

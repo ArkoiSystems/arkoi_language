@@ -25,7 +25,7 @@ using namespace arkoi::driver;
 using namespace arkoi;
 
 std::string random_hex(size_t length) {
-    static std::mt19937_64 rng { std::random_device { }() };
+    static std::mt19937_64 rng{ std::random_device{ }() };
     static std::uniform_int_distribution dist(0, 15);
     const static auto HEX_CHARACTERS = "0123456789abcdef";
 
@@ -43,11 +43,11 @@ std::filesystem::path driver::generate_temp_path() {
 }
 
 int32_t driver::compile(
-        const std::shared_ptr<pretty_diagnostics::Source>& source,
-        std::ofstream* il_ostream,
-        std::ofstream* cfg_ostream,
-        std::ofstream* asm_ostream
-        ) {
+    const std::shared_ptr<pretty_diagnostics::Source>& source,
+    std::ofstream* il_ostream,
+    std::ofstream* cfg_ostream,
+    std::ofstream* asm_ostream
+) {
     front::Scanner scanner(source);
     auto tokens = scanner.tokenize();
     if (scanner.has_failed()) return 1;

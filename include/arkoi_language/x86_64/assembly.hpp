@@ -7,7 +7,6 @@
 #include "arkoi_language/x86_64/operand.hpp"
 
 namespace arkoi::x86_64 {
-
 class Label {
 public:
     explicit Label(std::string name) :
@@ -54,7 +53,6 @@ private:
 struct AssemblyItem final : std::variant<Label, Directive, Instruction> {
     using variant::variant;
 };
-
 } // namespace arkoi::x86_64
 
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Label& label);

@@ -6,7 +6,6 @@
 #include <utility>
 
 namespace arkoi::front {
-
 class Token {
 public:
     enum class Type {
@@ -73,7 +72,6 @@ private:
     pretty_diagnostics::Span _span;
     Type _type;
 };
-
 } // namespace arkoi::front
 
 std::ostream& operator<<(std::ostream& os, const arkoi::front::Token::Type& type);

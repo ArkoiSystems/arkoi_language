@@ -36,8 +36,13 @@ void Generator::visit(ast::Function& node) {
     auto entry_label = _make_label_symbol();
     auto exit_label = _make_label_symbol();
 
-    auto& function = _module.emplace_back(function_symbol.name(), parameters, function_symbol.return_type(),
-                                          entry_label, exit_label);
+    auto& function = _module.emplace_back(
+        function_symbol.name(),
+        parameters,
+        function_symbol.return_type(),
+        entry_label,
+        exit_label
+    );
     _current_function = &function;
 
     _current_block = function.entry();

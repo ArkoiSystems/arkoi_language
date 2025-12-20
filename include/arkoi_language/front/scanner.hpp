@@ -8,7 +8,6 @@
 #include "arkoi_language/front/token.hpp"
 
 namespace arkoi::front {
-
 class Scanner {
 public:
     explicit Scanner(const std::shared_ptr<pretty_diagnostics::Source>& source) :
@@ -69,9 +68,9 @@ private:
 
 private:
     std::shared_ptr<pretty_diagnostics::Source> _source;
-    size_t _row { }, _column { }, _indentation { };
+    size_t _row{ }, _column{ }, _indentation{ };
     std::string _current_line;
-    bool _failed { };
+    bool _failed{ };
 };
 
 class ScannerError : public std::runtime_error {
@@ -103,7 +102,6 @@ public:
     explicit NumberOutOfRange(const std::string& number) :
         ScannerError("The number " + number + " exceeds the 64bit limitations.") { }
 };
-
 } // namespace arkoi::front
 
 //==============================================================================

@@ -4,7 +4,6 @@
 #include "arkoi_language/sem/type.hpp"
 
 namespace arkoi::sem {
-
 class TypeResolver final : ast::Visitor {
 private:
     TypeResolver() = default;
@@ -56,10 +55,9 @@ private:
     static std::unique_ptr<ast::Node> _cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to);
 
 private:
-    std::optional<Type> _current_type { }, _return_type { };
-    bool _failed { };
+    std::optional<Type> _current_type{ }, _return_type{ };
+    bool _failed{ };
 };
-
 } // namespace arkoi::sem
 
 //==============================================================================
