@@ -6,8 +6,14 @@
 #include <utility>
 
 namespace arkoi::front {
+/**
+ * @brief Represents a token with locationality and type
+ */
 class Token {
 public:
+    /**
+     * @brief Enumeration of different token types
+     */
     enum class Type {
         Indentation,
         Dedentation,
@@ -57,15 +63,45 @@ public:
     };
 
 public:
+    /**
+     * @brief Constructs a Token with the given parameters
+     *
+     * @param type The type of the token
+     * @param span The source code span of the entire token
+     */
     Token(const Type type, pretty_diagnostics::Span span) :
         _span(std::move(span)), _type(type) { }
 
+    /**
+     * @brief Returns the source code span of the entire token
+     *
+     * @return A reference to the span
+     */
     [[nodiscard]] auto& span() const { return _span; }
 
+    /**
+     * @brief Returns the type of the token
+     *
+     * @return A reference to the type
+     */
     [[nodiscard]] auto& type() const { return _type; }
 
+    /**
+     * @brief Looks up a keyword by its string representation
+     *
+     * @param value The string to look up
+     *
+     * @return The token type if found, std::nullopt otherwise
+     */
     [[nodiscard]] static std::optional<Type> lookup_keyword(const std::string_view& value);
 
+    /**
+     * @brief Looks up a special character token type
+     *
+     * @param value The character to look up
+     *
+     * @return The token type if found, std::nullopt otherwise
+     */
     [[nodiscard]] static std::optional<Type> lookup_special(char value);
 
 private:
@@ -74,8 +110,24 @@ private:
 };
 } // namespace arkoi::front
 
+/**
+ * @brief Streams a readable description of a `Token::Type`
+ *
+ * @param os Output stream to write to
+ * @param type Type to describe
+ *
+ * @return Reference to @p os.
+ */
 std::ostream& operator<<(std::ostream& os, const arkoi::front::Token::Type& type);
 
+/**
+ * @brief Streams a readable description of a `Token`
+ *
+ * @param os Output stream to write to
+ * @param token Token to describe
+ *
+ * @return Reference to @p os.
+ */
 std::ostream& operator<<(std::ostream& os, const arkoi::front::Token& token);
 
 //==============================================================================

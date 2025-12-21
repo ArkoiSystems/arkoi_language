@@ -15,34 +15,102 @@ class Cast;
 class Call;
 class If;
 
+/**
+ * @brief Base class for AST visitors
+ */
 class Visitor {
 public:
     virtual ~Visitor() = default;
 
+    /**
+     * @brief Visits a Program node
+     *
+     * @param node The Program node to visit
+     */
     virtual void visit(Program& node) = 0;
 
+    /**
+     * @brief Visits a Function node
+     *
+     * @param node The Function node to visit
+     */
     virtual void visit(Function& node) = 0;
 
+    /**
+     * @brief Visits a Block node
+     *
+     * @param node The Block node to visit
+     */
     virtual void visit(Block& node) = 0;
 
+    /**
+     * @brief Visits a Parameter node
+     *
+     * @param node The Parameter node to visit
+     */
     virtual void visit(Parameter& node) = 0;
 
+    /**
+     * @brief Visits an Immediate node
+     *
+     * @param node The Immediate node to visit
+     */
     virtual void visit(Immediate& node) = 0;
 
+    /**
+     * @brief Visits a Variable node
+     *
+     * @param node The Variable node to visit
+     */
     virtual void visit(Variable& node) = 0;
 
+    /**
+     * @brief Visits a Return node
+     *
+     * @param node The Return node to visit
+     */
     virtual void visit(Return& node) = 0;
 
+    /**
+     * @brief Visits an Identifier node
+     *
+     * @param node The Identifier node to visit
+     */
     virtual void visit(Identifier& node) = 0;
 
+    /**
+     * @brief Visits a Binary node
+     *
+     * @param node The Binary node to visit
+     */
     virtual void visit(Binary& node) = 0;
 
+    /**
+     * @brief Visits a Cast node
+     *
+     * @param node The Cast node to visit
+     */
     virtual void visit(Cast& node) = 0;
 
+    /**
+     * @brief Visits an Assign node
+     *
+     * @param node The Assign node to visit
+     */
     virtual void visit(Assign& node) = 0;
 
+    /**
+     * @brief Visits a Call node
+     *
+     * @param node The Call node to visit
+     */
     virtual void visit(Call& node) = 0;
 
+    /**
+     * @brief Visits an If node
+     *
+     * @param node The If node to visit
+     */
     virtual void visit(If& node) = 0;
 };
 } // namespace arkoi::ast

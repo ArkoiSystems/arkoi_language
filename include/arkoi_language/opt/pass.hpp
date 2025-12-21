@@ -6,25 +6,78 @@
 #include "arkoi_language/il/cfg.hpp"
 
 namespace arkoi::opt {
+/**
+ * @brief Base class for optimization passes
+ */
 class Pass {
 public:
     virtual ~Pass() = default;
 
+    /**
+     * @brief Called when entering a module
+     *
+     * @param module The module being entered
+     *
+     * @return True if the module was modified, false otherwise
+     */
     virtual bool enter_module(il::Module& module) = 0;
 
+    /**
+     * @brief Called when exiting a module
+     *
+     * @param module The module being exited
+     *
+     * @return True if the module was modified, false otherwise
+     */
     virtual bool exit_module(il::Module& module) = 0;
 
+    /**
+     * @brief Called when entering a function
+     *
+     * @param function The function being entered
+     *
+     * @return True if the function was modified, false otherwise
+     */
     virtual bool enter_function(il::Function& function) = 0;
 
+    /**
+     * @brief Called when exiting a function
+     *
+     * @param function The function being exited
+     *
+     * @return True if the function was modified, false otherwise
+     */
     virtual bool exit_function(il::Function& function) = 0;
 
+    /**
+     * @brief Called for each basic block in a function
+     *
+     * @param block The basic block being processed
+     *
+     * @return True if the block was modified, false otherwise
+     */
     virtual bool on_block(il::BasicBlock& block) = 0;
 };
 
+/**
+ * @brief Manager for running a series of optimization passes
+ */
 class PassManager {
 public:
+    /**
+     * @brief Runs all registered passes on a module
+     *
+     * @param module The module to optimize
+     */
     void run(il::Module& module) const;
 
+    /**
+     * @brief Adds a new pass to the manager
+     *
+     * @tparam Type The type of the pass
+     * @tparam Args The types of arguments for the pass constructor
+     * @param args The arguments for the pass constructor
+     */
     template <typename Type, typename... Args>
     void add(Args&&... args);
 

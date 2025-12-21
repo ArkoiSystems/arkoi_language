@@ -5,40 +5,125 @@
 #include "arkoi_language/il/visitor.hpp"
 
 namespace arkoi::il {
+/**
+ * @brief Visitor for printing the Intermediate Language (IL)
+ */
 class ILPrinter final : public Visitor {
 public:
+    /**
+     * @brief Constructs an ILPrinter with the given output stream
+     *
+     * @param output The output stream to which the IL will be printed
+     */
     explicit ILPrinter(std::stringstream& output) :
         _output(output) { }
 
 public:
+    /**
+     * @brief Prints the IL of a module to a stringstream
+     *
+     * @param module The module whose IL is to be printed
+     *
+     * @return A stringstream containing the printed IL
+     */
     [[nodiscard]] static std::stringstream print(Module& module);
 
+    /**
+     * @brief Visits a Module
+     *
+     * @param module The module to visit
+     */
     void visit(Module& module) override;
 
+    /**
+     * @brief Visits a Function
+     *
+     * @param function The function to visit
+     */
     void visit(Function& function) override;
 
+    /**
+     * @brief Visits a BasicBlock
+     *
+     * @param block The basic block to visit
+     */
     void visit(BasicBlock& block) override;
 
+    /**
+     * @brief Visits a Return instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Return& instruction) override;
 
+    /**
+     * @brief Visits a Binary instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Binary& instruction) override;
 
+    /**
+     * @brief Visits a Cast instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Cast& instruction) override;
 
+    /**
+     * @brief Visits a Call instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Call& instruction) override;
 
+    /**
+     * @brief Visits a Goto instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Goto& instruction) override;
 
+    /**
+     * @brief Visits an If instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(If& instruction) override;
 
+    /**
+     * @brief Visits an Alloca instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Alloca& instruction) override;
 
+    /**
+     * @brief Visits a Store instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Store& instruction) override;
 
+    /**
+     * @brief Visits a Load instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Load& instruction) override;
 
+    /**
+     * @brief Visits a Constant instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Constant& instruction) override;
 
+    /**
+     * @brief Returns the output stream
+     *
+     * @return The output stream
+     */
     [[nodiscard]] auto& output() const { return _output; }
 
 private:

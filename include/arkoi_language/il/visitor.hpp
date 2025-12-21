@@ -15,34 +15,102 @@ class Call;
 class Goto;
 class If;
 
+/**
+ * @brief Base class for IL visitors
+ */
 class Visitor {
 public:
     virtual ~Visitor() = default;
 
+    /**
+     * @brief Visits a Module
+     *
+     * @param module The module to visit
+     */
     virtual void visit(Module& module) = 0;
 
+    /**
+     * @brief Visits a Function
+     *
+     * @param function The function to visit
+     */
     virtual void visit(Function& function) = 0;
 
+    /**
+     * @brief Visits a BasicBlock
+     *
+     * @param block The basic block to visit
+     */
     virtual void visit(BasicBlock& block) = 0;
 
+    /**
+     * @brief Visits a Return instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(Return& instruction) = 0;
 
+    /**
+     * @brief Visits a Binary instruction
+     *
+     * @param instruction The instruction to visit.
+     */
     virtual void visit(Binary& instruction) = 0;
 
+    /**
+     * @brief Visits a Cast instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(Cast& instruction) = 0;
 
+    /**
+     * @brief Visits a Call instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(Call& instruction) = 0;
 
+    /**
+     * @brief Visits an If instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(If& instruction) = 0;
 
+    /**
+     * @brief Visits a Goto instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(Goto& instruction) = 0;
 
+    /**
+     * @brief Visits an Alloca instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(Alloca& instruction) = 0;
 
+    /**
+     * @brief Visits a Store instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(Store& instruction) = 0;
 
+    /**
+     * @brief Visits a Load instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(Load& instruction) = 0;
 
+    /**
+     * @brief Visits a Constant instruction
+     *
+     * @param instruction The instruction to visit
+     */
     virtual void visit(Constant& instruction) = 0;
 };
 } // namespace arkoi::il

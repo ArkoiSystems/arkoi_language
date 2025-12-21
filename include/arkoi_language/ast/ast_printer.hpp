@@ -3,46 +3,139 @@
 #include <functional>
 #include <string>
 
-#include "arkoi_language/ast/visitor.hpp"
 #include "arkoi_language/ast/nodes.hpp"
+#include "arkoi_language/ast/visitor.hpp"
 
 namespace arkoi::ast {
-class ASTPrinter : public Visitor {
+/**
+ * @brief Visitor for printing the Abstract Syntax Tree (AST) in a human-readable format
+ */
+class ASTPrinter final : public Visitor {
 public:
+    /**
+     * @brief Constructs an ASTPrinter using a provided output stream that is written to
+     *
+     * @param output The output stream to which the AST will be printed
+     */
     explicit ASTPrinter(std::stringstream& output) :
         _output(output) { }
 
 public:
+    /**
+     * @brief Prints the AST of a program to the output stream
+     *
+     * @param program The program whose AST is to be printed
+     *
+     * @return An output stream containing the printed AST
+     */
     [[nodiscard]] static std::stringstream print(Program& program);
 
+    /**
+     * @brief Helper function to print a child node with proper indentation
+     *
+     * @param callback A callback function to print the child node or do other related
+     *                 things
+     *
+     * @param is_last Whether the child node is the last one in a potential list
+     */
     void print_child(const std::function<void()>& callback, bool is_last);
 
+    /**
+     * @brief Visits a Program node and prints it in a human-readable format
+     *
+     * @param node The Program node to visit
+     */
     void visit(Program& node) override;
 
+    /**
+     * @brief Visits a Function node and prints it in a human-readable format
+     *
+     * @param node The Function node to visit
+     */
     void visit(Function& node) override;
 
+    /**
+     * @brief Visits a Block node and prints it in a human-readable format
+     *
+     * @param node The Block node to visit
+     */
     void visit(Block& node) override;
 
+    /**
+     * @brief Visits a Parameter node and prints it in a human-readable format
+     *
+     * @param node The Parameter node to visit
+     */
     void visit(Parameter& node) override;
 
+    /**
+     * @brief Visits an Immediate node and prints it in a human-readable format
+     *
+     * @param node The Immediate node to visit
+     */
     void visit(Immediate& node) override;
 
+    /**
+     * @brief Visits a Variable node and prints it in a human-readable format
+     *
+     * @param node The Variable node to visit
+     */
     void visit(Variable& node) override;
 
+    /**
+     * @brief Visits a Return node and prints it in a human-readable format
+     *
+     * @param node The Return node to visit
+     */
     void visit(Return& node) override;
 
+    /**
+     * @brief Visits an Identifier node and prints it in a human-readable format
+     *
+     * @param node The Identifier node to visit
+     */
     void visit(Identifier& node) override;
 
+    /**
+     * @brief Visits a Binary node and prints it in a human-readable format
+     *
+     * @param node The Binary node to visit
+     */
     void visit(Binary& node) override;
 
+    /**
+     * @brief Visits a Cast node and prints it in a human-readable format
+     *
+     * @param node The Cast node to visit
+     */
     void visit(Cast& node) override;
 
+    /**
+     * @brief Visits an Assign node and prints it in a human-readable format
+     *
+     * @param node The Assign node to visit
+     */
     void visit(Assign& node) override;
 
+    /**
+     * @brief Visits a Call node and prints it in a human-readable format
+     *
+     * @param node The Call node to visit
+     */
     void visit(Call& node) override;
 
+    /**
+     * @brief Visits an If node and prints it in a human-readable format
+     *
+     * @param node The If node to visit
+     */
     void visit(If& node) override;
 
+    /**
+     * @brief Returns the stream with the final formatted output
+     *
+     * @return The output stream containing the data
+     */
     [[nodiscard]] auto& output() const { return _output; }
 
 private:

@@ -6,16 +6,29 @@
 #include "arkoi_language/il/instruction.hpp"
 
 namespace arkoi::il {
+/**
+ * @brief Enumeration of dataflow analysis directions
+ */
 enum class DataflowDirection {
     Forward,
     Backward
 };
 
+/**
+ * @brief Enumeration of dataflow analysis granularities
+ */
 enum class DataflowGranularity {
     Block,
     Instruction
 };
 
+/**
+ * @brief Base class for dataflow analysis passes
+ *
+ * @tparam ResultType The type of data being analyzed (e.g., Operand)
+ * @tparam DirectionType The direction of the analysis
+ * @tparam GranularityType The granularity of the analysis
+ */
 template <typename ResultType, DataflowDirection DirectionType, DataflowGranularity GranularityType>
 class DataflowPass {
 public:
@@ -29,13 +42,39 @@ public:
 public:
     virtual ~DataflowPass() = default;
 
-    virtual State merge(const std::vector<State>& predecessors) = 0;
+    /**
+     * @brief Merges multiple states into one
+     *
+     * @param predecessors The states to merge
+     *
+     * @return The merged state
+     */
+    [[nodiscard]] virtual State merge(const std::vector<State>& predecessors) = 0;
 
-    virtual State initialize(Function&, Target&) = 0;
+    /**
+     * @brief Initializes the analysis state for a target
+     *
+     * @param function The function being analyzed
+     * @param target The target (block or instruction)
+     *
+     * @return The initial state
+     */
+    [[nodiscard]] virtual State initialize(Function& function, Target& target) = 0;
 
-    virtual State transfer(Target&, const State& state) = 0;
+    /**
+     * @brief Applies the transfer function to a target and its current state
+     *
+     * @param target The target (block or instruction)
+     * @param state The current state
+     *
+     * @return The new state
+     */
+    [[nodiscard]] virtual State transfer(Target& target, const State& state) = 0;
 };
 
+/**
+ * @brief Concept for a dataflow analysis pass
+ */
 template <typename T>
 concept DataflowPassConcept = requires {
     typename T::Result;
@@ -43,6 +82,11 @@ concept DataflowPassConcept = requires {
     { T::Granularity } -> std::convertible_to<DataflowGranularity>;
 } && std::is_base_of_v<DataflowPass<typename T::Result, T::Direction, T::Granularity>, T>;
 
+/**
+ * @brief Engine for running dataflow analyses
+ *
+ * @tparam Pass The dataflow pass to run
+ */
 template <DataflowPassConcept Pass>
 class DataflowAnalysis {
 public:
@@ -50,14 +94,35 @@ public:
     using State = std::unordered_set<typename Pass::Result>;
 
 public:
+    /**
+     * @brief Constructs a DataflowAnalysis with pass arguments
+     *
+     * @tparam Args The types of arguments for the pass constructor
+     * @param args The arguments for the pass constructor
+     */
     template <typename... Args>
     explicit DataflowAnalysis(Args&&... args) :
         _pass(std::make_unique<Pass>(std::forward<Args>(args)...)) { }
 
+    /**
+     * @brief Runs the dataflow analysis on a function
+     *
+     * @param function The function to analyze
+     */
     void run(Function& function);
 
+    /**
+     * @brief Returns the output states for all targets
+     *
+     * @return A reference to the map of output states
+     */
     [[nodiscard]] auto& out() const { return _out; }
 
+    /**
+     * @brief Returns the input states for all targets
+     *
+     * @return A reference to the map of input states
+     */
     [[nodiscard]] auto& in() const { return _in; }
 
 private:

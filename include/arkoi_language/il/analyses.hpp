@@ -3,28 +3,80 @@
 #include "arkoi_language/il/dataflow.hpp"
 
 namespace arkoi::il {
+/**
+ * @brief Dataflow analysis for computing liveness at the block level
+ */
 class BlockLivenessAnalysis final :
     public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Block> {
 public:
     BlockLivenessAnalysis() = default;
 
-    State merge(const std::vector<State>& predecessors) override;
+    /**
+     * @brief Merges states from predecessors
+     *
+     * @param predecessors The states of predecessors to merge
+     *
+     * @return The merged state
+     */
+    [[nodiscard]] State merge(const std::vector<State>& predecessors) override;
 
-    State initialize(Function& function, BasicBlock& current) override;
+    /**
+     * @brief Initializes the analysis state for a basic block
+     *
+     * @param function The function containing the block
+     * @param current The basic block to initialize
+     *
+     * @return The initial state
+     */
+    [[nodiscard]] State initialize(Function& function, BasicBlock& current) override;
 
-    State transfer(BasicBlock& current, const State& state) override;
+    /**
+     * @brief Transfer function for a basic block
+     *
+     * @param current The basic block
+     * @param state The current state
+     *
+     * @return The new state after applying the transfer function
+     */
+    [[nodiscard]] State transfer(BasicBlock& current, const State& state) override;
 };
 
+/**
+ * @brief Dataflow analysis for computing liveness at the instruction level
+ */
 class InstructionLivenessAnalysis final :
     public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Instruction> {
 public:
     InstructionLivenessAnalysis() = default;
 
-    State merge(const std::vector<State>& predecessors) override;
+    /**
+     * @brief Merges states from predecessors
+     *
+     * @param predecessors The states of predecessors to merge
+     *
+     * @return The merged state
+     */
+    [[nodiscard]] State merge(const std::vector<State>& predecessors) override;
 
-    State initialize(Function& function, Instruction& instruction) override;
+    /**
+     * @brief Initializes the analysis state for an instruction
+     *
+     * @param function The function containing the instruction
+     * @param instruction The instruction to initialize
+     *
+     * @return The initial state
+     */
+    [[nodiscard]] State initialize(Function& function, Instruction& instruction) override;
 
-    State transfer(Instruction& current, const State& state) override;
+    /**
+     * @brief Transfer function for an instruction
+     *
+     * @param current The instruction
+     * @param state The current state
+     *
+     * @return The new state after applying the transfer function
+     */
+    [[nodiscard]] State transfer(Instruction& current, const State& state) override;
 };
 } // namespace arkoi::il
 

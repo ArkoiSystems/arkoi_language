@@ -6,26 +6,74 @@
 #include "arkoi_language/sem/type.hpp"
 
 namespace arkoi::il {
+/**
+ * @brief Base class for all IL operands
+ */
 class OperandBase {
 public:
     virtual ~OperandBase() = default;
 
+    /**
+     * @brief Returns the type of the operand
+     *
+     * @return The type used by this operand
+     */
     [[nodiscard]] virtual sem::Type type() const = 0;
 };
 
+/**
+ * @brief Represents a memory location operand in the IL
+ */
 class Memory final : public OperandBase {
 public:
-    Memory(size_t version, sem::Type type) :
+    /**
+     * @brief Constructs a Memory operand with the given parameters
+     *
+     * @param version The version (or index) of the memory location
+     * @param type The type of the value stored in memory
+     */
+    Memory(const size_t version, sem::Type type) :
         _type(std::move(type)), _index(version) { }
 
+    /**
+     * @brief Less-than comparison based on the index
+     *
+     * @param rhs Right-hand span
+     *
+     * @return True if this memory location starts before @p rhs
+     */
     bool operator<(const Memory& rhs) const;
 
+    /**
+     * @brief Equality compares only the indices
+     *
+     * @param rhs Right-hand span
+     *
+     * @return True if both memory locations have the same indices
+     */
     bool operator==(const Memory& rhs) const;
 
+    /**
+     * @brief Inequality based on `==`
+     *
+     * @param rhs Right-hand span
+     *
+     * @return True if the memory locations differ
+     */
     bool operator!=(const Memory& rhs) const;
 
+    /**
+     * @brief Returns the type of the operand
+     *
+     * @return The type used by this operand
+     */
     [[nodiscard]] sem::Type type() const override { return _type; }
 
+    /**
+     * @brief Returns the index of the memory location
+     *
+     * @return The index/version of the memory location
+     */
     [[nodiscard]] auto index() const { return _index; }
 
 private:
@@ -33,21 +81,67 @@ private:
     size_t _index;
 };
 
+/**
+ * @brief Represents a variable operand in the IL
+ */
 class Variable final : public OperandBase {
 public:
+    /**
+     * @brief Constructs a Variable operand with the given parameters
+     *
+     * @param name The name of the variable
+     * @param type The type of the variable
+     * @param version The version of the variable (SSA)
+     */
     Variable(std::string name, sem::Type type, size_t version = 0) :
         _name(std::move(name)), _version(version), _type(std::move(type)) { }
 
+    /**
+     * @brief Less-than comparison based on the name and version
+     *
+     * @param rhs Right-hand span
+     *
+     * @return True if this variable starts before @p rhs
+     */
     bool operator<(const Variable& rhs) const;
 
+    /**
+     * @brief Equality compares the name and version of the variable
+     *
+     * @param rhs Right-hand span
+     *
+     * @return True if both variables refer to the same name and version
+     */
     bool operator==(const Variable& rhs) const;
 
+    /**
+     * @brief Inequality based on `==`
+     *
+     * @param rhs Right-hand span
+     *
+     * @return True if the variables differ
+     */
     bool operator!=(const Variable& rhs) const;
 
+    /**
+     * @brief Returns the type of the operand
+     *
+     * @return The type used by this operand
+     */
     [[nodiscard]] sem::Type type() const override { return _type; }
 
+    /**
+     * @brief Returns the version of the variable
+     *
+     * @return The version of the variable
+     */
     [[nodiscard]] auto version() const { return _version; }
 
+    /**
+     * @brief Returns the name of the variable
+     *
+     * @return A reference to the name string
+     */
     [[nodiscard]] auto& name() const { return _name; }
 
 private:
@@ -56,15 +150,31 @@ private:
     sem::Type _type;
 };
 
+/**
+ * @brief Represents an immediate value operand in the IL
+ */
 struct Immediate final : OperandBase, std::variant<uint64_t, int64_t, uint32_t, int32_t, double, float, bool> {
     using variant::variant;
 
+    /**
+     * @brief Returns the type of the operand
+     *
+     * @return The type used by this operand
+     */
     [[nodiscard]] sem::Type type() const override;
 };
 
+/**
+ * @brief Represents an IL operand, which can be an immediate, a variable, or a memory location
+ */
 struct Operand final : OperandBase, std::variant<Immediate, Variable, Memory> {
     using variant::variant;
 
+    /**
+     * @brief Returns the type of the operand
+     *
+     * @return The type used by this operand
+     */
     [[nodiscard]] sem::Type type() const override;
 };
 } // namespace arkoi::il
@@ -91,12 +201,44 @@ struct hash<arkoi::il::Operand> {
 };
 } // namespace std
 
+/**
+ * @brief Streams a readable description of a `il::Immediate`
+ *
+ * @param os Output stream to write to
+ * @param operand Immediate to describe
+ *
+ * @return Reference to @p os.
+ */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Immediate& operand);
 
+/**
+ * @brief Streams a readable description of a `il::Variable`
+ *
+ * @param os Output stream to write to
+ * @param operand Variable to describe
+ *
+ * @return Reference to @p os.
+ */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Variable& operand);
 
+/**
+ * @brief Streams a readable description of a `il::Memory`
+ *
+ * @param os Output stream to write to
+ * @param operand Memory to describe
+ *
+ * @return Reference to @p os.
+ */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Memory& operand);
 
+/**
+ * @brief Streams a readable description of a `il::Operand`
+ *
+ * @param os Output stream to write to
+ * @param operand Operand to describe
+ *
+ * @return Reference to @p os.
+ */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Operand& operand);
 
 //==============================================================================

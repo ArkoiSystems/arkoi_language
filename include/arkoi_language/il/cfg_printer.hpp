@@ -7,40 +7,125 @@
 #include "arkoi_language/il/visitor.hpp"
 
 namespace arkoi::il {
+/**
+ * @brief Visitor for printing the Control Flow Graph (CFG) in Graphviz DOT format
+ */
 class CFGPrinter final : Visitor {
 public:
+    /**
+     * @brief Constructs a CFGPrinter with the given output stream
+     *
+     * @param output The output stream to which the CFG will be printed
+     */
     explicit CFGPrinter(std::stringstream& output) :
         _current_function(nullptr), _output(output), _printer(output) { }
 
 public:
+    /**
+     * @brief Prints the CFG of a module to a stringstream
+     *
+     * @param module The module whose CFG is to be printed
+     *
+     * @return A stringstream containing the printed CFG
+     */
     [[nodiscard]] static std::stringstream print(Module& module);
 
+    /**
+     * @brief Visits a Module
+     *
+     * @param module The module to visit
+     */
     void visit(Module& module) override;
 
+    /**
+     * @brief Visits a Function
+     *
+     * @param function The function to visit
+     */
     void visit(Function& function) override;
 
+    /**
+     * @brief Visits a BasicBlock
+     *
+     * @param block The basic block to visit
+     */
     void visit(BasicBlock& block) override;
 
+    /**
+     * @brief Visits a Return instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Return& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits a Binary instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Binary& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits a Cast instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Cast& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits a Call instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Call& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits a Goto instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Goto& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits an If instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(If& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits an Alloca instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Alloca& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits a Store instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Store& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits a Load instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Load& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Visits a Constant instruction
+     *
+     * @param instruction The instruction to visit
+     */
     void visit(Constant& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Returns the output stream
+     *
+     * @return The output stream
+     */
     [[nodiscard]] auto& output() const { return _output; }
 
 private:

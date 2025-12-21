@@ -5,19 +5,83 @@
 namespace arkoi::opt {
 class ConstantFolding final : public Pass {
 public:
-    bool enter_module(il::Module&) override { return false; }
+    /**
+     * @brief Called when entering a module
+     *
+     * This is never getting used as the constant folding is a local
+     * optimization technique only done on basic blocks
+     *
+     * @param module The module being entered
+     *
+     * @return True if the module was modified, false otherwise
+     */
+    bool enter_module([[maybe_unused]] il::Module& module) override { return false; }
 
-    bool exit_module(il::Module&) override { return false; }
+    /**
+     * @brief Called when exiting a module
+     *
+     * This is never getting used as the constant folding is a local
+     * optimization technique only done on basic blocks
+     *
+     * @param module The module being exited
+     *
+     * @return True if the module was modified, false otherwise
+     */
+    bool exit_module([[maybe_unused]] il::Module& module) override { return false; }
 
-    bool enter_function(il::Function&) override { return false; }
+    /**
+     * @brief Called when entering a function
+     *
+     * This is never getting used as the constant folding is a local
+     * optimization technique only done on basic blocks
+     *
+     * @param function The function being entered
+     *
+     * @return True if the function was modified, false otherwise
+     */
+    bool enter_function([[maybe_unused]] il::Function& function) override { return false; }
 
-    bool exit_function(il::Function&) override { return false; }
+    /**
+     * @brief Called when exiting a function
+     *
+     * This is never getting used as the constant folding is a local
+     * optimization technique only done on basic blocks
+     *
+     * @param function The function being exited
+     *
+     * @return True if the function was modified, false otherwise
+     */
+    bool exit_function([[maybe_unused]] il::Function& function) override { return false; }
 
+    /**
+     * @brief Called for each basic block in a function
+     *
+     * @param block The basic block being processed
+     *
+     * @return True if the block was modified, false otherwise
+     */
     bool on_block(il::BasicBlock& block) override;
 
 private:
+    /**
+     * @brief This will evaluate a cast instruction to its appropriate
+     *        result
+     *
+     * @param instruction The input cast that should get evaluated
+     *
+     * @return The result of the cast as immediate operand
+     */
     [[nodiscard]] static il::Immediate _cast(il::Cast& instruction);
 
+    /**
+     * @brief Evaluates a given cast (based on type and expression) and returns
+     *        the result as an immediate
+     *
+     * @param to The target type to which the expression should be casted
+     * @param expression The actual expression to be evaluated
+     *
+     * @return A resulting immediate of the evaluation
+     */
     [[nodiscard]] static il::Immediate _evaluate_cast(const sem::Type& to, auto expression);
 };
 } // namespace arkoi::opt
