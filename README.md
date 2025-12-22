@@ -173,7 +173,7 @@ This repository uses the following open-source projects:
 ---
 
 ## License
-This project is licensed under the BSD 3-Clause License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the BSD 3-Clause License. See the [LICENSE](LICENSE.txt) file for details.
 
 ---
 
