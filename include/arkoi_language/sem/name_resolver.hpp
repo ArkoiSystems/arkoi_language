@@ -7,13 +7,33 @@
 #include "arkoi_language/sem/symbol_table.hpp"
 
 namespace arkoi::sem {
+/**
+ * @brief Performs name resolution on the AST
+ */
 class NameResolver final : ast::Visitor {
 private:
+    /**
+     * @brief Construct a NameResolver
+     *
+     * Private to enforce usage through the static resolve() entry point
+     */
     NameResolver() = default;
 
 public:
+    /**
+     * @brief Perform name resolution on a program
+     *
+     * @param node The program AST to resolve
+     *
+     * @return A NameResolver instance containing the resolution result
+     */
     [[nodiscard]] static NameResolver resolve(ast::Program& node);
 
+    /**
+     * @brief Check whether name resolution failed
+     *
+     * @return True if one or more name resolution errors occurred, false otherwise
+     */
     [[nodiscard]] auto has_failed() const { return _failed; }
 
 private:
@@ -24,6 +44,11 @@ private:
      */
     void visit(ast::Program& node) override;
 
+    /**
+     * @brief Visit a Function node as a prototype
+
+     * @param node The Function node to register
+     */
     void visit_as_prototype(ast::Function& node);
 
     /**
@@ -55,7 +80,7 @@ private:
     void visit(ast::Identifier& node) override;
 
     /**
-     * @brief Visits an Immediate node  (empty implementation)
+     * @brief Visits an Immediate node (empty implementation)
      *
      * @param node The Immediate node to visit
      */
@@ -110,9 +135,27 @@ private:
      */
     void visit(ast::If& node) override;
 
+    /**
+     * @brief Ensure a symbol does not already exist in the current scope
+     *
+     * @tparam Type The symbol type to create
+     * @tparam Args Constructor argument types
+     * @param token The token identifying the symbol
+     * @param args Arguments forwarded to the symbol constructor
+     *
+     * @return The created symbol, or nullptr on failure
+     */
     template <typename Type, typename... Args>
     [[nodiscard]] std::shared_ptr<Symbol> _check_non_existence(const front::Token& token, Args&&... args);
 
+    /**
+     * @brief Look up an existing symbol in the current scope stack
+     *
+     * @tparam Types Allowed symbol types
+     * @param token The token identifying the symbol
+     *
+     * @return The resolved symbol, or nullptr on failure
+     */
     template <typename... Types>
     [[nodiscard]] std::shared_ptr<Symbol> _check_existence(const front::Token& token);
 

@@ -6,22 +6,51 @@
 #include "arkoi_language/x86_64/operand.hpp"
 
 namespace arkoi::x86_64 {
+/**
+ * @brief Performs register allocation for an x86-64 function
+ */
 class RegisterAllocater {
 public:
     using Mapping = std::unordered_map<il::Variable, Register::Base>;
 
 public:
+    /**
+     * @brief Construct a RegisterAllocater with the given parameters
+     *
+     * @param function The IL function to allocate registers for
+     * @param precolored Initial variable-to-register mappings
+     */
     RegisterAllocater(il::Function& function, Mapping precolored);
 
+    /**
+     * @brief Retrieve the register assignments
+     *
+     * @return A mapping of IL variables to assigned physical registers
+     */
     [[nodiscard]] auto& assigned() { return _assigned; }
 
+    /**
+     * @brief Retrieve the spilled variables
+     *
+     * @return A list of variables that could not be allocated to registers
+     *         and must be spilled to memory
+     */
     [[nodiscard]] auto& spilled() { return _spilled; }
 
 private:
+    /**
+     * @brief Executes the dataflow analysis for coloring the graph
+     */
     void _renumber();
 
+    /**
+     * @brief Build the interference graph
+     */
     void _build();
 
+    /**
+     * @brief Simplify the interference graph
+     */
     void _simplify();
 
 private:
