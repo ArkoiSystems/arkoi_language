@@ -168,8 +168,8 @@ public:
     /**
      * @brief Equality compares only the current pointed element
      *
-     * @param left Left-hand span
-     * @param right Right-hand span
+     * @param left Left-hand block iterator
+     * @param right Right-hand block iterator
      *
      * @return True if both iterators refer to the same pointer
      */
@@ -180,8 +180,8 @@ public:
     /**
      * @brief Inequality based on `==`
      *
-     * @param left Left-hand span
-     * @param right Right-hand span
+     * @param left Left-hand block iterator
+     * @param right Right-hand block iterator
      *
      * @return True if the iterators differ
      */

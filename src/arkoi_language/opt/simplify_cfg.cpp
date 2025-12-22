@@ -6,14 +6,14 @@ using namespace arkoi::opt;
 using namespace arkoi;
 
 bool SimplifyCFG::enter_function(il::Function&) {
-    _mergable_blocks.clear();
+    _simple_blocks.clear();
     _proxy_blocks.clear();
     return false;
 }
 
 bool SimplifyCFG::on_block(il::BasicBlock& block) {
     if (is_simple_block(block)) {
-        _mergable_blocks.insert(&block);
+        _simple_blocks.insert(&block);
     } else if (_is_proxy_block(block)) {
         _proxy_blocks.insert(&block);
     }
@@ -28,7 +28,7 @@ bool SimplifyCFG::exit_function(il::Function& function) {
         changed = true;
     }
 
-    for (auto& block : _mergable_blocks) {
+    for (auto& block : _simple_blocks) {
         _merge_block(function, *block);
         changed = true;
     }

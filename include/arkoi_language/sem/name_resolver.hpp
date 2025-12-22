@@ -17,32 +17,97 @@ public:
     [[nodiscard]] auto has_failed() const { return _failed; }
 
 private:
+    /**
+     * @brief Visits a Program node
+     *
+     * @param node The Program node to visit
+     */
     void visit(ast::Program& node) override;
 
     void visit_as_prototype(ast::Function& node);
 
+    /**
+     * @brief Visits a Function node
+     *
+     * @param node The Function node to visit
+     */
     void visit(ast::Function& node) override;
 
+    /**
+     * @brief Visits a Block node
+     *
+     * @param node The Block node to visit
+     */
     void visit(ast::Block& node) override;
 
-    void visit(ast::Parameter&) override;
+    /**
+     * @brief Visits a Parameter node
+     *
+     * @param node The Parameter node to visit
+     */
+    void visit(ast::Parameter& node) override;
 
+    /**
+     * @brief Visits an Identifier node
+     *
+     * @param node The Identifier node to visit
+     */
     void visit(ast::Identifier& node) override;
 
-    void visit(ast::Immediate&) override { }
+    /**
+     * @brief Visits an Immediate node  (empty implementation)
+     *
+     * @param node The Immediate node to visit
+     */
+    void visit([[maybe_unused]] ast::Immediate& node) override { }
 
+    /**
+     * @brief Visits a Variable node
+     *
+     * @param node The Variable node to visit
+     */
     void visit(ast::Variable& node) override;
 
+    /**
+     * @brief Visits a Return node
+     *
+     * @param node The Return node to visit
+     */
     void visit(ast::Return& node) override;
 
+    /**
+     * @brief Visits a Binary node
+     *
+     * @param node The Binary node to visit
+     */
     void visit(ast::Binary& node) override;
 
+    /**
+     * @brief Visits a Cast node
+     *
+     * @param node The Cast node to visit
+     */
     void visit(ast::Cast& node) override;
 
+    /**
+     * @brief Visits an Assign node
+     *
+     * @param node The Assign node to visit
+     */
     void visit(ast::Assign& node) override;
 
+    /**
+     * @brief Visits a Call node
+     *
+     * @param node The Call node to visit
+     */
     void visit(ast::Call& node) override;
 
+    /**
+     * @brief Visits an If node
+     *
+     * @param node The If node to visit
+     */
     void visit(ast::If& node) override;
 
     template <typename Type, typename... Args>

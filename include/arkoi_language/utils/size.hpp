@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+/**
+ * @brief Enumeration of sizes in bytes
+ */
 enum class Size : size_t {
     BYTE  = 1,
     WORD  = 2,
@@ -9,10 +12,32 @@ enum class Size : size_t {
     QWORD = 8,
 };
 
+/**
+ * @brief Converts a Size enum value to bytes
+ *
+ * @param size The size as enumeration
+ *
+ * @return The size in bytes
+ */
 size_t size_to_bytes(const Size& size);
 
+/**
+ * @brief Converts a Size enum value to bits
+ *
+ * @param size The size as enumeration
+ *
+ * @return The size in bits
+ */
 size_t size_to_bits(const Size& size);
 
+/**
+ * @brief Streams a readable description of a `Size`
+ *
+ * @param os Output stream to write to
+ * @param size Size to describe
+ *
+ * @return Reference to @p os.
+ */
 std::ostream& operator<<(std::ostream& os, const Size& size);
 
 //==============================================================================

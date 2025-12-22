@@ -45,11 +45,6 @@ Size Type::size() const {
     return std::visit([](const auto& value) { return value.size(); }, *this);
 }
 
-std::ostream& operator<<(std::ostream& os, const Type& type) {
-    std::visit([&os](const auto& value) { os << value; }, type);
-    return os;
-}
-
 std::ostream& operator<<(std::ostream& os, const Integral& type) {
     return os << (type.sign() ? "s" : "u") << size_to_bits(type.size());
 }
@@ -60,6 +55,11 @@ std::ostream& operator<<(std::ostream& os, const Floating& type) {
 
 std::ostream& operator<<(std::ostream& os, const Boolean&) {
     return os << "bool";
+}
+
+std::ostream& operator<<(std::ostream& os, const Type& type) {
+    std::visit([&os](const auto& value) { os << value; }, type);
+    return os;
 }
 
 //==============================================================================

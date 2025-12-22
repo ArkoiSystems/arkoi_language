@@ -3,6 +3,11 @@
 #include <unordered_set>
 #include <vector>
 
+/**
+ * @brief A set that maintains the insertion order of its elements
+ *
+ * @tparam T The type of elements in the set
+ */
 template <typename T>
 class OrderedSet {
 public:
@@ -10,24 +15,78 @@ public:
     using iterator = typename std::vector<T>::iterator;
 
 public:
+    /**
+     * @brief Inserts a value into the set if it doesn't already exist
+     *
+     * @param value The value to insert
+     *
+     * @return True if the value was inserted, false if it already existed
+     */
     bool insert(const T& value);
 
+    /**
+     * @brief Erases a value from the set
+     *
+     * @param value The value to erase
+     *
+     * @return True if the value was erased, false if it didn't exist
+     */
     bool erase(const T& value);
 
+    /**
+     * @brief Checks if the set contains a value
+     *
+     * @param value The value to check
+     *
+     * @return True if the value exists, false otherwise
+     */
     [[nodiscard]] bool contains(const T& value) const;
 
+    /**
+     * @brief Clears all elements from the set
+     */
     void clear();
 
+    /**
+     * @brief Returns the number of elements in the set
+     *
+     * @return The size of the set
+     */
     [[nodiscard]] size_t size() const { return _set.size(); }
 
+    /**
+     * @brief Checks if the set is empty
+     *
+     * @return True if empty, false otherwise
+     */
     [[nodiscard]] bool empty() const { return _set.empty(); }
 
+    /**
+     * @brief Returns a const iterator to the first element
+     *
+     * @return A const iterator to the beginning of the vector
+     */
     const_iterator begin() const { return _vector.begin(); }
 
+    /**
+     * @brief Returns a const iterator to the end
+     *
+     * @return A const iterator to the end of the vector
+     */
     const_iterator end() const { return _vector.end(); }
 
+    /**
+     * @brief Returns an iterator to the first element
+     *
+     * @return An iterator to the beginning of the set
+     */
     iterator begin() { return _vector.begin(); }
 
+    /**
+     * @brief Returns an iterator to the end
+     *
+     * @return An iterator to the end of the vector
+     */
     iterator end() { return _vector.end(); }
 
 private:

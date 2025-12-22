@@ -18,13 +18,13 @@ bool ConstantPropagation::on_block(il::BasicBlock& block) {
             _constants[constant->result()] = constant->immediate();
         }
 
-        changed |= _can_propagate(instruction);
+        changed |= _propagate(instruction);
     }
 
     return changed;
 }
 
-bool ConstantPropagation::_can_propagate(il::Instruction& target) {
+bool ConstantPropagation::_propagate(il::Instruction& target) {
     auto propagated = false;
 
     std::visit(

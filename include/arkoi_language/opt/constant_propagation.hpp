@@ -5,19 +5,82 @@
 namespace arkoi::opt {
 class ConstantPropagation final : public Pass {
 public:
-    bool enter_module(il::Module&) override { return false; }
+    /**
+     * @brief Called when entering a module
+     *
+     * This is never getting used as the constant propagation is a local
+     * optimization technique only done on basic blocks
+     *
+     * @param module The module being entered
+     *
+     * @return True if the module was modified, false otherwise
+     */
+    bool enter_module([[maybe_unused]] il::Module& module) override { return false; }
 
-    bool exit_module(il::Module&) override { return false; }
+    /**
+     * @brief Called when exiting a module
+     *
+     * This is never getting used as the constant propagation is a local
+     * optimization technique only done on basic blocks
+     *
+     * @param module The module being exited
+     *
+     * @return True if the module was modified, false otherwise
+     */
+    bool exit_module([[maybe_unused]] il::Module& module) override { return false; }
 
-    bool enter_function(il::Function&) override { return false; }
+    /**
+     * @brief Called when entering a function
+     *
+     * This is never getting used as the constant propagation is a local
+     * optimization technique only done on basic blocks
+     *
+     * @param function The function being entered
+     *
+     * @return True if the function was modified, false otherwise
+     */
+    bool enter_function([[maybe_unused]] il::Function& function) override { return false; }
 
-    bool exit_function(il::Function&) override { return false; }
+    /**
+     * @brief Called when exiting a function
+     *
+     * This is never getting used as the constant propagation is a local
+     * optimization technique only done on basic blocks
+     *
+     * @param function The function being exited
+     *
+     * @return True if the function was modified, false otherwise
+     */
+    bool exit_function([[maybe_unused]] il::Function& function) override { return false; }
 
+    /**
+     * @brief Called for each basic block in a function
+     *
+     * @param block The basic block being processed
+     *
+     * @return True if the block was modified, false otherwise
+     */
     bool on_block(il::BasicBlock& block) override;
 
 private:
-    [[nodiscard]] bool _can_propagate(il::Instruction& target);
+    /**
+     * @brief Propagates constant values and replaces the operands in
+     *        the instruction with their right value
+     *
+     * @param target The instruction to be propagated
+     *
+     * @return If any changes were made by the propagation
+     */
+    [[nodiscard]] bool _propagate(il::Instruction& target);
 
+    /**
+     * @brief Propagates constant values and replaces the operand
+     *        with it's right value
+     *
+     * @param operand The operand to be propagated
+     *
+     * @return If any changes were made by the propagation
+     */
     [[nodiscard]] bool _propagate(il::Operand& operand);
 
 private:

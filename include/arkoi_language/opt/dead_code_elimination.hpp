@@ -7,14 +7,58 @@
 namespace arkoi::opt {
 class DeadCodeElimination final : public Pass {
 public:
-    bool enter_module(il::Module&) override { return false; }
+    /**
+     * @brief Called when entering a module
+     *
+     * This is never getting used by the dead code elimination
+     * though
+     *
+     * @param module The module being entered
+     *
+     * @return True if the module was modified, false otherwise
+     */
+    bool enter_module([[maybe_unused]] il::Module& module) override { return false; }
 
-    bool exit_module(il::Module&) override { return false; }
+    /**
+     * @brief Called when exiting a module
+     *
+     * This is never getting used by the dead code elimination
+     * though
+     *
+     * @param module The module being exited
+     *
+     * @return True if the module was modified, false otherwise
+     */
+    bool exit_module([[maybe_unused]] il::Module& module) override { return false; }
 
+    /**
+     * @brief Called when entering a function
+     *
+     * @param function The function being entered
+     *
+     * @return True if the function was modified, false otherwise
+     */
     bool enter_function(il::Function& function) override;
 
-    bool exit_function(il::Function&) override { return false; }
+    /**
+     * @brief Called when exiting a function
+     *
+     * This is never getting used by the dead code elimination
+     * though
+     *
+     * @param function The function being exited
+     *
+     * @return True if the function was modified, false otherwise
+     */
+    bool exit_function([[maybe_unused]] il::Function& function) override { return false; }
 
+    /**
+     * @brief Called for each basic block in a function
+     *
+     * @param block The basic block being processed
+     *
+     * @return True if the block was modified, false otherwise
+     */
     bool on_block(il::BasicBlock& block) override;
 
 private:

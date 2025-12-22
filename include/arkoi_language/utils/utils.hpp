@@ -2,14 +2,30 @@
 
 #include <sstream>
 
+/**
+ * @brief Helper struct for visitor pattern using std::variant
+ *
+ * @tparam Ts The types to match.
+ */
 template <class... Ts>
 struct match : Ts... {
     using Ts::operator()...;
 };
 
+/**
+ * @brief Deduction guide for the match helper
+ */
 template <class... Ts>
 match(Ts...) -> match<Ts...>;
 
+/**
+ * @brief Converts a value to its string representation using operator<<
+ *
+ * @tparam T The type of the value
+ * @param value The value to convert
+ *
+ * @return The string representation of the value
+ */
 template <typename T>
 std::string to_string(const T& value) {
     std::ostringstream ss;
@@ -17,8 +33,22 @@ std::string to_string(const T& value) {
     return ss.str();
 }
 
+/**
+ * @brief Returns the base path (directory) of a file path
+ *
+ * @param path The file path
+ *
+ * @return The base path
+ */
 std::string get_base_path(const std::string& path);
 
+/**
+ * @brief Reads the entire content of a file into a string
+ *
+ * @param path The path to the file
+ *
+ * @return The file content
+ */
 std::string read_file(const std::string& path);
 
 //==============================================================================
