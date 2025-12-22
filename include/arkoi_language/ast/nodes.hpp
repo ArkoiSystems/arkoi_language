@@ -11,38 +11,51 @@
 
 namespace arkoi::ast {
 /**
- * @brief Base class for all AST nodes
+ * @brief Abstract base class for all nodes in the Abstract Syntax Tree (AST).
+ *
+ * Each node in the AST represents a construct in the source code (e.g., a statement,
+ * an expression, a function definition). All nodes must implement the `accept`
+ * method for the visitor pattern and provide their source code `span`.
+ *
+ * @see Visitor
  */
 class Node {
 public:
     virtual ~Node() = default;
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Dispatches the visitor to the concrete node implementation.
      *
-     * @param visitor The visitor to accept
+     * This is the entry point for the Visitor pattern.
+     *
+     * @param visitor The visitor to accept.
      */
     virtual void accept(Visitor& visitor) = 0;
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span associated with this node.
      *
-     * @return The span of the node
+     * The span includes the starting and ending positions in the source file.
+     *
+     * @return The `pretty_diagnostics::Span` of the node.
      */
     [[nodiscard]] virtual pretty_diagnostics::Span span() = 0;
 };
 
 /**
- * @brief Represents a program in the AST.
+ * @brief Represents the top-level unit of a source file.
+ *
+ * A `Program` consists of a sequence of global statements (e.g., function definitions)
+ * and holds the root symbol table for the entire compilation unit.
  */
 class Program final : public Node {
 public:
     /**
-     * @brief Constructs a Program node with the given parameters
+     * @brief Constructs a `Program` node.
      *
-     * @param statements The statements defined in the program
-     * @param span The source code span of the program
-     * @param table The symbol table used for the program
+     * @param statements The top-level statements defined in the program.
+     * @param span The source code span covering the entire program.
+     * @param table The global symbol table for this program.
      */
     Program(
         std::vector<std::unique_ptr<Node>>&& statements,
@@ -51,30 +64,30 @@ public:
     ) : _statements(std::move(statements)), _table(std::move(table)), _span(std::move(span)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Program` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the program.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the program.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the statements defined in the program
+     * @brief Returns the statements contained within the program.
      *
-     * @return A reference to the vector of statements
+     * @return A constant reference to the vector of statement nodes.
      */
     [[nodiscard]] auto& statements() const { return _statements; }
 
     /**
-     * @brief Returns the symbol table used for the program
+     * @brief Returns the global symbol table associated with the program.
      *
-     * @return A reference to the symbol table
+     * @return A constant reference to the `sem::SymbolTable`.
      */
     [[nodiscard]] auto& table() const { return _table; }
 
@@ -85,16 +98,18 @@ private:
 };
 
 /**
- * @brief Represents a block of statements in the AST
+ * @brief Represents a block of statements enclosed in braces.
+ *
+ * Blocks introduce a new lexical scope and contain their own symbol table.
  */
 class Block final : public Node {
 public:
     /**
-     * @brief Constructs a Block node with the given parameters
+     * @brief Constructs a `Block` node.
      *
-     * @param statements The statements defined in the block
-     * @param span The source code span of the block
-     * @param table The symbol table used for the block
+     * @param statements The sequence of statements within the block.
+     * @param span The source code span from the opening brace to the closing brace.
+     * @param table The symbol table for the scope introduced by this block.
      */
     Block(
         std::vector<std::unique_ptr<Node>>&& statements,
@@ -103,30 +118,30 @@ public:
     ) : _statements(std::move(statements)), _table(std::move(table)), _span(std::move(span)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Block` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the block.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the block.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the statements defined in the block
+     * @brief Returns the statements contained within the block.
      *
-     * @return A reference to the vector of statements
+     * @return A constant reference to the vector of statement nodes.
      */
     [[nodiscard]] auto& statements() const { return _statements; }
 
     /**
-     * @brief Returns the symbol table used for the block
+     * @brief Returns the symbol table associated with this block's scope.
      *
-     * @return A reference to the symbol table
+     * @return A constant reference to the `sem::SymbolTable`.
      */
     [[nodiscard]] auto& table() const { return _table; }
 
@@ -137,7 +152,10 @@ private:
 };
 
 /**
- * @brief Represents an identifier in the AST
+ * @brief Represents an identifier (e.g., variable or function name).
+ *
+ * An `Identifier` node captures the name of a symbol and, after semantic analysis,
+ * holds a reference to the resolved `Symbol`.
  */
 class Identifier final : public Node {
 public:
@@ -146,7 +164,7 @@ public:
     X(Variable)
 
     /**
-     * @brief Enumeration of different identifier kinds
+     * @brief Specifies the kind of entity the identifier refers to.
      */
     enum class Kind {
 #define X(element) element,
@@ -156,63 +174,65 @@ public:
 
 public:
     /**
-     * @brief Constructs an Identifier node with the given parameters
+     * @brief Constructs an `Identifier` node.
      *
-     * @param value The token representing the identifier
-     * @param kind The kind of the identifier
-     * @param span The source code span of the entire identifier
+     * @param value The token containing the identifier's name.
+     * @param kind The kind of identifier (variable or function).
+     * @param span The source code span of the identifier.
      */
     Identifier(front::Token value, const Kind kind, pretty_diagnostics::Span span) :
         _span(std::move(span)), _value(std::move(value)), _kind(kind) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Identifier` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the identifier.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the identifier.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the symbol associated with the identifier
+     * @brief Returns the resolved symbol for this identifier.
      *
-     * @return A reference to the symbol
+     * This is populated during the semantic analysis phase.
+     *
+     * @return A shared pointer to the `Symbol`.
+     * @throws std::bad_optional_access if the symbol has not been resolved.
      */
     [[nodiscard]] auto& symbol() const { return _symbol.value(); }
 
     /**
-     * @brief Sets the symbol associated with the identifier
+     * @brief Sets the resolved symbol for this identifier.
      *
-     * @param symbol The symbol to set
+     * @param symbol The `Symbol` to associate with this identifier.
      */
     void set_symbol(std::shared_ptr<Symbol> symbol) { _symbol = std::move(symbol); }
 
     /**
-     * @brief Returns the token representing the identifier
+     * @brief Returns the token representing the identifier's name.
      *
-     * @return A reference to the token
+     * @return A constant reference to the `front::Token`.
      */
     [[nodiscard]] auto& value() const { return _value; }
 
     /**
-     * @brief Returns the kind of the identifier
+     * @brief Returns the kind of the identifier.
      *
-     * @return The kind of the identifier
+     * @return The `Kind` of the identifier.
      */
     [[nodiscard]] auto& kind() const { return _kind; }
 
     /**
-     * @brief Converts an identifier kind to a string
+     * @brief Converts an identifier kind to its string representation.
      *
-     * @param kind The kind to convert
-     *
-     * @return A string representation of the kind
+     * @param kind The kind to convert.
+     * @return A string literal representing the kind.
      */
     static const char* to_string(const Kind kind) {
         switch (kind) {
@@ -231,45 +251,47 @@ private:
 };
 
 /**
- * @brief Represents a function parameter in the AST
+ * @brief Represents a parameter in a function definition.
+ *
+ * A `Parameter` consists of an identifier (the parameter name) and a type.
  */
 class Parameter final : public Node {
 public:
     /**
-     * @brief Constructs a Parameter node with the given parameters
+     * @brief Constructs a `Parameter` node.
      *
-     * @param name The name of the parameter
-     * @param type The type of the parameter
-     * @param span The source code span of the entire parameter
+     * @param name The identifier of the parameter.
+     * @param type The semantic type of the parameter.
+     * @param span The source code span of the parameter declaration.
      */
     Parameter(Identifier name, sem::Type type, pretty_diagnostics::Span span) :
         _span(std::move(span)), _name(std::move(name)), _type(std::move(type)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Parameter` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the parameter.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the parameter.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the type of the parameter
+     * @brief Returns the semantic type of the parameter.
      *
-     * @return A reference to the type
+     * @return A constant reference to the `sem::Type`.
      */
     [[nodiscard]] auto& type() const { return _type; }
 
     /**
-     * @brief Returns the name of the parameter
+     * @brief Returns the identifier of the parameter.
      *
-     * @return A reference to the identifier representing the name
+     * @return A reference to the `Identifier`.
      */
     [[nodiscard]] auto& name() { return _name; }
 
@@ -280,19 +302,22 @@ private:
 };
 
 /**
- * @brief Represents a function definition in the AST
+ * @brief Represents a function definition in the AST.
+ *
+ * A `Function` node includes its name, parameters, return type, and the body `Block`.
+ * It also holds the symbol table for the function's scope.
  */
 class Function final : public Node {
 public:
     /**
-     * @brief Constructs a Function node with the given parameters
+     * @brief Constructs a `Function` node.
      *
-     * @param name The name of the function
-     * @param parameters The parameters of the function
-     * @param type The return type of the function
-     * @param block The body of the function
-     * @param span The source code span of the entire function
-     * @param table The symbol table used for the function
+     * @param name The identifier of the function.
+     * @param parameters The list of parameters for the function.
+     * @param type The return type of the function.
+     * @param block The body block containing the function's statements.
+     * @param span The source code span of the entire function definition.
+     * @param table The symbol table for the function's scope.
      */
     Function(
         Identifier name,
@@ -305,51 +330,51 @@ public:
         _block(std::move(block)), _name(std::move(name)), _type(std::move(type)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Function` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the function.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the function.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the parameters of the function
+     * @brief Returns the parameters of the function.
      *
-     * @return A reference to the vector of parameters
+     * @return A reference to the vector of `Parameter` nodes.
      */
     [[nodiscard]] auto& parameters() { return _parameters; }
 
     /**
-     * @brief Returns the symbol table for the function
+     * @brief Returns the symbol table associated with the function's scope.
      *
-     * @return A reference to the symbol table
+     * @return A constant reference to the `sem::SymbolTable`.
      */
     [[nodiscard]] auto& table() const { return _table; }
 
     /**
-     * @brief Returns the return type of the function
+     * @brief Returns the return type of the function.
      *
-     * @return A reference to the type
+     * @return A constant reference to the `sem::Type`.
      */
     [[nodiscard]] auto& type() const { return _type; }
 
     /**
-     * @brief Returns the body of the function
+     * @brief Returns the body block of the function.
      *
-     * @return A reference to the unique_ptr of the block
+     * @return A reference to the unique pointer of the `Block`.
      */
     [[nodiscard]] auto& block() { return _block; }
 
     /**
-     * @brief Returns the name of the function
+     * @brief Returns the name identifier of the function.
      *
-     * @return A reference to the identifier representing the name
+     * @return A reference to the `Identifier`.
      */
     [[nodiscard]] auto& name() { return _name; }
 
@@ -363,58 +388,63 @@ private:
 };
 
 /**
- * @brief Represents a return statement in the AST
+ * @brief Represents a return statement.
+ *
+ * A `Return` node contains an optional expression to be returned from a function.
  */
 class Return final : public Node {
 public:
     /**
-     * @brief Constructs a Return node with the given parameters
+     * @brief Constructs a `Return` node.
      *
-     * @param expression The expression to return
-     * @param span The source code span of the entire return statement
+     * @param expression The expression to return.
+     * @param span The source code span of the return statement.
      */
     Return(std::unique_ptr<Node>&& expression, pretty_diagnostics::Span span) :
         _expression(std::move(expression)), _span(std::move(span)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Return` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the return statement.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the return statement.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the type of the returned expression
+     * @brief Returns the type of the expression being returned.
      *
-     * @return A reference to the type
+     * This is populated during semantic analysis.
+     *
+     * @return A constant reference to the `sem::Type`.
+     * @throws std::bad_optional_access if the type has not been set.
      */
     [[nodiscard]] auto& type() const { return _type.value(); }
 
     /**
-     * @brief Sets the type of the returned expression
+     * @brief Sets the type of the expression being returned.
      *
-     * @param type The type to set
+     * @param type The semantic type to set.
      */
     void set_type(sem::Type type) { _type = std::move(type); }
 
     /**
-     * @brief Returns the returned expression
+     * @brief Returns the expression being returned.
      *
-     * @return A reference to the unique_ptr of the expression
+     * @return A reference to the unique pointer of the expression `Node`.
      */
     [[nodiscard]] auto& expression() { return _expression; }
 
     /**
-     * @brief Sets the returned expression
+     * @brief Sets the expression to be returned.
      *
-     * @param node The expression node to set
+     * @param node The expression `Node` to set.
      */
     void set_expression(std::unique_ptr<Node>&& node) { _expression = std::move(node); }
 
@@ -425,17 +455,20 @@ private:
 };
 
 /**
- * @brief Represents an if statement in the AST
+ * @brief Represents an if-else conditional statement.
+ *
+ * An `If` node contains a condition, a mandatory `then` branch, and an optional
+ * `else` branch (represented by `next`).
  */
 class If final : public Node {
 public:
     /**
-     * @brief Constructs an If node with the given parameters
+     * @brief Constructs an `If` node.
      *
-     * @param condition The condition of the if statement
-     * @param branch The then branch of the if statement
-     * @param next The else branch (if any) of the if statement
-     * @param span The source code span of the entire if statement
+     * @param condition The condition expression.
+     * @param branch The statement or block to execute if the condition is true.
+     * @param next The optional statement or block to execute if the condition is false.
+     * @param span The source code span of the entire if-else statement.
      */
     If(
         std::unique_ptr<Node>&& condition,
@@ -446,44 +479,44 @@ public:
         _span(std::move(span)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `If` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the if-else statement.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the if-else statement.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the then branch of the if statement
+     * @brief Returns the `then` branch of the if statement.
      *
-     * @return A reference to the unique_ptr of the branch
+     * @return A constant reference to the unique pointer of the branch `Node`.
      */
     [[nodiscard]] auto& branch() const { return _branch; }
 
     /**
-     * @brief Returns the else branch of the if statement
+     * @brief Returns the `else` branch of the if statement.
      *
-     * @return A reference to the unique_ptr of the next node
+     * @return A constant reference to the unique pointer of the next `Node`.
      */
     [[nodiscard]] auto& next() const { return _next; }
 
     /**
-     * @brief Returns the condition of the if statement
+     * @brief Returns the condition expression.
      *
-     * @return A reference to the unique_ptr of the condition
+     * @return A reference to the unique pointer of the condition `Node`.
      */
     [[nodiscard]] auto& condition() { return _condition; }
 
     /**
-     * @brief Sets the condition of the if statement
+     * @brief Sets the condition expression.
      *
-     * @param condition The condition node to set
+     * @param condition The condition `Node` to set.
      */
     void set_condition(std::unique_ptr<Node>&& condition) { _condition = std::move(condition); }
 
@@ -494,52 +527,54 @@ private:
 };
 
 /**
- * @brief Represents an assignment statement in the AST
+ * @brief Represents an assignment statement.
+ *
+ * An `Assign` node represents the assignment of an expression to a variable identified by name.
  */
 class Assign final : public Node {
 public:
     /**
-     * @brief Constructs an Assign node with the given parameters
+     * @brief Constructs an `Assign` node.
      *
-     * @param name The name of the variable being assigned to
-     * @param expression The expression being assigned
-     * @param span The source code span of the entire assignment statement
+     * @param name The identifier of the target variable.
+     * @param expression The expression whose value is being assigned.
+     * @param span The source code span of the assignment statement.
      */
     Assign(Identifier name, std::unique_ptr<Node>&& expression, pretty_diagnostics::Span span) :
         _expression(std::move(expression)), _span(std::move(span)), _name(std::move(name)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Assign` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the assignment.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the assignment.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the expression being assigned
+     * @brief Returns the expression being assigned.
      *
-     * @return A reference to the unique_ptr of the expression
+     * @return A reference to the unique pointer of the expression `Node`.
      */
     [[nodiscard]] auto& expression() { return _expression; }
 
     /**
-     * @brief Sets the expression being assigned
+     * @brief Sets the expression being assigned.
      *
-     * @param node The expression node to set
+     * @param node The expression `Node` to set.
      */
     void set_expression(std::unique_ptr<Node>&& node) { _expression = std::move(node); }
 
     /**
-     * @brief Returns the name of the variable being assigned to
+     * @brief Returns the identifier of the target variable.
      *
-     * @return A reference to the identifier representing the name
+     * @return A reference to the target `Identifier`.
      */
     [[nodiscard]] auto& name() { return _name; }
 
@@ -550,17 +585,19 @@ private:
 };
 
 /**
- * @brief Represents a variable declaration in the AST
+ * @brief Represents a variable declaration statement.
+ *
+ * A `Variable` node includes its name, explicit type, and an optional initial expression.
  */
 class Variable final : public Node {
 public:
     /**
-     * @brief Constructs a Variable node with the given parameters
+     * @brief Constructs a `Variable` declaration node.
      *
-     * @param name The name of the variable
-     * @param type The type of the variable
-     * @param expression The initial expression for the variable (optional)
-     * @param span The source code span of the entire variable declaration
+     * @param name The identifier of the declared variable.
+     * @param type The declared semantic type.
+     * @param expression The optional initial value expression.
+     * @param span The source code span of the variable declaration.
      */
     Variable(
         Identifier name,
@@ -571,44 +608,44 @@ public:
         _type(std::move(type)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Variable` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the variable declaration.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the variable declaration.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the initial expression of the variable
+     * @brief Returns the initial value expression.
      *
-     * @return A reference to the unique_ptr of the expression
+     * @return A reference to the unique pointer of the expression `Node`.
      */
     [[nodiscard]] auto& expression() { return _expression; }
 
     /**
-     * @brief Sets the initial expression of the variable
+     * @brief Sets the initial value expression.
      *
-     * @param node The expression node to set
+     * @param node The expression `Node` to set.
      */
     void set_expression(std::unique_ptr<Node>&& node) { _expression = std::move(node); }
 
     /**
-     * @brief Returns the type of the variable
+     * @brief Returns the declared semantic type of the variable.
      *
-     * @return A reference to the type
+     * @return A constant reference to the `sem::Type`.
      */
     [[nodiscard]] auto& type() const { return _type; }
 
     /**
-     * @brief Returns the name of the variable
+     * @brief Returns the identifier of the declared variable.
      *
-     * @return A reference to the identifier representing the name
+     * @return A reference to the `Identifier`.
      */
     [[nodiscard]] auto& name() { return _name; }
 
@@ -620,45 +657,47 @@ private:
 };
 
 /**
- * @brief Represents a function call in the AST
+ * @brief Represents a function call expression.
+ *
+ * A `Call` node consists of the function's name and a list of argument expressions.
  */
 class Call final : public Node {
 public:
     /**
-     * @brief Constructs a Call node with the given parameters
+     * @brief Constructs a `Call` node.
      *
-     * @param name The name of the function being called
-     * @param arguments The arguments to the function call
-     * @param span The source code span of the entire function call
+     * @param name The identifier of the function being called.
+     * @param arguments The list of expressions passed as arguments.
+     * @param span The source code span of the function call.
      */
     Call(Identifier name, std::vector<std::unique_ptr<Node>>&& arguments, pretty_diagnostics::Span span) :
         _arguments(std::move(arguments)), _span(std::move(span)), _name(std::move(name)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Call` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the call.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the call.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the arguments to the function call
+     * @brief Returns the arguments passed to the function.
      *
-     * @return A reference to the vector of arguments
+     * @return A reference to the vector of argument `Node` pointers.
      */
     [[nodiscard]] auto& arguments() { return _arguments; }
 
     /**
-     * @brief Returns the name of the function being called
+     * @brief Returns the name of the function being called.
      *
-     * @return A reference to the identifier representing the name
+     * @return A reference to the function `Identifier`.
      */
     [[nodiscard]] auto& name() { return _name; }
 
@@ -669,7 +708,9 @@ private:
 };
 
 /**
- * @brief Represents an immediate value (literal) in the AST
+ * @brief Represents a literal (immediate) value in the source code.
+ *
+ * Immediates can be integers, floating-point numbers, or booleans.
  */
 class Immediate final : public Node {
 public:
@@ -679,7 +720,7 @@ public:
     X(Boolean)
 
     /**
-     * @brief Enumeration of different immediate kinds
+     * @brief Specifies the kind of literal value.
      */
     enum class Kind {
 #define X(element) element,
@@ -689,63 +730,64 @@ public:
 
 public:
     /**
-     * @brief Constructs an Immediate node with the given parameters
+     * @brief Constructs an `Immediate` node.
      *
-     * @param value The token representing the literal value
-     * @param kind The kind of the literal
-     * @param span The source code span of the entire immediate node
+     * @param value The token containing the literal value.
+     * @param kind The kind of the literal value.
+     * @param span The source code span of the literal.
      */
     Immediate(front::Token value, const Kind kind, pretty_diagnostics::Span span) :
         _span(std::move(span)), _value(std::move(value)), _kind(kind) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Immediate` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the literal.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the literal.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the token representing the literal value
+     * @brief Returns the token representing the literal value.
      *
-     * @return A reference to the token
+     * @return A constant reference to the `front::Token`.
      */
     [[nodiscard]] auto& value() const { return _value; }
 
     /**
-     * @brief Returns the kind of the literal
+     * @brief Returns the kind of the literal value.
      *
-     * @return The kind of the literal
+     * @return The `Kind` of the immediate.
      */
     [[nodiscard]] auto& kind() const { return _kind; }
 
     /**
-     * @brief Returns the type of the literal
+     * @brief Returns the semantic type of the literal value.
      *
-     * @return A reference to the type
+     * This is populated during semantic analysis.
+     *
+     * @return A constant reference to the `sem::Type`.
      */
     [[nodiscard]] auto& type() const { return *_type; }
 
     /**
-     * @brief Sets the type of the literal
+     * @brief Sets the semantic type of the literal value.
      *
-     * @param type The type to set
+     * @param type The semantic type to set.
      */
     void set_type(sem::Type type) { _type = std::move(type); }
 
     /**
-     * @brief Converts an immediate kind to a string
+     * @brief Converts an immediate kind to its string representation.
      *
-     * @param kind The kind to convert
-     *
-     * @return A string representation of the kind
+     * @param kind The kind to convert.
+     * @return A string literal representing the kind.
      */
     static const char* to_string(const Kind kind) {
         switch (kind) {
@@ -764,7 +806,9 @@ private:
 };
 
 /**
- * @brief Represents a binary operation in the AST
+ * @brief Represents a binary operation expression.
+ *
+ * A `Binary` node consists of a left operand, an operator, and a right operand.
  */
 class Binary final : public Node {
 public:
@@ -777,7 +821,7 @@ public:
     X(LessThan)
 
     /**
-     * @brief Enumeration of different binary operators
+     * @brief Specifies the binary operator.
      */
     enum class Operator {
 #define X(element) element,
@@ -787,12 +831,12 @@ public:
 
 public:
     /**
-     * @brief Constructs a Binary node with the given parameters
+     * @brief Constructs a `Binary` operation node.
      *
-     * @param left The left operand
-     * @param op The operator
-     * @param right The right operand
-     * @param span The source code span of the entire binary operation
+     * @param left The left operand expression.
+     * @param op The binary operator to apply.
+     * @param right The right operand expression.
+     * @param span The source code span of the entire binary expression.
      */
     Binary(
         std::unique_ptr<Node>&& left,
@@ -802,88 +846,93 @@ public:
     ) : _left(std::move(left)), _right(std::move(right)), _span(std::move(span)), _op(op) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Binary` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the binary expression.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the binary expression.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the operator
+     * @brief Returns the binary operator.
      *
-     * @return The operator
+     * @return The `Operator` of the expression.
      */
     [[nodiscard]] auto& op() const { return _op; }
 
     /**
-     * @brief Returns the common type of the operators
+     * @brief Returns the type expected for the operands.
      *
-     * @return A reference to the type
+     * This is populated during semantic analysis.
+     *
+     * @return A constant reference to the `sem::Type`.
+     * @throws std::bad_optional_access if the type has not been set.
      */
     [[nodiscard]] auto& op_type() const { return _op_type.value(); }
 
     /**
-     * @brief Sets the common type of the operators
+     * @brief Sets the expected type for the operands.
      *
-     * @param type The type to set
+     * @param type The semantic type to set.
      */
     void set_op_type(sem::Type type) { _op_type = std::move(type); }
 
     /**
-     * @brief Returns the right operand
+     * @brief Returns the right operand.
      *
-     * @return A reference to the unique_ptr of the right operand
+     * @return A reference to the unique pointer of the right `Node`.
      */
     [[nodiscard]] auto& right() { return _right; }
 
     /**
-     * @brief Sets the right operand
+     * @brief Sets the right operand.
      *
-     * @param node The node to set as the right operand
+     * @param node The `Node` to set as the right operand.
      */
     void set_right(std::unique_ptr<Node>&& node) { _right = std::move(node); }
 
     /**
-     * @brief Returns the left operand
+     * @brief Returns the left operand.
      *
-     * @return A reference to the unique_ptr of the left operand
+     * @return A reference to the unique pointer of the left `Node`.
      */
     [[nodiscard]] auto& left() { return _left; }
 
     /**
-     * @brief Sets the left operand
+     * @brief Sets the left operand.
      *
-     * @param node The node to set as the left operand
+     * @param node The `Node` to set as the left operand.
      */
     void set_left(std::unique_ptr<Node>&& node) { _left = std::move(node); }
 
     /**
-     * @brief Returns the result type of the binary operation
+     * @brief Returns the result type of the binary operation.
      *
-     * @return A reference to the type
+     * This is populated during semantic analysis.
+     *
+     * @return A constant reference to the `sem::Type`.
+     * @throws std::bad_optional_access if the type has not been set.
      */
     [[nodiscard]] auto& result_type() const { return _result_type.value(); }
 
     /**
-     * @brief Sets the result type of the binary operation
+     * @brief Sets the result type of the binary operation.
      *
-     * @param type The type to set
+     * @param type The semantic type to set.
      */
     void set_result_type(sem::Type type) { _result_type = std::move(type); }
 
     /**
-     * @brief Converts a binary operator to a string
+     * @brief Converts a binary operator to its string representation.
      *
-     * @param op The operator to convert
-     *
-     * @return A string representation of the operator
+     * @param op The operator to convert.
+     * @return A string literal representing the operator.
      */
     static const char* to_string(const Operator op) {
         switch (op) {
@@ -902,70 +951,75 @@ private:
 };
 
 /**
- * @brief Represents a type cast in the AST
+ * @brief Represents an explicit or implicit type cast.
+ *
+ * A `Cast` node converts an expression from one semantic type to another.
  */
 class Cast final : public Node {
 public:
     /**
-     * @brief Constructs a Cast node with both 'from' and 'to' types
+     * @brief Constructs a `Cast` node with both source and target types.
      *
-     * @param expression The expression being cast
-     * @param from The source type
-     * @param to The target type
-     * @param span The source code span of the entire cast
+     * @param expression The expression being cast.
+     * @param from The source semantic type.
+     * @param to The target semantic type.
+     * @param span The source code span of the entire cast.
      */
     Cast(std::unique_ptr<Node>&& expression, sem::Type from, sem::Type to, pretty_diagnostics::Span span) :
         _from(from), _expression(std::move(expression)), _span(std::move(span)), _to(std::move(to)) { }
 
     /**
-     * @brief Constructs a Cast node with only the target 'to' type
+     * @brief Constructs a `Cast` node with only the target type.
      *
-     * @param expression The expression being cast
-     * @param to The target type
-     * @param span The source code span of the entire cast
+     * The source type is expected to be populated later during analysis.
+     *
+     * @param expression The expression being cast.
+     * @param to The target semantic type.
+     * @param span The source code span of the entire cast.
      */
     Cast(std::unique_ptr<Node>&& expression, sem::Type to, pretty_diagnostics::Span span) :
         _expression(std::move(expression)), _span(std::move(span)), _to(std::move(to)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Cast` node.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the source code span of the entire node
+     * @brief Returns the source code span of the cast.
      *
-     * @return The span of the node
+     * @return The `pretty_diagnostics::Span` of the cast.
      */
     [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
 
     /**
-     * @brief Returns the expression being cast
+     * @brief Returns the expression being cast.
      *
-     * @return A reference to the unique_ptr of the expression
+     * @return A constant reference to the unique pointer of the expression `Node`.
      */
     [[nodiscard]] auto& expression() const { return _expression; }
 
     /**
-     * @brief Returns the source type of the cast
+     * @brief Returns the source type of the cast.
      *
-     * @return A reference to the 'from' type
+     * @return A constant reference to the source `sem::Type`.
+     * @throws std::bad_optional_access if the source type has not been set.
      */
     [[nodiscard]] auto& from() const { return _from.value(); }
 
     /**
-     * @brief Sets the source type of the cast
+     * @brief Sets the source type of the cast.
      *
-     * @param type The type to set
+     * @param type The source semantic type to set.
      */
     void set_from(sem::Type type) { _from = std::move(type); }
 
     /**
-     * @brief Returns the target type of the cast
+     * @brief Returns the target type of the cast.
      *
-     * @return A reference to the 'to' type
+     * @return A constant reference to the target `sem::Type`.
      */
     [[nodiscard]] auto& to() const { return _to; }
 

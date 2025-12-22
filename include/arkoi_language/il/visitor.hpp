@@ -16,100 +16,106 @@ class Goto;
 class If;
 
 /**
- * @brief Base class for IL visitors
+ * @brief Base class for the Intermediate Language (IL) visitors.
+ *
+ * This class implements the Visitor pattern for the IL representation,
+ * including structural elements like `Module`, `Function`, and `BasicBlock`,
+ * as well as all individual TAC instructions.
+ *
+ * @see InstructionBase, BasicBlock, Function, Module
  */
 class Visitor {
 public:
     virtual ~Visitor() = default;
 
     /**
-     * @brief Visits a Module
+     * @brief Visits a compilation `Module`.
      *
-     * @param module The module to visit
+     * @param module The `Module` to visit.
      */
     virtual void visit(Module& module) = 0;
 
     /**
-     * @brief Visits a Function
+     * @brief Visits a `Function` definition.
      *
-     * @param function The function to visit
+     * @param function The `Function` to visit.
      */
     virtual void visit(Function& function) = 0;
 
     /**
-     * @brief Visits a BasicBlock
+     * @brief Visits a `BasicBlock` in the CFG.
      *
-     * @param block The basic block to visit
+     * @param block The `BasicBlock` to visit.
      */
     virtual void visit(BasicBlock& block) = 0;
 
     /**
-     * @brief Visits a Return instruction
+     * @brief Visits a `Return` instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `Return` instruction to visit.
      */
     virtual void visit(Return& instruction) = 0;
 
     /**
-     * @brief Visits a Binary instruction
+     * @brief Visits a `Binary` operation instruction.
      *
-     * @param instruction The instruction to visit.
+     * @param instruction The `Binary` instruction to visit.
      */
     virtual void visit(Binary& instruction) = 0;
 
     /**
-     * @brief Visits a Cast instruction
+     * @brief Visits a `Cast` instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `Cast` instruction to visit.
      */
     virtual void visit(Cast& instruction) = 0;
 
     /**
-     * @brief Visits a Call instruction
+     * @brief Visits a `Call` instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `Call` instruction to visit.
      */
     virtual void visit(Call& instruction) = 0;
 
     /**
-     * @brief Visits an If instruction
+     * @brief Visits an `If` conditional jump instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `If` instruction to visit.
      */
     virtual void visit(If& instruction) = 0;
 
     /**
-     * @brief Visits a Goto instruction
+     * @brief Visits a `Goto` unconditional jump instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `Goto` instruction to visit.
      */
     virtual void visit(Goto& instruction) = 0;
 
     /**
-     * @brief Visits an Alloca instruction
+     * @brief Visits an `Alloca` stack allocation instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `Alloca` instruction to visit.
      */
     virtual void visit(Alloca& instruction) = 0;
 
     /**
-     * @brief Visits a Store instruction
+     * @brief Visits a `Store` memory write instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `Store` instruction to visit.
      */
     virtual void visit(Store& instruction) = 0;
 
     /**
-     * @brief Visits a Load instruction
+     * @brief Visits a `Load` memory read instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `Load` instruction to visit.
      */
     virtual void visit(Load& instruction) = 0;
 
     /**
-     * @brief Visits a Constant instruction
+     * @brief Visits a `Constant` assignment instruction.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `Constant` instruction to visit.
      */
     virtual void visit(Constant& instruction) = 0;
 };

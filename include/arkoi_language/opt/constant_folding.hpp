@@ -3,84 +3,65 @@
 #include "arkoi_language/opt/pass.hpp"
 
 namespace arkoi::opt {
+/**
+ * @brief Optimization pass that evaluates constant expressions at compile time.
+ *
+ * `ConstantFolding` identifies instructions where all operands are constant
+ * (immediates) and replaces the instruction with a single `il::Constant`
+ * assignment. This is a local optimization performed within basic blocks.
+ *
+ * Example: `x = 1 + 2` becomes `x = 3`.
+ *
+ * @see Pass, ConstantPropagation
+ */
 class ConstantFolding final : public Pass {
 public:
     /**
-     * @brief Called when entering a module
-     *
-     * This is never getting used as the constant folding is a local
-     * optimization technique only done on basic blocks
-     *
-     * @param module The module being entered
-     *
-     * @return True if the module was modified, false otherwise
+     * @brief No-op for module entry.
      */
     bool enter_module([[maybe_unused]] il::Module& module) override { return false; }
 
     /**
-     * @brief Called when exiting a module
-     *
-     * This is never getting used as the constant folding is a local
-     * optimization technique only done on basic blocks
-     *
-     * @param module The module being exited
-     *
-     * @return True if the module was modified, false otherwise
+     * @brief No-op for module exit.
      */
     bool exit_module([[maybe_unused]] il::Module& module) override { return false; }
 
     /**
-     * @brief Called when entering a function
-     *
-     * This is never getting used as the constant folding is a local
-     * optimization technique only done on basic blocks
-     *
-     * @param function The function being entered
-     *
-     * @return True if the function was modified, false otherwise
+     * @brief No-op for function entry.
      */
     bool enter_function([[maybe_unused]] il::Function& function) override { return false; }
 
     /**
-     * @brief Called when exiting a function
-     *
-     * This is never getting used as the constant folding is a local
-     * optimization technique only done on basic blocks
-     *
-     * @param function The function being exited
-     *
-     * @return True if the function was modified, false otherwise
+     * @brief No-op for function exit.
      */
     bool exit_function([[maybe_unused]] il::Function& function) override { return false; }
 
     /**
-     * @brief Called for each basic block in a function
+     * @brief Performs constant folding on the instructions within a basic block.
      *
-     * @param block The basic block being processed
+     * Iterates through the block's instructions and evaluates `il::Binary` and
+     * `il::Cast` operations if their inputs are `il::Immediate` values.
      *
-     * @return True if the block was modified, false otherwise
+     * @param block The `il::BasicBlock` to optimize.
+     * @return True if any instructions were folded, false otherwise.
      */
     bool on_block(il::BasicBlock& block) override;
 
 private:
     /**
-     * @brief This will evaluate a cast instruction to its appropriate
-     *        result
+     * @brief Evaluates an `il::Cast` instruction with a constant source.
      *
-     * @param instruction The input cast that should get evaluated
-     *
-     * @return The result of the cast as immediate operand
+     * @param instruction The cast instruction to evaluate.
+     * @return The resulting `il::Immediate` value.
      */
     [[nodiscard]] static il::Immediate _cast(il::Cast& instruction);
 
     /**
-     * @brief Evaluates a given cast (based on type and expression) and returns
-     *        the result as an immediate
+     * @brief Helper to perform the actual type conversion for a constant value.
      *
-     * @param to The target type to which the expression should be casted
-     * @param expression The actual expression to be evaluated
-     *
-     * @return A resulting immediate of the evaluation
+     * @param to The target `sem::Type`.
+     * @param expression The constant value to convert.
+     * @return The casted `il::Immediate`.
      */
     [[nodiscard]] static il::Immediate _evaluate_cast(const sem::Type& to, auto expression);
 };

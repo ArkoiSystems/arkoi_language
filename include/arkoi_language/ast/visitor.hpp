@@ -16,100 +16,108 @@ class Call;
 class If;
 
 /**
- * @brief Base class for AST visitors
+ * @brief Base class for the Abstract Syntax Tree (AST) visitors.
+ *
+ * This class implements the Visitor pattern, allowing for operations to be
+ * performed on the AST without modifying the node classes themselves.
+ * Common implementations include semantic analysis, code generation, and pretty-printing.
+ *
+ * Each `visit` method corresponds to a specific `Node` subclass.
+ *
+ * @see Node
  */
 class Visitor {
 public:
     virtual ~Visitor() = default;
 
     /**
-     * @brief Visits a Program node
+     * @brief Visits a `Program` node.
      *
-     * @param node The Program node to visit
+     * @param node The `Program` node representing the top-level unit.
      */
     virtual void visit(Program& node) = 0;
 
     /**
-     * @brief Visits a Function node
+     * @brief Visits a `Function` node.
      *
-     * @param node The Function node to visit
+     * @param node The `Function` node representing a function definition.
      */
     virtual void visit(Function& node) = 0;
 
     /**
-     * @brief Visits a Block node
+     * @brief Visits a `Block` node.
      *
-     * @param node The Block node to visit
+     * @param node The `Block` node representing a sequence of statements.
      */
     virtual void visit(Block& node) = 0;
 
     /**
-     * @brief Visits a Parameter node
+     * @brief Visits a `Parameter` node.
      *
-     * @param node The Parameter node to visit
+     * @param node The `Parameter` node representing a function parameter.
      */
     virtual void visit(Parameter& node) = 0;
 
     /**
-     * @brief Visits an Immediate node
+     * @brief Visits an `Immediate` node.
      *
-     * @param node The Immediate node to visit
+     * @param node The `Immediate` node representing a literal value (e.g., integer).
      */
     virtual void visit(Immediate& node) = 0;
 
     /**
-     * @brief Visits a Variable node
+     * @brief Visits a `Variable` node.
      *
-     * @param node The Variable node to visit
+     * @param node The `Variable` node representing a variable declaration.
      */
     virtual void visit(Variable& node) = 0;
 
     /**
-     * @brief Visits a Return node
+     * @brief Visits a `Return` node.
      *
-     * @param node The Return node to visit
+     * @param node The `Return` node representing a return statement.
      */
     virtual void visit(Return& node) = 0;
 
     /**
-     * @brief Visits an Identifier node
+     * @brief Visits an `Identifier` node.
      *
-     * @param node The Identifier node to visit
+     * @param node The `Identifier` node representing a name reference.
      */
     virtual void visit(Identifier& node) = 0;
 
     /**
-     * @brief Visits a Binary node
+     * @brief Visits a `Binary` node.
      *
-     * @param node The Binary node to visit
+     * @param node The `Binary` node representing a binary operation (e.g., addition).
      */
     virtual void visit(Binary& node) = 0;
 
     /**
-     * @brief Visits a Cast node
+     * @brief Visits a `Cast` node.
      *
-     * @param node The Cast node to visit
+     * @param node The `Cast` node representing a type conversion.
      */
     virtual void visit(Cast& node) = 0;
 
     /**
-     * @brief Visits an Assign node
+     * @brief Visits an `Assign` node.
      *
-     * @param node The Assign node to visit
+     * @param node The `Assign` node representing an assignment statement.
      */
     virtual void visit(Assign& node) = 0;
 
     /**
-     * @brief Visits a Call node
+     * @brief Visits a `Call` node.
      *
-     * @param node The Call node to visit
+     * @param node The `Call` node representing a function call.
      */
     virtual void visit(Call& node) = 0;
 
     /**
-     * @brief Visits an If node
+     * @brief Visits an `If` node.
      *
-     * @param node The If node to visit
+     * @param node The `If` node representing an if-else statement.
      */
     virtual void visit(If& node) = 0;
 };

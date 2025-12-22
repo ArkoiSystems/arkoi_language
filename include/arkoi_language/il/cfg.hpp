@@ -13,7 +13,11 @@ namespace arkoi::il {
 class Function;
 
 /**
- * @brief Represents a basic block in the Control Flow Graph (CFG)
+ * @brief Represents a Basic Block in the Control Flow Graph (CFG).
+ *
+ * A basic block is a linear sequence of instructions with a single entry point
+ * (the first instruction) and a single exit point (the last instruction).
+ * In Arkoi IL, basic blocks are linked together to form the CFG of a function.
  */
 class BasicBlock {
 public:
@@ -22,92 +26,91 @@ public:
 
 public:
     /**
-     * @brief Constructs a BasicBlock with the given parameters
+     * @brief Constructs a `BasicBlock` with a unique label.
      *
-     * @param label The label of the basic block
+     * @param label The symbolic name of the block (e.g., "L1", "entry").
      */
     explicit BasicBlock(std::string label) :
         _branch(), _next(), _label(std::move(label)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Dispatches the visitor to this basic block.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
-     * @brief Emplace a new instruction at the end of the block
+     * @brief Creates and appends a new instruction to the block.
      *
-     * @tparam Type The type of the instruction
-     * @tparam Args The argument types for the instruction constructor
-     * @param args The arguments for the instruction constructor
-     *
-     * @return A reference to the newly created instruction.
+     * @tparam Type The concrete instruction type (e.g., `Binary`, `Goto`).
+     * @tparam Args The constructor argument types for @p Type.
+     * @param args The arguments to pass to the instruction constructor.
+     * @return A reference to the newly appended `Instruction`.
      */
     template <typename Type, typename... Args>
     Instruction& emplace_back(Args&&... args);
 
     /**
-     * @brief Returns the label of the basic block
+     * @brief Returns the symbolic label of the block.
      *
-     * @return A reference to the label string
+     * @return A constant reference to the label string.
      */
     [[nodiscard]] auto& label() const { return _label; }
 
     /**
-     * @brief Returns the branch target (if any)
+     * @brief Returns the non-sequential branch target (if any).
      *
-     * @return A pointer to the branch target basic block
+     * For example, in an `If` instruction, this points to the "then" block.
+     *
+     * @return A pointer to the branch target `BasicBlock`, or nullptr.
      */
     [[nodiscard]] auto* branch() const { return _branch; }
 
     /**
-     * @brief Sets the branch target
+     * @brief Sets the non-sequential branch target.
      *
-     * @param branch The target basic block
+     * @param branch Pointer to the destination `BasicBlock`.
      */
     void set_branch(BasicBlock* branch);
 
     /**
-     * @brief Returns the next sequential basic block
+     * @brief Returns the sequential fallthrough target.
      *
-     * @return A pointer to the next basic block
+     * This is the block that executes if no conditional jump is taken.
+     *
+     * @return A pointer to the next `BasicBlock`, or nullptr.
      */
     [[nodiscard]] auto* next() const { return _next; }
 
     /**
-     * @brief Sets the next sequential basic block
+     * @brief Sets the sequential fallthrough target.
      *
-     * @param next The next basic block
+     * @param next Pointer to the destination `BasicBlock`.
      */
     void set_next(BasicBlock* next);
 
     /**
-     * @brief Returns the set of predecessor basic blocks
+     * @brief Returns the set of all blocks that can jump to this one.
      *
-     * @return A reference to the set of predecessors
+     * @return A reference to the set of predecessor `BasicBlock` pointers.
      */
     [[nodiscard]] auto& predecessors() { return _predecessors; }
 
     /**
-     * @brief Returns the vector of instructions in the block
+     * @brief Returns the sequence of instructions within this block.
      *
-     * @return A reference to the vector of instructions
+     * @return A reference to the vector of `Instruction` objects.
      */
     [[nodiscard]] auto& instructions() { return _instructions; }
 
     /**
-     * @brief Returns an iterator to the first instruction
-     *
-     * @return An iterator to the beginning of the instructions
+     * @brief Returns an iterator to the first instruction.
      */
     Instructions::iterator begin() { return _instructions.begin(); }
 
     /**
-     * @brief Returns an iterator to the end of instructions
-     *
-     * @return An iterator to the end of the instructions
+     * @brief Returns an iterator to the end of the instructions.
      */
     Instructions::iterator end() { return _instructions.end(); }
 
@@ -120,7 +123,10 @@ private:
 };
 
 /**
- * @brief Iterator for traversing basic blocks in a function
+ * @brief An iterator for traversing basic blocks in a `Function`.
+ *
+ * This iterator performs a traversal (typically DFS or BFS depending on internal queue)
+ * of the CFG starting from the entry block.
  */
 class BlockIterator {
 public:
@@ -131,59 +137,41 @@ public:
 
 public:
     /**
-     * @brief Constructs a BlockIterator for a function
+     * @brief Constructs an iterator starting at the entry block of a function.
      *
-     * @param function The function to iterate over
+     * @param function The function to traverse.
      */
     explicit BlockIterator(Function* function);
 
     /**
-     * @brief Dereferences the iterator
-     *
-     * @return A reference to the current basic block
+     * @brief Dereferences the iterator to the current block.
      */
     [[nodiscard]] reference operator*() const { return *_current; }
 
     /**
-     * @brief Accesses members of the current basic block
-     *
-     * @return A pointer to the current basic block
+     * @brief Accesses members of the current basic block.
      */
     [[nodiscard]] pointer operator->() const { return _current; }
 
     /**
-     * @brief Pre-increment operator
-     *
-     * @return A reference to this iterator
+     * @brief Advances to the next block in the CFG traversal.
      */
     BlockIterator& operator++();
 
     /**
-     * @brief Post-increment operator
-     *
-     * @return The iterator before incrementing
+     * @brief Post-increment operator.
      */
     BlockIterator operator++(int);
 
     /**
-     * @brief Equality compares only the current pointed element
-     *
-     * @param left Left-hand block iterator
-     * @param right Right-hand block iterator
-     *
-     * @return True if both iterators refer to the same pointer
+     * @brief Equality comparison for iterators.
      */
     friend bool operator==(const BlockIterator& left, const BlockIterator& right) {
         return left._current == right._current;
     }
 
     /**
-     * @brief Inequality based on `==`
-     *
-     * @param left Left-hand block iterator
-     * @param right Right-hand block iterator
-     *
-     * @return True if the iterators differ
+     * @brief Inequality comparison for iterators.
      */
     friend bool operator!=(const BlockIterator& left, const BlockIterator& right) {
         return !(left == right);
@@ -197,28 +185,30 @@ private:
 };
 
 /**
- * @brief Represents a function in the Control Flow Graph (CFG)
+ * @brief Represents a single function in the IL representation.
+ *
+ * A `Function` holds a collection of `BasicBlock` objects that form its CFG.
+ * It also manages the pool of blocks and provides access to entry/exit points.
  */
 class Function {
 public:
     /**
-     * @brief Constructs a Function with the given parameters and automatically
-     *        generated entry and exit labels
+     * @brief Constructs a `Function` with auto-generated labels.
      *
-     * @param name The name of the function
-     * @param parameters The function parameters
-     * @param type The return type
+     * @param name The name of the function.
+     * @param parameters The list of input variables.
+     * @param type The semantic return type.
      */
     Function(const std::string& name, std::vector<Variable> parameters, sem::Type type);
 
     /**
-     * @brief Constructs a Function with explicit entry and exit labels
+     * @brief Constructs a `Function` with custom entry and exit labels.
      *
-     * @param name The name of the function
-     * @param parameters The function parameters
-     * @param type The return type
-     * @param entry_label The label for the entry block
-     * @param exit_label The label for the exit block
+     * @param name The name of the function.
+     * @param parameters The list of input variables.
+     * @param type The semantic return type.
+     * @param entry_label The label for the start of the function.
+     * @param exit_label The label for the return point.
      */
     Function(
         std::string name, std::vector<Variable> parameters, sem::Type type,
@@ -226,92 +216,90 @@ public:
     );
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Dispatches the visitor to this function and all its blocks.
      *
      * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
-     * @brief Emplace a new basic block in the function
+     * @brief Creates and appends a new basic block to the function.
      *
-     * @tparam Args The argument types for the BasicBlock constructor
-     * @param args The arguments for the BasicBlock constructor
-     *
-     * @return A pointer to the newly created basic block
+     * @tparam Args The constructor argument types for `BasicBlock`.
+     * @param args The arguments to pass to the `BasicBlock` constructor.
+     * @return A pointer to the newly created `BasicBlock`.
      */
     template <typename... Args>
     BasicBlock* emplace_back(Args&&... args);
 
     /**
-     * @brief Checks if the function is a leaf function (no calls)
+     * @brief Determines if this function contains any `Call` instructions.
      *
-     * @return True if it's a leaf, false otherwise
+     * @return True if no function calls are present, false otherwise.
      */
     [[nodiscard]] bool is_leaf();
 
     /**
-     * @brief Removes a basic block from the function
+     * @brief Removes a basic block from the function's CFG.
      *
-     * @param target The basic block to remove
-     *
-     * @return True if successful, false otherwise
+     * @param target Pointer to the block to be removed.
+     * @return True if the block was found and removed, false otherwise.
      */
     [[nodiscard]] bool remove(BasicBlock* target);
 
     /**
-     * @brief Returns the name of the function
+     * @brief Returns the name of the function.
      *
-     * @return A reference to the name string
+     * @return A constant reference to the name string.
      */
     [[nodiscard]] auto& name() const { return _name; }
 
     /**
-     * @brief Returns the return type of the function
+     * @brief Returns the return type of the function.
      *
-     * @return A reference to the type
+     * @return A constant reference to the `sem::Type`.
      */
     [[nodiscard]] auto& type() const { return _type; }
 
     /**
-     * @brief Returns the entry basic block
+     * @brief Returns the initial entry block of the function.
      *
-     * @return A pointer to the entry block
+     * @return Pointer to the entry `BasicBlock`.
      */
     [[nodiscard]] auto* entry() const { return _entry; }
 
     /**
-     * @brief Returns the exit basic block
+     * @brief Returns the final exit block of the function.
      *
-     * @return A pointer to the exit block
+     * @return Pointer to the exit `BasicBlock`.
      */
     [[nodiscard]] auto* exit() const { return _exit; }
 
     /**
-     * @brief Sets the exit basic block
+     * @brief Overrides the current exit block.
      *
-     * @param exit The exit block
+     * @param exit Pointer to the new exit `BasicBlock`.
      */
     void set_exit(BasicBlock* exit) { _exit = exit; }
 
     /**
-     * @brief Returns the function parameters
+     * @brief Returns the formal parameters of the function.
      *
-     * @return A reference to the vector of parameters
+     * @return A reference to the vector of parameter `Variable` objects.
      */
     [[nodiscard]] auto& parameters() { return _parameters; }
 
     /**
-     * @brief Returns an iterator to the entry block
+     * @brief Returns a CFG traversal iterator starting at the entry block.
      *
-     * @return A block iterator
+     * @return A `BlockIterator` representing the start state.
      */
     [[nodiscard]] BlockIterator begin() { return BlockIterator(this); }
 
     /**
-     * @brief Returns an end iterator
+     * @brief Returns an end-of-traversal iterator.
      *
-     * @return A block iterator
+     * @return A `BlockIterator` representing the end state.
      */
     [[nodiscard]] BlockIterator end() { return BlockIterator(nullptr); }
 
@@ -325,7 +313,7 @@ private:
 };
 
 /**
- * @brief Represents a module containing multiple functions
+ * @brief Represents a compilation unit (module) containing multiple functions.
  */
 class Module {
 public:
@@ -335,34 +323,33 @@ public:
     Module() = default;
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Dispatches the visitor to the module and all its functions.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
-     * @brief Emplace a new function in the module
+     * @brief Creates and appends a new function to the module.
      *
-     * @tparam Args The argument types for the Function constructor
-     * @param args The arguments for the Function constructor
-     *
-     * @return A reference to the newly created function
+     * @tparam Args The constructor argument types for `Function`.
+     * @param args The arguments to pass to the `Function` constructor.
+     * @return A reference to the newly created `Function`.
      */
     template <typename... Args>
     Function& emplace_back(Args&&... args);
 
     /**
-     * @brief Returns an iterator to the first function
+     * @brief Returns an iterator to the first function in the module.
      *
-     * @return An iterator to the beginning of the functions
+     * @return A `std::vector<Function>::iterator` representing the start state.
      */
     Functions::iterator begin() { return _functions.begin(); }
 
     /**
-     * @brief Returns an iterator to the end of functions
+     * @brief Returns an iterator to the end of the functions list.
      *
-     * @return An iterator to the end of the functions
+     * @return A `std::vector<Function>::iterator` representing the end state.
      */
     Functions::iterator end() { return _functions.end(); }
 

@@ -8,72 +8,87 @@
 
 namespace arkoi::il {
 /**
- * @brief Base class for all IL instructions
+ * @brief Abstract base class for all Intermediate Language (IL) instructions.
+ *
+ * Each IL instruction represents a single operation in the Three-Address-ish Code (TAC-ish)
+ * style representation. Instructions provide information about which operands
+ * they define (write to) and which they use (read from), which is essential
+ * for dataflow analysis.
+ *
+ * @see Visitor, Operand
  */
 class InstructionBase {
 public:
     virtual ~InstructionBase() = default;
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Dispatches the visitor to the concrete instruction implementation.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     virtual void accept(Visitor& visitor) = 0;
 
     /**
-     * @brief Returns the list of operands defined by this instruction
+     * @brief Returns the list of operands that are defined (written) by this instruction.
      *
-     * @return A vector of defined operands
+     * For example, in `x = y + z`, `x` is a defined operand.
+     *
+     * @return A vector of defined `Operand` objects.
+     * @see uses
      */
     [[nodiscard]] virtual std::vector<Operand> defs() const { return { }; }
 
     /**
-     * @brief Returns the list of operands used by this instruction
+     * @brief Returns the list of operands that are used (read) by this instruction.
      *
-     * @return A vector of used operands
+     * For example, in `x = y + z`, `y` and `z` are used operands.
+     *
+     * @return A vector of used `Operand` objects.
+     * @see defs
      */
     [[nodiscard]] virtual std::vector<Operand> uses() const { return { }; }
 
     /**
-     * @brief Checks if the instruction has a constant value
+     * @brief Checks if the instruction result is a constant or has constant operands.
      *
-     * @return True if constant, false otherwise
+     * Useful for optimizations like constant folding.
+     *
+     * @return True if the instruction is constant-evaluable, false otherwise.
      */
     [[nodiscard]] virtual bool is_constant() = 0;
 };
 
 /**
- * @brief Represents an unconditional jump in the IL
+ * @brief Represents an unconditional jump to a target label.
  */
 class Goto final : public InstructionBase {
 public:
     /**
-     * @brief Constructs a Goto instruction
+     * @brief Constructs a `Goto` instruction.
      *
-     * @param label The target label
+     * @param label The name of the target basic block label.
      */
     explicit Goto(std::string label) :
         _label(std::move(label)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Goto` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Returns whether this instruction is constant.
      *
-     * @return Always false for Goto
+     * @return Always false for `Goto`.
      */
     [[nodiscard]] bool is_constant() override { return false; }
 
     /**
-     * @brief Returns the target label
+     * @brief Returns the target label of the jump.
      *
-     * @return A reference to the label string
+     * @return A constant reference to the label string.
      */
     [[nodiscard]] auto& label() const { return _label; }
 
@@ -82,59 +97,62 @@ private:
 };
 
 /**
- * @brief Represents a conditional jump in the IL
+ * @brief Represents a conditional jump (if-then-else) in the IL.
+ *
+ * If the condition evaluates to true, control transfers to `branch`.
+ * Otherwise, it transfers to `next`.
  */
 class If final : public InstructionBase {
 public:
     /**
-     * @brief Constructs an If instruction with the given parameters
+     * @brief Constructs an `If` instruction.
      *
-     * @param condition The condition operand
-     * @param next The label of the block to execute if the condition is false
-     * @param branch The label of the block to execute if the condition is true
+     * @param condition The operand to evaluate as a boolean.
+     * @param next The label to jump to if the condition is false.
+     * @param branch The label to jump to if the condition is true.
      */
     If(Operand condition, std::string next, std::string branch) :
         _next(std::move(next)), _branch(std::move(branch)), _condition(std::move(condition)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `If` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands used by this instruction
+     * @brief Returns the operands used by this conditional jump.
      *
-     * @return A vector containing the condition operand
+     * @return A vector containing the `_condition` operand.
      */
     [[nodiscard]] std::vector<Operand> uses() const override { return { _condition }; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if the condition is an immediate constant.
      *
-     * @return True if the condition is an immediate value
+     * @return True if `_condition` is an `Immediate`.
      */
     [[nodiscard]] bool is_constant() override { return std::holds_alternative<Immediate>(_condition); }
 
     /**
-     * @brief Returns the condition operand
+     * @brief Returns the condition operand.
      *
-     * @return A reference to the condition operand
+     * @return A reference to the `Operand`.
      */
     [[nodiscard]] auto& condition() { return _condition; }
 
     /**
-     * @brief Returns the target label for the true branch
+     * @brief Returns the label for the true branch.
      *
-     * @return A reference to the label string
+     * @return A constant reference to the `branch` label.
      */
     [[nodiscard]] auto& branch() const { return _branch; }
 
     /**
-     * @brief Returns the target label for the false branch
+     * @brief Returns the label for the false branch (fallthrough).
      *
-     * @return A reference to the label string
+     * @return A constant reference to the `next` label.
      */
     [[nodiscard]] auto& next() const { return _next; }
 
@@ -144,66 +162,68 @@ private:
 };
 
 /**
- * @brief Represents a function call in the IL
+ * @brief Represents a function call in the IL.
+ *
+ * A `Call` defines a result variable and uses a list of argument operands.
  */
 class Call final : public InstructionBase {
 public:
     /**
-     * @brief Constructs a Call instruction with the given parameters
+     * @brief Constructs a `Call` instruction.
      *
-     * @param result The variable where the result will be stored
-     * @param name The name of the function to call
-     * @param arguments The arguments to the function call
+     * @param result The variable where the function's return value will be stored.
+     * @param name The name of the function to be called.
+     * @param arguments The list of operands passed as arguments.
      */
     Call(Variable result, std::string name, std::vector<Operand>&& arguments) :
         _arguments(std::move(arguments)), _name(std::move(name)), _result(std::move(result)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Call` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands defined by this instruction
+     * @brief Returns the result variable defined by the call.
      *
-     * @return A vector containing the result variable
+     * @return A vector containing the `_result` variable.
      */
     [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
 
     /**
-     * @brief Returns the operands used by this instruction
+     * @brief Returns the argument operands used by the call.
      *
-     * @return A vector containing the arguments
+     * @return A vector of `_arguments`.
      */
     [[nodiscard]] std::vector<Operand> uses() const override { return _arguments; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if the call is constant.
      *
-     * @return Always false for Call
+     * @return Always false for `Call`.
      */
     [[nodiscard]] bool is_constant() override { return false; }
 
     /**
-     * @brief Returns the arguments to the function call
+     * @brief Returns the list of argument operands.
      *
-     * @return A reference to the vector of arguments
+     * @return A reference to the arguments vector.
      */
     [[nodiscard]] auto& arguments() { return _arguments; }
 
     /**
-     * @brief Returns the result variable
+     * @brief Returns the result variable.
      *
-     * @return A reference to the result variable
+     * @return A constant reference to the `_result` variable.
      */
     [[nodiscard]] auto& result() const { return _result; }
 
     /**
-     * @brief Returns the name of the function
+     * @brief Returns the name of the function being called.
      *
-     * @return A reference to the name string
+     * @return A constant reference to the function name string.
      */
     [[nodiscard]] auto& name() const { return _name; }
 
@@ -214,43 +234,45 @@ private:
 };
 
 /**
- * @brief Represents a return instruction in the IL
+ * @brief Represents a return instruction.
+ *
+ * Transfers control back to the caller and optionally returns a value.
  */
 class Return final : public InstructionBase {
 public:
     /**
-     * @brief Constructs a Return instruction
+     * @brief Constructs a `Return` instruction.
      *
-     * @param value The operand to return
+     * @param value The operand containing the value to return.
      */
     explicit Return(Operand value) :
         _value(std::move(value)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Return` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands used by this instruction
+     * @brief Returns the operand used for the return value.
      *
-     * @return A vector containing the return value operand
+     * @return A vector containing the `_value` operand.
      */
     [[nodiscard]] std::vector<Operand> uses() const override { return { _value }; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if the return is constant.
      *
-     * @return Always false for Return
+     * @return Always false for `Return`.
      */
     [[nodiscard]] bool is_constant() override { return false; }
 
     /**
-     * @brief Returns the return value operand
+     * @brief Returns the operand being returned.
      *
-     * @return A reference to the operand
+     * @return A reference to the `_value` operand.
      */
     [[nodiscard]] auto& value() { return _value; }
 
@@ -259,107 +281,106 @@ private:
 };
 
 /**
- * @brief Represents a binary operation in the IL
+ * @brief Represents a binary operation between two operands.
  */
 class Binary final : public InstructionBase {
 public:
     /**
-     * @brief Enumeration of IL binary operators
+     * @brief Supported binary operators in the IL.
      */
     enum class Operator {
-        Add,
-        Sub,
-        Mul,
-        Div,
-        GreaterThan,
-        LessThan,
+        Add,         ///< '+'
+        Sub,         ///< '-'
+        Mul,         ///< '*'
+        Div,         ///< '/'
+        GreaterThan, ///< '>'
+        LessThan,    ///< '<'
     };
 
 public:
     /**
-     * @brief Constructs a Binary instruction with the given parameters
+     * @brief Constructs a `Binary` operation instruction.
      *
-     * @param result The variable where the result will be stored
-     * @param left The left operand
-     * @param op The operator
-     * @param right The right operand
-     * @param op_type The type of the operands
+     * @param result The variable to store the result of the operation.
+     * @param left The left operand.
+     * @param op The binary operator to apply.
+     * @param right The right operand.
+     * @param op_type The semantic type of the operands.
      */
     Binary(Variable result, Operand left, Operator op, Operand right, sem::Type op_type) :
         _left(std::move(left)), _right(std::move(right)), _result(std::move(result)),
         _op_type(std::move(op_type)), _op(op) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Binary` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands defined by this instruction
+     * @brief Returns the result variable defined by this operation.
      *
-     * @return A vector containing the result variable
+     * @return A vector containing the `_result` variable.
      */
     [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
 
     /**
-     * @brief Returns the operands used by this instruction
+     * @brief Returns the operands used by this operation.
      *
-     * @return A vector containing the left and right operands
+     * @return A vector containing the `_left` and `_right` operands.
      */
     [[nodiscard]] std::vector<Operand> uses() const override { return { _left, _right }; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if both operands are immediate constants.
      *
-     * @return True if both operands are immediate values
+     * @return True if both `_left` and `_right` are `Immediate`.
      */
     [[nodiscard]] bool is_constant() override {
         return std::holds_alternative<Immediate>(_left) && std::holds_alternative<Immediate>(_right);
     }
 
     /**
-     * @brief Returns the result variable
+     * @brief Returns the result variable.
      *
-     * @return A reference to the result variable
+     * @return A constant reference to the `_result` variable.
      */
     [[nodiscard]] auto& result() const { return _result; }
 
     /**
-     * @brief Returns the right operand
+     * @brief Returns the right operand.
      *
-     * @return A reference to the operand
+     * @return A reference to the `_right` operand.
      */
     [[nodiscard]] auto& right() { return _right; }
 
     /**
-     * @brief Returns the left operand
+     * @brief Returns the left operand.
      *
-     * @return A reference to the operand
+     * @return A reference to the `_left` operand.
      */
     [[nodiscard]] auto& left() { return _left; }
 
     /**
-     * @brief Returns the operand type
+     * @brief Returns the type of the operands.
      *
-     * @return A reference to the type
+     * @return A constant reference to the `sem::Type`.
      */
     [[nodiscard]] auto& op_type() const { return _op_type; }
 
     /**
-     * @brief Returns the operator
+     * @brief Returns the operator.
      *
-     * @return The operator
+     * @return A constant reference to the `Operator`.
      */
     [[nodiscard]] auto& op() const { return _op; }
 
     /**
-     * @brief Converts an AST binary operator to an IL binary operator
+     * @brief Converts an AST binary operator to its IL equivalent.
      *
-     * @param op The AST operator
-     *
-     * @return The corresponding IL operator
+     * @param op The `ast::Binary::Operator` from the AST.
+     * @return The corresponding `il::Binary::Operator`.
      */
     [[nodiscard]] static Operator node_to_instruction(ast::Binary::Operator op);
 
@@ -371,66 +392,66 @@ private:
 };
 
 /**
- * @brief Represents a type cast in the IL
+ * @brief Represents a type conversion (cast) instruction.
  */
 class Cast final : public InstructionBase {
 public:
     /**
-     * @brief Constructs a Cast instruction with the given parameters
+     * @brief Constructs a `Cast` instruction.
      *
-     * @param result The variable where the result will be stored
-     * @param source The source operand
-     * @param from The source type
+     * @param result The target variable for the casted value.
+     * @param source The operand to be converted.
+     * @param from The original semantic type of the operand.
      */
     Cast(Variable result, Operand source, sem::Type from) :
         _result(std::move(result)), _source(std::move(source)), _from(std::move(from)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Cast` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands defined by this instruction
+     * @brief Returns the result variable defined by the cast.
      *
-     * @return A vector containing the result variable
+     * @return A vector containing the `_result` variable.
      */
     [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
 
     /**
-     * @brief Returns the operands used by this instruction
+     * @brief Returns the source operand used for the cast.
      *
-     * @return A vector containing the source operand
+     * @return A vector containing the `_source` operand.
      */
     [[nodiscard]] std::vector<Operand> uses() const override { return { _source }; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if the source operand is an immediate constant.
      *
-     * @return True if the source operand is an immediate value
+     * @return True if `_source` is an `Immediate`.
      */
     [[nodiscard]] bool is_constant() override { return std::holds_alternative<Immediate>(_source); }
 
     /**
-     * @brief Returns the source operand
+     * @brief Returns the source operand.
      *
-     * @return A reference to the operand
+     * @return A reference to the `_source` operand.
      */
     [[nodiscard]] auto& source() { return _source; }
 
     /**
-     * @brief Returns the result variable
+     * @brief Returns the target result variable.
      *
-     * @return A reference to the result variable
+     * @return A constant reference to the `_result` variable.
      */
     [[nodiscard]] auto& result() const { return _result; }
 
     /**
-     * @brief Returns the source type
+     * @brief Returns the original type of the source operand.
      *
-     * @return A reference to the type
+     * @return A constant reference to the `_from` type.
      */
     [[nodiscard]] auto& from() const { return _from; }
 
@@ -441,43 +462,45 @@ private:
 };
 
 /**
- * @brief Represents a stack allocation (alloca) in the IL
+ * @brief Represents a stack memory allocation (`alloca`).
+ *
+ * Allocates space on the stack for a local variable or structure.
  */
 class Alloca final : public InstructionBase {
 public:
     /**
-     * @brief Constructs an Alloca instruction
+     * @brief Constructs an `Alloca` instruction.
      *
-     * @param result The memory location allocated on the stack
+     * @param result The memory location representing the stack allocation.
      */
     explicit Alloca(Memory result) :
         _result(std::move(result)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Alloca` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands defined by this instruction
+     * @brief Returns the memory location defined by the allocation.
      *
-     * @return A vector containing the allocated memory
+     * @return A vector containing the `_result` memory operand.
      */
     [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if the allocation is constant.
      *
-     * @return Always false for Alloca
+     * @return Always false for `Alloca`.
      */
     [[nodiscard]] bool is_constant() override { return false; }
 
     /**
-     * @brief Returns the result of the alloca
+     * @brief Returns the allocated memory location.
      *
-     * @return A reference to the result memory location
+     * @return A constant reference to the `_result` memory location.
      */
     [[nodiscard]] auto& result() const { return _result; }
 
@@ -486,58 +509,60 @@ private:
 };
 
 /**
- * @brief Represents a memory load instruction in the IL
+ * @brief Represents a memory load instruction.
+ *
+ * Reads a value from a memory location into a variable.
  */
 class Load final : public InstructionBase {
 public:
     /**
-     * @brief Constructs a Load instruction with the given parameters
+     * @brief Constructs a `Load` instruction.
      *
-     * @param result The variable where the loaded value will be stored
-     * @param source The memory location to load from
+     * @param result The variable to store the loaded value.
+     * @param source The memory location to read from.
      */
     Load(Variable result, Memory source) :
         _result(std::move(result)), _source(std::move(source)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Load` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands defined by this instruction
+     * @brief Returns the result variable defined by the load.
      *
-     * @return A vector containing the result variable
+     * @return A vector containing the `_result` variable.
      */
     [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
 
     /**
-     * @brief Returns the operands used by this instruction
+     * @brief Returns the memory location used by the load.
      *
-     * @return A vector containing the source memory location
+     * @return A vector containing the `_source` memory operand.
      */
     [[nodiscard]] std::vector<Operand> uses() const override { return { _source }; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if the load is constant.
      *
-     * @return Always false for Load
+     * @return Always false for `Load`.
      */
     [[nodiscard]] bool is_constant() override { return false; }
 
     /**
-     * @brief Returns the result variable
+     * @brief Returns the target variable.
      *
-     * @return A reference to the result variable
+     * @return A constant reference to the `_result` variable.
      */
     [[nodiscard]] auto& result() const { return _result; }
 
     /**
-     * @brief Returns the source memory location
+     * @brief Returns the source memory location.
      *
-     * @return A reference to the memory location
+     * @return A constant reference to the `_source` memory location.
      */
     [[nodiscard]] auto& source() const { return _source; }
 
@@ -547,51 +572,55 @@ private:
 };
 
 /**
- * @brief Represents a memory store instruction in the IL
+ * @brief Represents a memory store instruction.
+ *
+ * Writes an operand's value into a target memory location.
  */
 class Store final : public InstructionBase {
 public:
     /**
-     * @brief Constructs a Store instruction with the given parameters
+     * @brief Constructs a `Store` instruction.
      *
-     * @param result The target memory location
-     * @param source The operand to store
+     * @param result The target memory location to write to.
+     * @param source The operand whose value will be stored.
      */
     Store(Memory result, Operand source) :
         _result(std::move(result)), _source(std::move(source)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Store` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands used by this instruction
+     * @brief Returns the operands used for the store.
      *
-     * @return A vector containing the source operand
+     * Note: the target memory location is often considered a 'use' of the address.
+     *
+     * @return A vector containing the `_source` operand.
      */
     [[nodiscard]] std::vector<Operand> uses() const override { return { _source }; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if the store is constant.
      *
-     * @return Always false for Store
+     * @return Always false for `Store`.
      */
     [[nodiscard]] bool is_constant() override { return false; }
 
     /**
-     * @brief Returns the target memory location
+     * @brief Returns the target memory location.
      *
-     * @return A reference to the memory location
+     * @return A constant reference to the `_result` memory location.
      */
     [[nodiscard]] auto& result() const { return _result; }
 
     /**
-     * @brief Returns the source operand
+     * @brief Returns the source operand.
      *
-     * @return A reference to the operand
+     * @return A reference to the `_source` operand.
      */
     [[nodiscard]] auto& source() { return _source; }
 
@@ -601,58 +630,58 @@ private:
 };
 
 /**
- * @brief Represents a constant assignment in the IL
+ * @brief Represents a constant assignment to a variable.
  */
 class Constant final : public InstructionBase {
 public:
     /**
-     * @brief Constructs a Constant instruction with the given parameters
+     * @brief Constructs a `Constant` instruction.
      *
-     * @param result The variable where the constant will be stored
-     * @param immediate The immediate value
+     * @param result The variable to store the constant value.
+     * @param immediate The literal value to assign.
      */
     Constant(Variable result, Immediate immediate) :
         _immediate(std::move(std::move(immediate))), _result(std::move(result)) { }
 
     /**
-     * @brief Accepts a custom defined visitor
+     * @brief Accepts a visitor to process this `Constant` instruction.
      *
-     * @param visitor The visitor to accept
+     * @param visitor The visitor to accept.
      */
     void accept(Visitor& visitor) override { visitor.visit(*this); }
 
     /**
-     * @brief Returns the operands defined by this instruction
+     * @brief Returns the result variable defined by this instruction.
      *
-     * @return A vector containing the result variable
+     * @return A vector containing the `_result` variable.
      */
     [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
 
     /**
-     * @brief Returns the operands used by this instruction
+     * @brief Returns the immediate value used by this instruction.
      *
-     * @return A vector containing the immediate value
+     * @return A vector containing the `_immediate` operand.
      */
     [[nodiscard]] std::vector<Operand> uses() const override { return { _immediate }; }
 
     /**
-     * @brief Checks if the instruction is constant
+     * @brief Checks if the instruction is constant.
      *
-     * @return Always true for Constant
+     * @return Always true for `Constant`.
      */
     [[nodiscard]] bool is_constant() override { return true; }
 
     /**
-     * @brief Returns the result variable
+     * @brief Returns the target result variable.
      *
-     * @return A reference to the result variable
+     * @return A constant reference to the `_result` variable.
      */
     [[nodiscard]] auto& result() const { return _result; }
 
     /**
-     * @brief Returns the immediate value
+     * @brief Returns the literal immediate value.
      *
-     * @return A reference to the immediate value
+     * @return A reference to the `_immediate` operand.
      */
     [[nodiscard]] auto& immediate() { return _immediate; }
 
@@ -662,7 +691,11 @@ private:
 };
 
 /**
- * @brief Represents a single IL instruction, implemented as a variant of all instruction types
+ * @brief A container for any IL instruction, implemented as a `std::variant`.
+ *
+ * This allows for type-safe polymorphic handling of instructions without
+ * the overhead of virtual calls for every operation, while still supporting
+ * the `Visitor` pattern.
  */
 struct Instruction final : InstructionBase, std::variant<
                                Goto, If, Cast, Call, Return,
@@ -671,42 +704,33 @@ struct Instruction final : InstructionBase, std::variant<
     using variant::variant;
 
     /**
-     * @brief Accepts a custom defined visitor
-     *
-     * @param visitor The visitor to accept
+     * @brief Dispatches the visitor to the underlying instruction type.
      */
     void accept(Visitor& visitor) override;
 
     /**
-     * @brief Returns the list of operands defined by this instruction
-     *
-     * @return A vector of defined operands
+     * @brief Forwards the `defs` call to the underlying instruction.
      */
     [[nodiscard]] std::vector<Operand> defs() const override;
 
     /**
-     * @brief Returns the list of operands used by this instruction
-     *
-     * @return A vector of used operands
+     * @brief Forwards the `uses` call to the underlying instruction.
      */
     [[nodiscard]] std::vector<Operand> uses() const override;
 
     /**
-     * @brief Checks if the instruction is constant
-     *
-     * @return True if constant, false otherwise
+     * @brief Forwards the `is_constant` call to the underlying instruction.
      */
     [[nodiscard]] bool is_constant() override;
 };
 } // namespace arkoi::il
 
 /**
- * @brief Streams a readable description of a `il::Binary::Operator`
+ * @brief Streams a detailed description of a `Binary::Operator`.
  *
- * @param os Output stream to write to
- * @param op Operand to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param op The binary operator to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Binary::Operator& op);
 

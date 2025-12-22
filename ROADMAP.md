@@ -1,5 +1,6 @@
-<h1 align="center" id="title">Implementation Roadmap</h1>
-<p align="center" id="description">Last updated: 2025-12-02</p>
+# Implementation Roadmap
+
+Last updated: 2025-12-02
 
 ---
 

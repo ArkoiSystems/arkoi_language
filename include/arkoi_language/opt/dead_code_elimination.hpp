@@ -5,59 +5,54 @@
 #include "arkoi_language/opt/pass.hpp"
 
 namespace arkoi::opt {
+/**
+ * @brief Optimization pass that removes instructions whose results are never used.
+ *
+ * `DeadCodeElimination` (DCE) identifies 'dead' assignments—variables that are
+ * written to but never subsequently read before the end of their lifetime.
+ * It also removes instructions with no side effects that do not contribute
+ * to the program's output.
+ *
+ * This implementation uses a simple usage-tracking mechanism across the function.
+ *
+ * @see Pass, il::InstructionBase::defs, il::InstructionBase::uses
+ */
 class DeadCodeElimination final : public Pass {
 public:
     /**
-     * @brief Called when entering a module
-     *
-     * This is never getting used by the dead code elimination
-     * though
-     *
-     * @param module The module being entered
-     *
-     * @return True if the module was modified, false otherwise
+     * @brief No-op for module entry.
      */
     bool enter_module([[maybe_unused]] il::Module& module) override { return false; }
 
     /**
-     * @brief Called when exiting a module
-     *
-     * This is never getting used by the dead code elimination
-     * though
-     *
-     * @param module The module being exited
-     *
-     * @return True if the module was modified, false otherwise
+     * @brief No-op for module exit.
      */
     bool exit_module([[maybe_unused]] il::Module& module) override { return false; }
 
     /**
-     * @brief Called when entering a function
+     * @brief Pre-calculates the set of used operands for the entire function.
      *
-     * @param function The function being entered
+     * Traverses all instructions in the function to determine which variables
+     * are read at least once.
      *
-     * @return True if the function was modified, false otherwise
+     * @param function The `il::Function` being optimized.
+     * @return False (this step only gathers information).
      */
     bool enter_function(il::Function& function) override;
 
     /**
-     * @brief Called when exiting a function
-     *
-     * This is never getting used by the dead code elimination
-     * though
-     *
-     * @param function The function being exited
-     *
-     * @return True if the function was modified, false otherwise
+     * @brief No-op for function exit.
      */
     bool exit_function([[maybe_unused]] il::Function& function) override { return false; }
 
     /**
-     * @brief Called for each basic block in a function
+     * @brief Removes dead instructions from a basic block.
      *
-     * @param block The basic block being processed
+     * An instruction is removed if it defines a variable that is not in the
+     * pre-calculated `_used` set and the instruction has no side effects.
      *
-     * @return True if the block was modified, false otherwise
+     * @param block The `il::BasicBlock` to optimize.
+     * @return True if any instructions were removed, false otherwise.
      */
     bool on_block(il::BasicBlock& block) override;
 

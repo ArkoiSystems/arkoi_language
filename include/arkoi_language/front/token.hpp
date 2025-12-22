@@ -7,100 +7,102 @@
 
 namespace arkoi::front {
 /**
- * @brief Represents a token with locationality and type
+ * @brief Represents a single lexical unit (token) in the source code.
+ *
+ * A `Token` stores its type (e.g., an identifier, a keyword, or an operator)
+ * and its location in the source code using a `pretty_diagnostics::Span`.
  */
 class Token {
 public:
     /**
-     * @brief Enumeration of different token types
+     * @brief Enumeration of all possible token types in the Arkoi language.
      */
     enum class Type {
-        Indentation,
-        Dedentation,
-        Newline,
+        Indentation,  ///< Increase in indentation level
+        Dedentation,  ///< Decrease in indentation level
+        Newline,      ///< End of line
 
-        Integer,
-        Floating,
-        Identifier,
-        Comment,
+        Integer,      ///< Integer literal
+        Floating,     ///< Floating-point literal
+        Identifier,   ///< User-defined name
+        Comment,      ///< Source code comment
 
-        // Keyword
-        If,
-        Else,
-        Fun,
-        Return,
-        U8,
-        S8,
-        U16,
-        S16,
-        U32,
-        S32,
-        U64,
-        S64,
-        USize,
-        SSize,
-        F32,
-        F64,
-        Bool,
-        True,
-        False,
+        // Keywords
+        If,           ///< 'if'
+        Else,         ///< 'else'
+        Fun,          ///< 'fun'
+        Return,       ///< 'return'
+        U8,           ///< 'u8'
+        S8,           ///< 's8'
+        U16,          ///< 'u16'
+        S16,          ///< 's16'
+        U32,          ///< 'u32'
+        S32,          ///< 's32'
+        U64,          ///< 'u64'
+        S64,          ///< 's64'
+        USize,        ///< 'usize'
+        SSize,        ///< 'ssize'
+        F32,          ///< 'f32'
+        F64,          ///< 'f64'
+        Bool,         ///< 'bool'
+        True,         ///< 'true'
+        False,        ///< 'false'
 
-        LParent,
-        RParent,
-        At,
-        Comma,
-        Plus,
-        Minus,
-        Slash,
-        Asterisk,
-        GreaterThan,
-        LessThan,
-        Equal,
-        Colon,
+        // Special characters and operators
+        LParent,      ///< '('
+        RParent,      ///< ')'
+        At,           ///< '@'
+        Comma,        ///< ','
+        Plus,         ///< '+'
+        Minus,        ///< '-'
+        Slash,        ///< '/'
+        Asterisk,     ///< '*'
+        GreaterThan,  ///< '>'
+        LessThan,     ///< '<'
+        Equal,        ///< '='
+        Colon,        ///< ':'
 
-        EndOfFile,
-        Unknown,
+        EndOfFile,    ///< End of source input
+        Unknown,      ///< Unrecognized token
     };
 
 public:
     /**
-     * @brief Constructs a Token with the given parameters
+     * @brief Constructs a `Token`.
      *
-     * @param type The type of the token
-     * @param span The source code span of the entire token
+     * @param type The category of the token.
+     * @param span The precise location of the token in the source.
      */
     Token(const Type type, pretty_diagnostics::Span span) :
         _span(std::move(span)), _type(type) { }
 
     /**
-     * @brief Returns the source code span of the entire token
+     * @brief Returns the source code span of the token.
      *
-     * @return A reference to the span
+     * @return A constant reference to the `pretty_diagnostics::Span`.
      */
     [[nodiscard]] auto& span() const { return _span; }
 
     /**
-     * @brief Returns the type of the token
+     * @brief Returns the type of the token.
      *
-     * @return A reference to the type
+     * @return A constant reference to the `Type`.
      */
     [[nodiscard]] auto& type() const { return _type; }
 
     /**
-     * @brief Looks up a keyword by its string representation
+     * @brief Determines if a given string is a reserved keyword.
      *
-     * @param value The string to look up
-     *
-     * @return The token type if found, std::nullopt otherwise
+     * @param value The string to check.
+     * @return The corresponding `Type` if it's a keyword, or `std::nullopt` otherwise.
      */
     [[nodiscard]] static std::optional<Type> lookup_keyword(const std::string_view& value);
 
     /**
-     * @brief Looks up a special character token type
+     * @brief Determines the token type for a single special character.
      *
-     * @param value The character to look up
-     *
-     * @return The token type if found, std::nullopt otherwise
+     * @param value The character to check.
+     * @return The corresponding `Type` if recognized, or `std::nullopt` otherwise.
      */
     [[nodiscard]] static std::optional<Type> lookup_special(char value);
 
@@ -111,22 +113,20 @@ private:
 } // namespace arkoi::front
 
 /**
- * @brief Streams a readable description of a `Token::Type`
+ * @brief Streams a human-readable name for a `Token::Type`.
  *
- * @param os Output stream to write to
- * @param type Type to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param type The token type to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::front::Token::Type& type);
 
 /**
- * @brief Streams a readable description of a `Token`
+ * @brief Streams a detailed description of a `Token` (type and span).
  *
- * @param os Output stream to write to
- * @param token Token to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param token The token to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::front::Token& token);
 

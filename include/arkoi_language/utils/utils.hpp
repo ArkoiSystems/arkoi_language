@@ -3,9 +3,21 @@
 #include <sstream>
 
 /**
- * @brief Helper struct for visitor pattern using std::variant
+ * @brief Helper struct for the visitor pattern using `std::variant`.
  *
- * @tparam Ts The types to match.
+ * This utility allows for a concise syntax when visiting a `std::variant`
+ * by providing multiple lambda expressions.
+ *
+ * Example usage:
+ * @code
+ * std::variant<int, float> v = 10;
+ * std::visit(match {
+ *     [](int i) { std::cout << "int: " << i << "\n"; },
+ *     [](float f) { std::cout << "float: " << f << "\n"; }
+ * }, v);
+ * @endcode
+ *
+ * @tparam Ts The types (usually lambdas) to be overloaded.
  */
 template <class... Ts>
 struct match : Ts... {
@@ -13,18 +25,20 @@ struct match : Ts... {
 };
 
 /**
- * @brief Deduction guide for the match helper
+ * @brief Deduction guide for the `match` helper.
  */
 template <class... Ts>
 match(Ts...) -> match<Ts...>;
 
 /**
- * @brief Converts a value to its string representation using operator<<
+ * @brief Converts a value to its string representation using `operator<<`.
  *
- * @tparam T The type of the value
- * @param value The value to convert
+ * This is a generic helper that works for any type that has an overloaded
+ * `std::ostream& operator<<(std::ostream&, const T&)`.
  *
- * @return The string representation of the value
+ * @tparam T The type of the value to convert.
+ * @param value The value to convert to a string.
+ * @return The string representation of the value.
  */
 template <typename T>
 std::string to_string(const T& value) {
@@ -34,20 +48,24 @@ std::string to_string(const T& value) {
 }
 
 /**
- * @brief Returns the base path (directory) of a file path
+ * @brief Returns the base path of a given file path.
  *
- * @param path The file path
+ * For example, if the input is "/home/arkoi/test.ark", the output would be "/home/arkoi/test".
  *
- * @return The base path
+ * @param path The file path to extract the directory from.
+ * @return The base directory path.
  */
 std::string get_base_path(const std::string& path);
 
 /**
- * @brief Reads the entire content of a file into a string
+ * @brief Reads the entire content of a file into a single string.
  *
- * @param path The path to the file
+ * This function handles opening the file, reading all bytes until EOF,
+ * and closing the file.
  *
- * @return The file content
+ * @param path The filesystem path to the file to be read.
+ * @return A string containing the full content of the file.
+ * @throws std::runtime_error if the file cannot be opened.
  */
 std::string read_file(const std::string& path);
 

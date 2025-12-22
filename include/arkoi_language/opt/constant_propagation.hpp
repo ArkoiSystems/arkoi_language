@@ -3,83 +3,68 @@
 #include "arkoi_language/opt/pass.hpp"
 
 namespace arkoi::opt {
+/**
+ * @brief Optimization pass that propagates constant values through the CFG.
+ *
+ * `ConstantPropagation` tracks variables that are assigned constant values and
+ * replaces subsequent uses of those variables with the constants themselves.
+ * This is a local optimization performed within basic blocks.
+ *
+ * Example:
+ * `x = 5`
+ * `y = x + 1`
+ * becomes:
+ * `x = 5`
+ * `y = 5 + 1` (which `ConstantFolding` can then turn into `y = 6`)
+ *
+ * @see Pass, ConstantFolding
+ */
 class ConstantPropagation final : public Pass {
 public:
     /**
-     * @brief Called when entering a module
-     *
-     * This is never getting used as the constant propagation is a local
-     * optimization technique only done on basic blocks
-     *
-     * @param module The module being entered
-     *
-     * @return True if the module was modified, false otherwise
+     * @brief No-op for module entry.
      */
     bool enter_module([[maybe_unused]] il::Module& module) override { return false; }
 
     /**
-     * @brief Called when exiting a module
-     *
-     * This is never getting used as the constant propagation is a local
-     * optimization technique only done on basic blocks
-     *
-     * @param module The module being exited
-     *
-     * @return True if the module was modified, false otherwise
+     * @brief No-op for module exit.
      */
     bool exit_module([[maybe_unused]] il::Module& module) override { return false; }
 
     /**
-     * @brief Called when entering a function
-     *
-     * This is never getting used as the constant propagation is a local
-     * optimization technique only done on basic blocks
-     *
-     * @param function The function being entered
-     *
-     * @return True if the function was modified, false otherwise
+     * @brief No-op for function entry.
      */
     bool enter_function([[maybe_unused]] il::Function& function) override { return false; }
 
     /**
-     * @brief Called when exiting a function
-     *
-     * This is never getting used as the constant propagation is a local
-     * optimization technique only done on basic blocks
-     *
-     * @param function The function being exited
-     *
-     * @return True if the function was modified, false otherwise
+     * @brief No-op for function exit.
      */
     bool exit_function([[maybe_unused]] il::Function& function) override { return false; }
 
     /**
-     * @brief Called for each basic block in a function
+     * @brief Performs constant propagation on the instructions within a basic block.
      *
-     * @param block The basic block being processed
+     * Maintains a local map of variables to their known constant values.
      *
-     * @return True if the block was modified, false otherwise
+     * @param block The `il::BasicBlock` to optimize.
+     * @return True if any operands were replaced with constants, false otherwise.
      */
     bool on_block(il::BasicBlock& block) override;
 
 private:
     /**
-     * @brief Propagates constant values and replaces the operands in
-     *        the instruction with their right value
+     * @brief Attempts to propagate constants into the operands of an instruction.
      *
-     * @param target The instruction to be propagated
-     *
-     * @return If any changes were made by the propagation
+     * @param target The instruction to modify.
+     * @return True if the instruction was modified.
      */
     [[nodiscard]] bool _propagate(il::Instruction& target);
 
     /**
-     * @brief Propagates constant values and replaces the operand
-     *        with it's right value
+     * @brief Replaces an operand with its known constant value if possible.
      *
-     * @param operand The operand to be propagated
-     *
-     * @return If any changes were made by the propagation
+     * @param operand The operand to potentially replace.
+     * @return True if the operand was replaced with an `il::Immediate`.
      */
     [[nodiscard]] bool _propagate(il::Operand& operand);
 

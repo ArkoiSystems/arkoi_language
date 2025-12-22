@@ -8,125 +8,105 @@
 
 namespace arkoi::il {
 /**
- * @brief Visitor for printing the Control Flow Graph (CFG) in Graphviz DOT format
+ * @brief Visitor for generating a visual representation of the Control Flow Graph (CFG).
+ *
+ * `CFGPrinter` outputs the graph in Graphviz DOT format. It includes instruction
+ * listings within each block and labels edges to show control flow (jumps and falls).
+ * It also optionally displays liveness information if `BlockLivenessAnalysis` is run.
+ *
+ * @see Visitor, Module, Function, BasicBlock, DataflowAnalysis
  */
 class CFGPrinter final : Visitor {
 public:
     /**
-     * @brief Constructs a CFGPrinter with the given output stream
+     * @brief Constructs a `CFGPrinter` that writes to the provided output stream.
      *
-     * @param output The output stream to which the CFG will be printed
+     * @param output The string stream where the DOT representation will be accumulated.
      */
     explicit CFGPrinter(std::stringstream& output) :
         _current_function(nullptr), _output(output), _printer(output) { }
 
 public:
     /**
-     * @brief Prints the CFG of a module to a stringstream
+     * @brief Entry point for generating the DOT graph for an entire module.
      *
-     * @param module The module whose CFG is to be printed
-     *
-     * @return A stringstream containing the printed CFG
+     * @param module The `Module` to visualize.
+     * @return A `std::stringstream` containing the complete Graphviz DOT source.
      */
     [[nodiscard]] static std::stringstream print(Module& module);
 
     /**
-     * @brief Visits a Module
+     * @brief Returns the output stream containing the Graphviz DOT data.
      *
-     * @param module The module to visit
+     * @return A constant reference to the internal `std::stringstream`.
+     */
+    [[nodiscard]] auto& output() const { return _output; }
+
+private:
+    /**
+     * @brief Starts the DOT graph and visits all functions.
      */
     void visit(Module& module) override;
 
     /**
-     * @brief Visits a Function
-     *
-     * @param function The function to visit
+     * @brief Generates a sub-graph for a single function.
      */
     void visit(Function& function) override;
 
     /**
-     * @brief Visits a BasicBlock
-     *
-     * @param block The basic block to visit
+     * @brief Generates a node in the DOT graph for a basic block.
      */
     void visit(BasicBlock& block) override;
 
     /**
-     * @brief Visits a Return instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Return& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits a Binary instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Binary& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits a Cast instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Cast& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits a Call instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Call& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits a Goto instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Goto& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits an If instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(If& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits an Alloca instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Alloca& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits a Store instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Store& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits a Load instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Load& instruction) override { _printer.visit(instruction); }
 
     /**
-     * @brief Visits a Constant instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
     void visit(Constant& instruction) override { _printer.visit(instruction); }
-
-    /**
-     * @brief Returns the output stream
-     *
-     * @return The output stream
-     */
-    [[nodiscard]] auto& output() const { return _output; }
 
 private:
     DataflowAnalysis<BlockLivenessAnalysis> _liveness{ };

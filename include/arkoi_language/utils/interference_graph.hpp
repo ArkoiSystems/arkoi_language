@@ -4,48 +4,62 @@
 #include <unordered_set>
 #include <ostream>
 
+/**
+ * @brief A generic interference graph implementation.
+ *
+ * This class represents an undirected graph where nodes represent variables (or other entities)
+ * and edges represent interferences between them. In the context of register allocation,
+ * an edge between two variables means they are live at the same time and thus cannot
+ * be assigned to the same register.
+ *
+ * @tparam Node The type of the nodes in the graph. Must be hashable and comparable.
+ */
 template <typename Node>
 class InterferenceGraph {
 public:
     InterferenceGraph() = default;
 
     /**
-     * Adds a node to the interference graph.
+     * @brief Adds a node to the interference graph.
      *
      * If the node does not already exist in the graph, it is added
      * with no adjacent (connected) nodes. If the node already exists,
      * this function has no effect.
      *
      * @param node The node to be added to the interference graph.
+     * @see remove_node
      */
     void add_node(const Node& node);
 
     /**
-     * Removes a node and all associated edges from the interference graph.
+     * @brief Removes a node and all associated edges from the interference graph.
      *
      * If the specified node exists in the graph, this method will remove
      * the node and update the adjacency sets of all other nodes that were
      * connected to it. If the node does not exist, the method does nothing.
      *
      * @param node The node to remove from the interference graph.
+     * @see add_node
      */
     void remove_node(const Node& node);
 
     /**
-     * Adds an edge between two nodes in the graph.
-     * If the nodes do not already exist in the graph, they will be added automatically.
-     * If the two nodes are the same, no action is taken.
+     * @brief Adds an undirected edge between two nodes in the graph.
+     *
+     * If the nodes do not already exist in the graph, they will be added automatically
+     * using @ref add_node. If the two nodes are the same, no action is taken.
      *
      * The method ensures that the two nodes become adjacent to each other,
      * meaning an undirected edge is created between the provided nodes.
      *
      * @param first The first node of the edge.
      * @param second The second node of the edge.
+     * @see is_interfering
      */
     void add_edge(const Node& first, const Node& second);
 
     /**
-     * Checks if two nodes in the interference graph are interfering with each other.
+     * @brief Checks if two nodes in the interference graph are interfering with each other.
      *
      * This method determines whether there is an interference (edge) between the
      * given nodes `first` and `second` in the graph. Interference is defined as
@@ -56,11 +70,12 @@ public:
      * @param second The second node to check for interference.
      * @return True if `first` and `second` are interfering (connected by an edge),
      *         false otherwise.
+     * @see add_edge
      */
     [[nodiscard]] bool is_interfering(const Node& first, const Node& second) const;
 
     /**
-     * Retrieves the set of nodes that interfere with the given node in the graph.
+     * @brief Retrieves the set of nodes that interfere with the given node in the graph.
      *
      * @param node The node for which to retrieve the interferences.
      * @return An unordered_set containing the nodes that are adjacent (interfere)
@@ -70,12 +85,17 @@ public:
     [[nodiscard]] std::unordered_set<Node> interferences(const Node& node) const;
 
     /**
-     * Retrieves all nodes within the interference graph.
+     * @brief Retrieves all nodes within the interference graph.
      *
-     * @return A vector containing all nodes currently stored in the graph.
+     * @return An unordered_set containing all nodes currently stored in the graph.
      */
     [[nodiscard]] std::unordered_set<Node> nodes() const;
 
+    /**
+     * @brief Provides access to the underlying adjacency map.
+     *
+     * @return A reference to the internal adjacency map.
+     */
     [[nodiscard]] auto& adjacents() const { return _adjacents; }
 
 private:

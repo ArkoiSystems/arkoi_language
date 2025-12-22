@@ -7,33 +7,46 @@
 
 namespace arkoi::il {
 /**
- * @brief Enumeration of dataflow analysis directions
+ * @brief Specifies the direction of information flow in a dataflow analysis.
  */
 enum class DataflowDirection {
-    Forward,
-    Backward
+    Forward,  ///< Information flows from entry to exit (e.g., reaching definitions)
+    Backward  ///< Information flows from exit to entry (e.g., liveness analysis)
 };
 
 /**
- * @brief Enumeration of dataflow analysis granularities
+ * @brief Specifies the unit of analysis for a dataflow pass.
  */
 enum class DataflowGranularity {
-    Block,
-    Instruction
+    Block,      ///< Analysis computed once per `BasicBlock`
+    Instruction ///< Analysis computed once per `Instruction`
 };
 
 /**
- * @brief Base class for dataflow analysis passes
+ * @brief Abstract base class for defining a dataflow analysis pass.
  *
- * @tparam ResultType The type of data being analyzed (e.g., Operand)
- * @tparam DirectionType The direction of the analysis
- * @tparam GranularityType The granularity of the analysis
+ * A dataflow pass is defined by its domain (ResultType), its direction,
+ * and its granularity. Subclasses must implement the meet (merge),
+ * initialization, and transfer functions.
+ *
+ * @tparam ResultType The type of data stored in the dataflow sets (e.g., `Operand`).
+ * @tparam DirectionType Whether the analysis is forward or backward.
+ * @tparam GranularityType Whether the analysis operates on blocks or instructions.
+ *
+ * @see DataflowAnalysis, BlockLivenessAnalysis
  */
 template <typename ResultType, DataflowDirection DirectionType, DataflowGranularity GranularityType>
 class DataflowPass {
 public:
+    /**
+     * @brief The structural element being analyzed (either `BasicBlock` or `Instruction`).
+     */
     using Target = std::conditional_t<GranularityType == DataflowGranularity::Block, BasicBlock, Instruction>;
     using Result [[maybe_unused]] = ResultType;
+
+    /**
+     * @brief The representation of the dataflow information at a single program point.
+     */
     using State = std::unordered_set<Result>;
 
     static constexpr auto Granularity = GranularityType;
@@ -43,37 +56,34 @@ public:
     virtual ~DataflowPass() = default;
 
     /**
-     * @brief Merges multiple states into one
+     * @brief The meet operator: combines dataflow states from multiple predecessors/successors.
      *
-     * @param predecessors The states to merge
-     *
-     * @return The merged state
+     * @param predecessors The collection of states to be merged.
+     * @return The resulting merged state.
      */
     [[nodiscard]] virtual State merge(const std::vector<State>& predecessors) = 0;
 
     /**
-     * @brief Initializes the analysis state for a target
+     * @brief Provides the initial state for a target element.
      *
-     * @param function The function being analyzed
-     * @param target The target (block or instruction)
-     *
-     * @return The initial state
+     * @param function The function containing the target.
+     * @param target The specific block or instruction to initialize.
+     * @return The starting `State`.
      */
     [[nodiscard]] virtual State initialize(Function& function, Target& target) = 0;
 
     /**
-     * @brief Applies the transfer function to a target and its current state
+     * @brief The transfer function: computes the output state based on input state and target.
      *
-     * @param target The target (block or instruction)
-     * @param state The current state
-     *
-     * @return The new state
+     * @param target The block or instruction being processed.
+     * @param state The input dataflow state (from `merge` or previous iteration).
+     * @return The new output state.
      */
     [[nodiscard]] virtual State transfer(Target& target, const State& state) = 0;
 };
 
 /**
- * @brief Concept for a dataflow analysis pass
+ * @brief Concept that validates if a type is a valid `DataflowPass`.
  */
 template <typename T>
 concept DataflowPassConcept = requires {
@@ -83,45 +93,60 @@ concept DataflowPassConcept = requires {
 } && std::is_base_of_v<DataflowPass<typename T::Result, T::Direction, T::Granularity>, T>;
 
 /**
- * @brief Engine for running dataflow analyses
+ * @brief The execution engine for dataflow analyses.
  *
- * @tparam Pass The dataflow pass to run
+ * `DataflowAnalysis` implements the worklist algorithm to compute the fixed-point
+ * solution for a given `DataflowPass`. It stores the computed `in` and `out` states
+ * for every target in the CFG.
+ *
+ * @tparam Pass A type satisfying the `DataflowPassConcept`.
  */
 template <DataflowPassConcept Pass>
 class DataflowAnalysis {
 public:
+    /**
+     * @brief The key used to look up states (pointer to `BasicBlock` or `Instruction`).
+     */
     using Key = std::conditional_t<Pass::Granularity == DataflowGranularity::Block, BasicBlock*, Instruction*>;
     using State = std::unordered_set<typename Pass::Result>;
 
 public:
     /**
-     * @brief Constructs a DataflowAnalysis with pass arguments
+     * @brief Constructs an analysis instance, passing arguments to the `Pass` constructor.
      *
-     * @tparam Args The types of arguments for the pass constructor
-     * @param args The arguments for the pass constructor
+     * @tparam Args Argument types for the pass.
+     * @param args Arguments to instantiate the concrete `Pass`.
      */
     template <typename... Args>
     explicit DataflowAnalysis(Args&&... args) :
         _pass(std::make_unique<Pass>(std::forward<Args>(args)...)) { }
 
     /**
-     * @brief Runs the dataflow analysis on a function
+     * @brief Executes the worklist algorithm on the provided function.
      *
-     * @param function The function to analyze
+     * This method iterates until the dataflow states reach a fixed point.
+     *
+     * @param function The function whose CFG will be analyzed.
      */
     void run(Function& function);
 
     /**
-     * @brief Returns the output states for all targets
+     * @brief Returns the computed 'out' states for all program points.
      *
-     * @return A reference to the map of output states
+     * In a forward analysis, this is the state *after* the target.
+     * In a backward analysis, this is the state *before* the target.
+     *
+     * @return A map from target pointer to `State`.
      */
     [[nodiscard]] auto& out() const { return _out; }
 
     /**
-     * @brief Returns the input states for all targets
+     * @brief Returns the computed 'in' states for all program points.
      *
-     * @return A reference to the map of input states
+     * In a forward analysis, this is the state *before* the target.
+     * In a backward analysis, this is the state *after* the target.
+     *
+     * @return A map from target pointer to `State`.
      */
     [[nodiscard]] auto& in() const { return _in; }
 

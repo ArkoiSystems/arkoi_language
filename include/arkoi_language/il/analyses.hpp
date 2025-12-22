@@ -4,7 +4,16 @@
 
 namespace arkoi::il {
 /**
- * @brief Dataflow analysis for computing liveness at the block level
+ * @brief Dataflow analysis for computing liveness at the basic block level.
+ *
+ * This analysis determines which operands are 'live' at the entry and exit of each
+ * basic block. An operand is live if its current value may be read in the future
+ * before it is overwritten.
+ *
+ * Direction: Backward
+ * Granularity: Block
+ *
+ * @see DataflowPass
  */
 class BlockLivenessAnalysis final :
     public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Block> {
@@ -12,37 +21,48 @@ public:
     BlockLivenessAnalysis() = default;
 
     /**
-     * @brief Merges states from predecessors
+     * @brief Merges liveness states from successor blocks.
      *
-     * @param predecessors The states of predecessors to merge
+     * In a backward analysis, the merge operation typically performs a union
+     * of the live sets from all successors.
      *
-     * @return The merged state
+     * @param successors The liveness sets from all successor basic blocks.
+     * @return The combined liveness state.
      */
-    [[nodiscard]] State merge(const std::vector<State>& predecessors) override;
+    [[nodiscard]] State merge(const std::vector<State>& successors) override;
 
     /**
-     * @brief Initializes the analysis state for a basic block
+     * @brief Initializes the liveness state for a specific basic block.
      *
-     * @param function The function containing the block
-     * @param current The basic block to initialize
-     *
-     * @return The initial state
+     * @param function The function containing the block.
+     * @param current The basic block to initialize.
+     * @return An empty or conservative initial liveness state.
      */
     [[nodiscard]] State initialize(Function& function, BasicBlock& current) override;
 
     /**
-     * @brief Transfer function for a basic block
+     * @brief Applies the backward transfer function to a basic block.
      *
-     * @param current The basic block
-     * @param state The current state
+     * The transfer function for liveness is: `In[B] = Use[B] U (Out[B] - Def[B])`.
      *
-     * @return The new state after applying the transfer function
+     * @param current The basic block being processed.
+     * @param state The liveness state at the exit of the block.
+     * @return The liveness state at the entry of the block.
      */
     [[nodiscard]] State transfer(BasicBlock& current, const State& state) override;
 };
 
 /**
- * @brief Dataflow analysis for computing liveness at the instruction level
+ * @brief Dataflow analysis for computing liveness at the individual instruction level.
+ *
+ * This provides finer granularity than `BlockLivenessAnalysis`, determining
+ * liveness at every program point between instructions. This is crucial for
+ * interference graph construction during register allocation.
+ *
+ * Direction: Backward
+ * Granularity: Instruction
+ *
+ * @see DataflowPass, BlockLivenessAnalysis, x86_64::RegisterAllocater
  */
 class InstructionLivenessAnalysis final :
     public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Instruction> {
@@ -50,31 +70,30 @@ public:
     InstructionLivenessAnalysis() = default;
 
     /**
-     * @brief Merges states from predecessors
+     * @brief Merges liveness states from the succeeding program point.
      *
-     * @param predecessors The states of predecessors to merge
-     *
-     * @return The merged state
+     * @param successors The liveness states from successor points.
+     * @return The merged liveness state.
      */
-    [[nodiscard]] State merge(const std::vector<State>& predecessors) override;
+    [[nodiscard]] State merge(const std::vector<State>& successors) override;
 
     /**
-     * @brief Initializes the analysis state for an instruction
+     * @brief Initializes the liveness state for an instruction point.
      *
-     * @param function The function containing the instruction
-     * @param instruction The instruction to initialize
-     *
-     * @return The initial state
+     * @param function The function containing the instruction.
+     * @param instruction The instruction to initialize.
+     * @return The initial liveness state.
      */
     [[nodiscard]] State initialize(Function& function, Instruction& instruction) override;
 
     /**
-     * @brief Transfer function for an instruction
+     * @brief Applies the backward transfer function to a single instruction.
      *
-     * @param current The instruction
-     * @param state The current state
+     * `In[I] = Use[I] U (Out[I] - Def[I])`.
      *
-     * @return The new state after applying the transfer function
+     * @param current The instruction being processed.
+     * @param state The liveness state after the instruction.
+     * @return The liveness state before the instruction.
      */
     [[nodiscard]] State transfer(Instruction& current, const State& state) override;
 };

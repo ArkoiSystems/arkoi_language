@@ -3,40 +3,45 @@
 #include <iostream>
 
 /**
- * @brief Enumeration of sizes in bytes
+ * @brief Enumeration of standard memory and operand sizes in bytes.
+ *
+ * This enum is used throughout the compiler to represent the size of
+ * variables, types, and machine instructions.
  */
 enum class Size : size_t {
-    BYTE  = 1,
-    WORD  = 2,
-    DWORD = 4,
-    QWORD = 8,
+    BYTE  = 1,  ///< 1 byte (8 bits)
+    WORD  = 2,  ///< 2 bytes (16 bits)
+    DWORD = 4,  ///< 4 bytes (32 bits)
+    QWORD = 8,  ///< 8 bytes (64 bits)
 };
 
 /**
- * @brief Converts a Size enum value to bytes
+ * @brief Converts a `Size` enumeration value to its equivalent in bytes.
  *
- * @param size The size as enumeration
- *
- * @return The size in bytes
+ * @param size The size enumeration to convert.
+ * @return The size in bytes as a `size_t`.
+ * @see size_to_bits
  */
 size_t size_to_bytes(const Size& size);
 
 /**
- * @brief Converts a Size enum value to bits
+ * @brief Converts a `Size` enumeration value to its equivalent in bits.
  *
- * @param size The size as enumeration
+ * Useful for calculating bit-offsets or for type systems that define
+ * precision in bits.
  *
- * @return The size in bits
+ * @param size The size enumeration to convert.
+ * @return The size in bits as a `size_t`.
+ * @see size_to_bytes
  */
 size_t size_to_bits(const Size& size);
 
 /**
- * @brief Streams a readable description of a `Size`
+ * @brief Streams a human-readable string representation of a `Size`.
  *
- * @param os Output stream to write to
- * @param size Size to describe
- *
- * @return Reference to @p os
+ * @param os The output stream to write to.
+ * @param size The size to represent as a string.
+ * @return A reference to the output stream @p os.
  */
 std::ostream& operator<<(std::ostream& os, const Size& size);
 

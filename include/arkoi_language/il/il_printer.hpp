@@ -6,125 +6,104 @@
 
 namespace arkoi::il {
 /**
- * @brief Visitor for printing the Intermediate Language (IL)
+ * @brief Visitor for printing the Intermediate Language (IL) in a human-readable text format.
+ *
+ * `ILPrinter` traverses the IL structures and instructions to generate a
+ * textual representation suitable for debugging or analysis.
+ *
+ * @see Visitor, Module, Function, BasicBlock
  */
 class ILPrinter final : public Visitor {
 public:
     /**
-     * @brief Constructs an ILPrinter with the given output stream
+     * @brief Constructs an `ILPrinter` that writes to the provided output stream.
      *
-     * @param output The output stream to which the IL will be printed
+     * @param output The string stream where the IL text will be accumulated.
      */
     explicit ILPrinter(std::stringstream& output) :
         _output(output) { }
 
 public:
     /**
-     * @brief Prints the IL of a module to a stringstream
+     * @brief Entry point for printing all functions in a module.
      *
-     * @param module The module whose IL is to be printed
-     *
-     * @return A stringstream containing the printed IL
+     * @param module The `Module` to be printed.
+     * @return A `std::stringstream` containing the full IL text.
      */
     [[nodiscard]] static std::stringstream print(Module& module);
 
     /**
-     * @brief Visits a Module
+     * @brief Returns the output stream containing the IL text.
      *
-     * @param module The module to visit
+     * @return A constant reference to the internal `std::stringstream`.
+     */
+    [[nodiscard]] auto& output() const { return _output; }
+
+private:
+    /**
+     * @brief Prints a representation of the entire module.
      */
     void visit(Module& module) override;
 
     /**
-     * @brief Visits a Function
-     *
-     * @param function The function to visit
+     * @brief Prints a representation of a function, including signature and blocks.
      */
     void visit(Function& function) override;
 
     /**
-     * @brief Visits a BasicBlock
-     *
-     * @param block The basic block to visit
+     * @brief Prints a representation of a basic block and its instructions.
      */
     void visit(BasicBlock& block) override;
 
     /**
-     * @brief Visits a Return instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints a `Return` instruction.
      */
     void visit(Return& instruction) override;
 
     /**
-     * @brief Visits a Binary instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints a `Binary` operation instruction.
      */
     void visit(Binary& instruction) override;
 
     /**
-     * @brief Visits a Cast instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints a `Cast` instruction.
      */
     void visit(Cast& instruction) override;
 
     /**
-     * @brief Visits a Call instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints a `Call` instruction.
      */
     void visit(Call& instruction) override;
 
     /**
-     * @brief Visits a Goto instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints a `Goto` instruction.
      */
     void visit(Goto& instruction) override;
 
     /**
-     * @brief Visits an If instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints an `If` instruction.
      */
     void visit(If& instruction) override;
 
     /**
-     * @brief Visits an Alloca instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints an `Alloca` instruction.
      */
     void visit(Alloca& instruction) override;
 
     /**
-     * @brief Visits a Store instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints a `Store` instruction.
      */
     void visit(Store& instruction) override;
 
     /**
-     * @brief Visits a Load instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints a `Load` instruction.
      */
     void visit(Load& instruction) override;
 
     /**
-     * @brief Visits a Constant instruction
-     *
-     * @param instruction The instruction to visit
+     * @brief Prints a `Constant` assignment instruction.
      */
     void visit(Constant& instruction) override;
-
-    /**
-     * @brief Returns the output stream
-     *
-     * @return The output stream
-     */
-    [[nodiscard]] auto& output() const { return _output; }
 
 private:
     std::stringstream& _output;

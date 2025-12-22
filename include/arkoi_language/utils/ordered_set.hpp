@@ -4,9 +4,13 @@
 #include <vector>
 
 /**
- * @brief A set that maintains the insertion order of its elements
+ * @brief A set that maintains the insertion order of its elements.
  *
- * @tparam T The type of elements in the set
+ * OrderedSet combines the properties of `std::unordered_set` (for fast lookup)
+ * and `std::vector` (to preserve insertion order). This is particularly useful
+ * in compiler passes where deterministic iteration order is required.
+ *
+ * @tparam T The type of elements in the set. Must be hashable and comparable.
  */
 template <typename T>
 class OrderedSet {
@@ -16,76 +20,89 @@ public:
 
 public:
     /**
-     * @brief Inserts a value into the set if it doesn't already exist
+     * @brief Inserts a value into the set if it doesn't already exist.
      *
-     * @param value The value to insert
+     * Complexity: O(1) average.
      *
-     * @return True if the value was inserted, false if it already existed
+     * @param value The value to insert.
+     * @return True if the value was inserted, false if it already existed.
+     * @see contains, erase
      */
     bool insert(const T& value);
 
     /**
-     * @brief Erases a value from the set
+     * @brief Erases a value from the set.
      *
-     * @param value The value to erase
+     * Complexity: O(N) where N is the number of elements, as it requires
+     * removing from the internal vector.
      *
-     * @return True if the value was erased, false if it didn't exist
+     * @param value The value to erase.
+     * @return True if the value was erased, false if it didn't exist.
+     * @see insert
      */
     bool erase(const T& value);
 
     /**
-     * @brief Checks if the set contains a value
+     * @brief Checks if the set contains a value.
      *
-     * @param value The value to check
+     * Complexity: O(1) average.
      *
-     * @return True if the value exists, false otherwise
+     * @param value The value to check.
+     * @return True if the value exists, false otherwise.
+     * @see insert
      */
     [[nodiscard]] bool contains(const T& value) const;
 
     /**
-     * @brief Clears all elements from the set
+     * @brief Clears all elements from the set.
      */
     void clear();
 
     /**
-     * @brief Returns the number of elements in the set
+     * @brief Returns the number of elements in the set.
      *
-     * @return The size of the set
+     * @return The size of the set.
+     * @see empty
      */
     [[nodiscard]] size_t size() const { return _set.size(); }
 
     /**
-     * @brief Checks if the set is empty
+     * @brief Checks if the set is empty.
      *
-     * @return True if empty, false otherwise
+     * @return True if empty, false otherwise.
+     * @see size
      */
     [[nodiscard]] bool empty() const { return _set.empty(); }
 
     /**
-     * @brief Returns a const iterator to the first element
+     * @brief Returns a const iterator to the first element.
      *
-     * @return A const iterator to the beginning of the vector
+     * The iteration order follows the insertion order.
+     *
+     * @return A const iterator to the beginning of the set.
      */
     const_iterator begin() const { return _vector.begin(); }
 
     /**
-     * @brief Returns a const iterator to the end
+     * @brief Returns a const iterator to the end.
      *
-     * @return A const iterator to the end of the vector
+     * @return A const iterator to the end of the set.
      */
     const_iterator end() const { return _vector.end(); }
 
     /**
-     * @brief Returns an iterator to the first element
+     * @brief Returns an iterator to the first element.
      *
-     * @return An iterator to the beginning of the set
+     * The iteration order follows the insertion order.
+     *
+     * @return An iterator to the beginning of the set.
      */
     iterator begin() { return _vector.begin(); }
 
     /**
-     * @brief Returns an iterator to the end
+     * @brief Returns an iterator to the end.
      *
-     * @return An iterator to the end of the vector
+     * @return An iterator to the end of the set.
      */
     iterator end() { return _vector.end(); }
 
