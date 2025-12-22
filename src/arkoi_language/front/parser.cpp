@@ -69,7 +69,7 @@ std::unique_ptr<ast::Function> Parser::_parse_function(const Token& keyword) {
     auto own_scope = _enter_scope();
 
     const auto& name = _consume(Token::Type::Identifier);
-    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Function);
+    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Function, name.span());
 
     auto parameters = _parse_parameters();
 
@@ -134,7 +134,7 @@ void Parser::_recover_parameters() {
 
 ast::Parameter Parser::_parse_parameter() {
     const auto& name = _consume(Token::Type::Identifier);
-    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable);
+    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable, name.span());
 
     auto type = _parse_type();
 
@@ -285,7 +285,7 @@ std::unique_ptr<ast::If> Parser::_parse_if(const Token& keyword) {
 }
 
 std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token& name) {
-    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable);
+    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable, name.span());
 
     _consume(Token::Type::Equal);
 
@@ -297,7 +297,7 @@ std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token& name) {
 }
 
 std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token& name) {
-    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable);
+    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable, name.span());
 
     auto type = _parse_type();
 
@@ -311,7 +311,7 @@ std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token& name) {
 }
 
 std::unique_ptr<ast::Call> Parser::_parse_call(const Token& name) {
-    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Function);
+    auto identifier = ast::Identifier(name, ast::Identifier::Kind::Function, name.span());
 
     _consume(Token::Type::LParent);
 
@@ -390,7 +390,7 @@ std::unique_ptr<ast::Node> Parser::_parse_factor() {
 std::unique_ptr<ast::Node> Parser::_parse_primary() {
     const auto& consumed = _consume_any();
     if (consumed.type() == Token::Type::Integer) {
-        auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Integer);
+        auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Integer, consumed.span());
         if (_current().type() != Token::Type::At) return node;
 
         const auto type = _parse_type();
@@ -402,7 +402,7 @@ std::unique_ptr<ast::Node> Parser::_parse_primary() {
     }
 
     if (consumed.type() == Token::Type::Floating) {
-        auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Floating);
+        auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Floating, consumed.span());
         if (_current().type() != Token::Type::At) return node;
 
         const auto type = _parse_type();
@@ -416,11 +416,11 @@ std::unique_ptr<ast::Node> Parser::_parse_primary() {
     if (consumed.type() == Token::Type::Identifier) {
         if (_current().type() == Token::Type::LParent) return _parse_call(consumed);
 
-        return std::make_unique<ast::Identifier>(consumed, ast::Identifier::Kind::Variable);
+        return std::make_unique<ast::Identifier>(consumed, ast::Identifier::Kind::Variable, consumed.span());
     }
 
     if (consumed.type() == Token::Type::True || consumed.type() == Token::Type::False) {
-        return std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Boolean);
+        return std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Boolean, consumed.span());
     }
 
     if (consumed.type() == Token::Type::LParent) {
