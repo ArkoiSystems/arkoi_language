@@ -150,7 +150,7 @@ arkoi_language/
 ---
 
 ## Roadmap
-There is a separate [ROADMAP.md]() file that lists the planned features and improvements for the compiler.
+There is a separate [ROADMAP.md](ROADMAP.md) file that lists the planned features and improvements for the compiler.
 
 ---
 
