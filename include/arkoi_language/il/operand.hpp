@@ -38,7 +38,7 @@ public:
     /**
      * @brief Less-than comparison based on the index
      *
-     * @param rhs Right-hand span
+     * @param rhs Right-hand memory location
      *
      * @return True if this memory location starts before @p rhs
      */
@@ -47,7 +47,7 @@ public:
     /**
      * @brief Equality compares only the indices
      *
-     * @param rhs Right-hand span
+     * @param rhs Right-hand memory location
      *
      * @return True if both memory locations have the same indices
      */
@@ -56,7 +56,7 @@ public:
     /**
      * @brief Inequality based on `==`
      *
-     * @param rhs Right-hand span
+     * @param rhs Right-hand memory location
      *
      * @return True if the memory locations differ
      */
@@ -99,7 +99,7 @@ public:
     /**
      * @brief Less-than comparison based on the name and version
      *
-     * @param rhs Right-hand span
+     * @param rhs Right-hand variable
      *
      * @return True if this variable starts before @p rhs
      */
@@ -108,7 +108,7 @@ public:
     /**
      * @brief Equality compares the name and version of the variable
      *
-     * @param rhs Right-hand span
+     * @param rhs Right-hand variable
      *
      * @return True if both variables refer to the same name and version
      */
@@ -117,7 +117,7 @@ public:
     /**
      * @brief Inequality based on `==`
      *
-     * @param rhs Right-hand span
+     * @param rhs Right-hand variable
      *
      * @return True if the variables differ
      */
@@ -207,7 +207,7 @@ struct hash<arkoi::il::Operand> {
  * @param os Output stream to write to
  * @param operand Immediate to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Immediate& operand);
 
@@ -217,7 +217,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::il::Immediate& operand);
  * @param os Output stream to write to
  * @param operand Variable to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Variable& operand);
 
@@ -227,7 +227,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::il::Variable& operand);
  * @param os Output stream to write to
  * @param operand Memory to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Memory& operand);
 
@@ -237,7 +237,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::il::Memory& operand);
  * @param os Output stream to write to
  * @param operand Operand to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::il::Operand& operand);
 

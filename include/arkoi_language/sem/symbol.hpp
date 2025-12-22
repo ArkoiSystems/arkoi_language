@@ -128,7 +128,7 @@ struct Symbol : std::variant<arkoi::sem::Function, arkoi::sem::Variable> {
  * @param os Output stream to write to
  * @param symbol Symbol to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Symbol>& symbol);
 

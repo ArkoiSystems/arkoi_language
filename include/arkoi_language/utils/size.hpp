@@ -36,7 +36,7 @@ size_t size_to_bits(const Size& size);
  * @param os Output stream to write to
  * @param size Size to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const Size& size);
 

@@ -173,7 +173,7 @@ struct Type final : TypeBase, std::variant<Integral, Floating, Boolean> {
  * @param os Output stream to write to
  * @param type Integral type to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Integral& type);
 
@@ -183,7 +183,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::sem::Integral& type);
  * @param os Output stream to write to
  * @param type Floating type to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Floating& type);
 
@@ -193,7 +193,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::sem::Floating& type);
  * @param os Output stream to write to
  * @param type Boolean type to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Boolean& type);
 
@@ -203,7 +203,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::sem::Boolean& type);
  * @param os Output stream to write to
  * @param type Type to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Type& type);
 

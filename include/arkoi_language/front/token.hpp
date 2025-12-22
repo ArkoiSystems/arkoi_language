@@ -116,7 +116,7 @@ private:
  * @param os Output stream to write to
  * @param type Type to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::front::Token::Type& type);
 
@@ -126,7 +126,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::front::Token::Type& type
  * @param os Output stream to write to
  * @param token Token to describe
  *
- * @return Reference to @p os.
+ * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::front::Token& token);
 
