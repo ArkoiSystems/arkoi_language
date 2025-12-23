@@ -8,153 +8,157 @@
 
 namespace arkoi::sem {
 /**
- * @brief Performs name resolution on the AST
+ * @brief Visitor that performs name resolution on the Abstract Syntax Tree (AST).
+ *
+ * `NameResolver` traverses the AST to associate every `Identifier` node with a
+ * specific `Symbol` from the hierarchical `SymbolTable`. It identifies errors
+ * such as duplicate definitions in the same scope or references to undefined
+ * variables/functions.
+ *
+ * @see ast::Visitor, SymbolTable, Symbol, TypeResolver
  */
 class NameResolver final : ast::Visitor {
 private:
     /**
-     * @brief Construct a NameResolver
-     *
-     * Private to enforce usage through the static resolve() entry point
+     * @brief Constructs a `NameResolver`.
+
+     * Private to enforce usage through the static @ref resolve entry point.
      */
     NameResolver() = default;
 
 public:
     /**
-     * @brief Perform name resolution on a program
-     *
-     * @param node The program AST to resolve
-     *
-     * @return A NameResolver instance containing the resolution result
+     * @brief Performs name resolution on an entire AST program.
+
+     * @param node The root `ast::Program` node to resolve.
+     * @return A `NameResolver` instance containing the result state.
      */
     [[nodiscard]] static NameResolver resolve(ast::Program& node);
 
     /**
-     * @brief Check whether name resolution failed
-     *
-     * @return True if one or more name resolution errors occurred, false otherwise
+     * @brief Indicates whether any name resolution errors were encountered.
+
+     * @return True if one or more resolution errors occurred, false otherwise.
      */
     [[nodiscard]] auto has_failed() const { return _failed; }
 
 private:
     /**
-     * @brief Visits a Program node
+    * @brief Resolves names in the global program scope.
      *
-     * @param node The Program node to visit
+     * @param node The `ast::Program` node to visit.
      */
     void visit(ast::Program& node) override;
 
     /**
-     * @brief Visit a Function node as a prototype
+     * @brief First-pass visitor for function prototypes to allow forward references.
 
-     * @param node The Function node to register
+     * @param node The `ast::Function` node to register.
      */
     void visit_as_prototype(ast::Function& node);
 
     /**
-     * @brief Visits a Function node
+     * @brief Resolves names within a function definition.
      *
-     * @param node The Function node to visit
+     * @param node The `ast::Function` node to visit.
      */
     void visit(ast::Function& node) override;
 
     /**
-     * @brief Visits a Block node
+     * @brief Resolves names within a nested scope block.
      *
-     * @param node The Block node to visit
+     * @param node The `ast::Block` node to visit.
      */
     void visit(ast::Block& node) override;
 
     /**
-     * @brief Visits a Parameter node
+     * @brief Resolves names for function parameters.
      *
-     * @param node The Parameter node to visit
+     * @param node The `ast::Parameter` node to visit.
      */
     void visit(ast::Parameter& node) override;
 
     /**
-     * @brief Visits an Identifier node
+     * @brief Associates an identifier node with its corresponding symbol.
      *
-     * @param node The Identifier node to visit
+     * @param node The `ast::Identifier` node to visit.
      */
     void visit(ast::Identifier& node) override;
 
     /**
-     * @brief Visits an Immediate node (empty implementation)
+     * @brief Literals do not contain names to resolve.
      *
-     * @param node The Immediate node to visit
+     * @param node The `ast::Immediate` node to visit.
      */
     void visit([[maybe_unused]] ast::Immediate& node) override { }
 
     /**
-     * @brief Visits a Variable node
+     * @brief Resolves names within a variable declaration.
      *
-     * @param node The Variable node to visit
+     * @param node The `ast::Variable` node to visit.
      */
     void visit(ast::Variable& node) override;
 
     /**
-     * @brief Visits a Return node
+     * @brief Resolves names within a return statement.
      *
-     * @param node The Return node to visit
+     * @param node The `ast::Return` node to visit.
      */
     void visit(ast::Return& node) override;
 
     /**
-     * @brief Visits a Binary node
+     * @brief Resolves names within a binary operation.
      *
-     * @param node The Binary node to visit
+     * @param node The `ast::Binary` node to visit.
      */
     void visit(ast::Binary& node) override;
 
     /**
-     * @brief Visits a Cast node
+     * @brief Resolves names within a type cast.
      *
-     * @param node The Cast node to visit
+     * @param node The `ast::Cast` node to visit.
      */
     void visit(ast::Cast& node) override;
 
     /**
-     * @brief Visits an Assign node
+     * @brief Resolves names within an assignment.
      *
-     * @param node The Assign node to visit
+     * @param node The `ast::Assign` node to visit.
      */
     void visit(ast::Assign& node) override;
 
     /**
-     * @brief Visits a Call node
+     * @brief Resolves names within a function call.
      *
-     * @param node The Call node to visit
+     * @param node The `ast::Call` node to visit.
      */
     void visit(ast::Call& node) override;
 
     /**
-     * @brief Visits an If node
+     * @brief Resolves names within an if-else statement.
      *
-     * @param node The If node to visit
+     * @param node The `ast::If` node to visit.
      */
     void visit(ast::If& node) override;
 
     /**
-     * @brief Ensure a symbol does not already exist in the current scope
+     * @brief Validates that a name is NOT yet defined in the current scope.
      *
-     * @tparam Type The symbol type to create
-     * @tparam Args Constructor argument types
-     * @param token The token identifying the symbol
-     * @param args Arguments forwarded to the symbol constructor
-     *
-     * @return The created symbol, or nullptr on failure
+     * @tparam Type The symbol kind to create.
+     * @tparam Args Argument types for the symbol constructor.
+     * @param token The identifier token.
+     * @param args Arguments for the symbol.
+     * @return The created `Symbol` shared pointer, or nullptr on failure.
      */
     template <typename Type, typename... Args>
     [[nodiscard]] std::shared_ptr<Symbol> _check_non_existence(const front::Token& token, Args&&... args);
 
     /**
-     * @brief Look up an existing symbol in the current scope stack
+     * @brief Validates that a name IS defined in an accessible scope.
      *
-     * @tparam Types Allowed symbol types
-     * @param token The token identifying the symbol
-     *
-     * @return The resolved symbol, or nullptr on failure
+     * @tparam Types Allowed symbol kinds.
+     * @param token The identifier token.
+     * @return The found `Symbol` shared pointer, or nullptr on failure.
      */
     template <typename... Types>
     [[nodiscard]] std::shared_ptr<Symbol> _check_existence(const front::Token& token);

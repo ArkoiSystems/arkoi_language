@@ -204,7 +204,7 @@ private:
     [[nodiscard]] static bool _is_space(char input);
 
     /**
-     * @brief Utility: Checks if a character is a valid hexadecimal digit.
+     * @brief Checks if a character is a valid hexadecimal digit.
      *
      * @param input The character to check.
      *

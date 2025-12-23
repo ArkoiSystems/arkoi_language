@@ -7,76 +7,82 @@
 
 namespace arkoi::opt {
 /**
- * @brief Base class for optimization passes
+ * @brief Base class for Intermediate Language (IL) optimization passes.
+ *
+ * A `Pass` provides hooks that are called during the traversal of the IL
+ * hierarchy. Passes can modify the IL (e.g., folding constants, removing
+ * dead code) and must return true if any changes were made.
+ *
+ * @see PassManager, il::Module, il::Function, il::BasicBlock
  */
 class Pass {
 public:
     virtual ~Pass() = default;
 
     /**
-     * @brief Called when entering a module
+     * @brief Hook called when starting the traversal of a module.
      *
-     * @param module The module being entered
-     *
-     * @return True if the module was modified, false otherwise
+     * @param module The `il::Module` being entered.
+     * @return True if the pass modified the module, false otherwise.
      */
     virtual bool enter_module(il::Module& module) = 0;
 
     /**
-     * @brief Called when exiting a module
+     * @brief Hook called after traversing all functions in a module.
      *
-     * @param module The module being exited
-     *
-     * @return True if the module was modified, false otherwise
+     * @param module The `il::Module` being exited.
+     * @return True if the pass modified the module, false otherwise.
      */
     virtual bool exit_module(il::Module& module) = 0;
 
     /**
-     * @brief Called when entering a function
+     * @brief Hook called when starting the traversal of a function.
      *
-     * @param function The function being entered
-     *
-     * @return True if the function was modified, false otherwise
+     * @param function The `il::Function` being entered.
+     * @return True if the pass modified the function, false otherwise.
      */
     virtual bool enter_function(il::Function& function) = 0;
 
     /**
-     * @brief Called when exiting a function
+     * @brief Hook called after traversing all blocks in a function.
      *
-     * @param function The function being exited
-     *
-     * @return True if the function was modified, false otherwise
+     * @param function The `il::Function` being exited.
+     * @return True if the pass modified the function, false otherwise.
      */
     virtual bool exit_function(il::Function& function) = 0;
 
     /**
-     * @brief Called for each basic block in a function
+     * @brief Hook called for every basic block in the current function.
      *
-     * @param block The basic block being processed
-     *
-     * @return True if the block was modified, false otherwise
+     * @param block The `il::BasicBlock` being processed.
+     * @return True if the pass modified the block, false otherwise.
      */
     virtual bool on_block(il::BasicBlock& block) = 0;
 };
 
 /**
- * @brief Manager for running a series of optimization passes
+ * @brief Orchestrates the execution of multiple optimization passes.
+ *
+ * `PassManager` stores a sequence of passes and applies them in order
+ * to an IL module.
  */
 class PassManager {
 public:
     /**
-     * @brief Runs all registered passes on a module
+     * @brief Runs all registered optimization passes on the module.
      *
-     * @param module The module to optimize
+     * Passes are executed in the order they were added to the manager.
+     *
+     * @param module The `il::Module` to optimize.
      */
     void run(il::Module& module) const;
 
     /**
-     * @brief Adds a new pass to the manager
+     * @brief Registers a new optimization pass.
      *
-     * @tparam Type The type of the pass
-     * @tparam Args The types of arguments for the pass constructor
-     * @param args The arguments for the pass constructor
+     * @tparam Type The concrete class of the pass (must inherit from `Pass`).
+     * @tparam Args Argument types for the pass constructor.
+     * @param args Arguments to instantiate the pass.
      */
     template <typename Type, typename... Args>
     void add(Args&&... args);

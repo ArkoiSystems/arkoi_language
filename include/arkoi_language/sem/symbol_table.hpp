@@ -8,38 +8,46 @@
 
 namespace arkoi::sem {
 /**
- * @brief Represents a symbol table for scope-based symbol management
+ * @brief Manages symbols within a specific lexical scope.
+ *
+ * `SymbolTable` implements a hierarchical symbol mapping. It stores symbols
+ * defined in the current scope and maintains a pointer to a parent scope
+ * to allow for name resolution in outer scopes (lexical nesting).
+ *
+ * @see Symbol, Function, Variable
  */
 class SymbolTable {
 public:
     /**
-     * @brief Constructs a SymbolTable with an optional parent symbol
+     * @brief Constructs a `SymbolTable` with an optional parent table.
      *
-     * @param parent The parent symbol table (optional)
+     * @param parent A shared pointer to the enclosing scope's symbol table.
      */
     explicit SymbolTable(std::shared_ptr<SymbolTable> parent = nullptr) :
         _parent(std::move(parent)) { }
 
     /**
-     * @brief Inserts a new symbol into the table with the given parameters
+     * @brief Creates and inserts a new symbol into the current scope.
      *
-     * @tparam Type The type of the symbol
-     * @tparam Args The types of arguments for the symbol constructor
-     * @param name The name of the symbol
-     * @param args The arguments for the symbol constructor
-     *
-     * @return A reference to the newly inserted symbol
+     * @tparam Type The concrete symbol type (e.g., `Variable`, `Function`).
+     * @tparam Args Argument types for the symbol's constructor.
+     * @param name The name identifier for the symbol.
+     * @param args Arguments to pass to the symbol constructor.
+     * @return A shared pointer to the newly created `Symbol`.
+     * @throws IdentifierAlreadyTaken if @p name already exists in the current scope.
      */
     template <typename Type, typename... Args>
     std::shared_ptr<Symbol>& insert(const std::string& name, Args&&... args);
 
     /**
-     * @brief Looks up a symbol by name in the current and parent tables
+     * @brief Resolves a symbol by name, searching current and parent scopes.
      *
-     * @tparam Types The types of symbols to look for
-     * @param name The name of the symbol to lookup
+     * This method implements lexical scoping rules.
      *
-     * @return A reference to the found symbol
+     * @tparam Types Optional filter for allowed symbol types.
+     * @param name The name identifier to search for.
+     * @return A reference to the shared pointer of the found `Symbol`.
+     * @throws IdentifierNotFound if the symbol is not found in any accessible scope.
      */
     template <typename... Types>
     [[nodiscard]] std::shared_ptr<Symbol>& lookup(const std::string& name);
@@ -50,28 +58,28 @@ private:
 };
 
 /**
- * @brief Exception thrown when an identifier is already taken in the current scope
+ * @brief Exception thrown when attempting to redefine an identifier in the same scope.
  */
 class IdentifierAlreadyTaken final : public std::runtime_error {
 public:
     /**
-     * @brief Constructs an IdentifierAlreadyTaken exception
+     * @brief Constructs an `IdentifierAlreadyTaken` exception.
      *
-     * @param name The name of the identifier
+     * @param name The name of the conflicting identifier.
      */
     explicit IdentifierAlreadyTaken(const std::string& name) :
         std::runtime_error("The identifier " + name + " is already taken.") { }
 };
 
 /**
- * @brief Exception thrown when an identifier is not found in the current or parent scopes
+ * @brief Exception thrown when an identifier cannot be resolved.
  */
 class IdentifierNotFound final : public std::runtime_error {
 public:
     /**
-     * @brief Constructs an IdentifierNotFound exception
+     * @brief Constructs an `IdentifierNotFound` exception.
      *
-     * @param name The name of the identifier
+     * @param name The name of the missing identifier.
      */
     explicit IdentifierNotFound(const std::string& name) :
         std::runtime_error("The identifier " + name + " was not found.") { }

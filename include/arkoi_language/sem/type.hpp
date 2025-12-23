@@ -7,70 +7,71 @@
 
 namespace arkoi::sem {
 /**
- * @brief Base class for all semantic types
+ * @brief Abstract base class for all semantic types in the language.
+ *
+ * A `Type` determines the size and layout of data, as well as the
+ * operations that can be performed on it.
  */
 class TypeBase {
 public:
     virtual ~TypeBase() = default;
 
     /**
-     * @brief Returns the size of the type
+     * @brief Returns the storage size required for this type.
      *
-     * @return The size as enumeration
+     * @return The `Size` enumeration value (BYTE, WORD, etc).
      */
     [[nodiscard]] virtual Size size() const = 0;
 };
 
 /**
- * @brief Represents an integral type
+ * @brief Represents an integral semantic type.
  */
 class Integral final : public TypeBase {
 public:
     /**
-     * @brief Constructs an Integral type with the given parameters
+     * @brief Constructs an `Integral` type.
      *
-     * @param size The size of the type
-     * @param sign Whether the type is signed
+     * @param size The size of the integer (e.g., QWORD for 64-bit).
+     * @param sign True if the integer is signed, false if unsigned.
      */
     constexpr Integral(const Size size, const bool sign) :
         _size(size), _sign(sign) { }
 
     /**
-     * @brief Returns the size of the type
+     * @brief Returns the storage size of the integer.
      *
-     * @return The size as enumeration
+     * @return The `Size` enumeration value.
      */
     [[nodiscard]] Size size() const override { return _size; }
 
     /**
-     * @brief Equality compares the size and signess
+     * @brief Checks if two integral types have the same size and signess.
      *
-     * @param other Right-hand integral type
-     *
-     * @return True if both types have the same size and signess
+     * @param other Right-hand integral type.
+     * @return True if both types have the same size and signess.
      */
     bool operator==(const Integral& other) const;
 
     /**
-     * @brief Inequality based on `==`
+     * @brief Inequality based on `==`.
      *
-     * @param other Right-hand integral type
-     *
-     * @return True if the types differ
+     * @param other Right-hand integral type.
+     * @return True if the types differ.
      */
     bool operator!=(const Integral& other) const;
 
     /**
-     * @brief Returns the maximum value representable by this type
+     * @brief Returns the maximum representable value for this integral type.
      *
-     * @return The maximum value
+     * @return The maximum value as a `uint64_t`.
      */
     [[nodiscard]] uint64_t max() const;
 
     /**
-     * @brief Returns whether the type is signed
+     * @brief Returns whether the type is signed.
      *
-     * @return True if signed, false otherwise
+     * @return True if signed, false otherwise.
      */
     [[nodiscard]] auto sign() const { return _sign; }
 
@@ -80,40 +81,38 @@ private:
 };
 
 /**
- * @brief Represents a floating-point type
+ * @brief Represents a floating-point semantic type.
  */
 class Floating final : public TypeBase {
 public:
     /**
-     * @brief Constructs a Floating type with the given size
+     * @brief Constructs a `Floating` type.
      *
-     * @param size The size of the type
+     * @param size The size of the float (e.g., DWORD for f32, QWORD for f64).
      */
     explicit Floating(const Size size) :
         _size(size) { }
 
     /**
-     * @brief Returns the size of the type
+     * @brief Returns the storage size of the floating-point value.
      *
-     * @return The size as enumeration
+     * @return The `Size` enumeration value.
      */
     [[nodiscard]] Size size() const override { return _size; }
 
     /**
-     * @brief Equality compares only the size
+     * @brief Equality compares only the size.
      *
-     * @param other Right-hand floating type
-     *
-     * @return True if both types have the same size
+     * @param other Right-hand floating type.
+     * @return True if both types have the same size.
      */
     bool operator==(const Floating& other) const;
 
     /**
-     * @brief Inequality based on `==`
+     * @brief Inequality based on `==`.
      *
-     * @param other Right-hand floating type
-     *
-     * @return True if the types differ
+     * @param other Right-hand floating type.
+     * @return True if the types differ.
      */
     bool operator!=(const Floating& other) const;
 
@@ -122,88 +121,88 @@ private:
 };
 
 /**
- * @brief Represents a boolean type
+ * @brief Represents the boolean semantic type.
+ *
+ * Booleans are always represented as a single byte in memory.
  */
 class Boolean final : public TypeBase {
 public:
     /**
-     * @brief Returns the size of the type
+     * @brief Returns the storage size of a boolean.
      *
-     * @return The size as enumeration (always BYTE)
+     * @return Always returns `Size::BYTE`.
      */
     [[nodiscard]] Size size() const override { return Size::BYTE; }
 
     /**
-     * @brief Equality will always be true
+     * @brief Equality will always be true.
      *
-     * @param other Right-hand boolean type
-     *
-     * @return Always true as boolean types can't differ
+     * @param other Right-hand boolean type.
+     * @return Always true as boolean types can't differ.
      */
     bool operator==(const Boolean& other) const;
 
     /**
-     * @brief Inequality based on `==`
+     * @brief Inequality based on `==`.
      *
-     * @param other Right-hand boolean type
-     *
-     * @return True if the types differ
+     * @param other Right-hand boolean type.
+     * @return True if the types differ.
      */
     bool operator!=(const Boolean& other) const;
 };
 
 /**
- * @brief Represents a generic semantic type, which can be integral, floating, or boolean
+ * @brief A type-safe container for any semantic type.
+ *
+ * `Type` is a `std::variant` of `Integral`, `Floating`, and `Boolean`.
+ * It provides a uniform interface for type operations while preserving
+ * concrete type information.
  */
 struct Type final : TypeBase, std::variant<Integral, Floating, Boolean> {
     using variant::variant;
 
     /**
-     * @brief Returns the size of the type
+     * @brief Returns the size of the underlying type.
      *
-     * @return The size as enumeration
+     * @return The `Size` of the active type variant.
      */
     [[nodiscard]] Size size() const override;
 };
 } // namespace arkoi::sem
 
 /**
- * @brief Streams a readable description of a `arkoi::sem::Integral`
+ * @brief Streams a detailed description of a `Integral`.
  *
- * @param os Output stream to write to
- * @param type Integral type to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param type The integral type to describe.
+ * @return A reference to the output stream @p os.
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Integral& type);
 
 /**
- * @brief Streams a readable description of a `arkoi::sem::Floating`
+ * @brief Streams a detailed description of a `Floating`.
  *
- * @param os Output stream to write to
- * @param type Floating type to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param type The floating type to describe.
+ * @return A reference to the output stream @p os.
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Floating& type);
 
 /**
- * @brief Streams a readable description of a `arkoi::sem::Boolean`
+ * @brief Streams a detailed description of a `Boolean`.
  *
- * @param os Output stream to write to
- * @param type Boolean type to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param type The boolean type to describe.
+ * @return A reference to the output stream @p os.
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Boolean& type);
 
 /**
- * @brief Streams a readable description of a `arkoi::sem::Type`
+ * @brief Streams a detailed description of a `sem::Type`.
  *
- * @param os Output stream to write to
- * @param type Type to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param type The type to describe.
+ * @return A reference to the output stream @p os.
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::sem::Type& type);
 

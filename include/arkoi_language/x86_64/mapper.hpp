@@ -8,179 +8,193 @@
 
 namespace arkoi::x86_64 {
 /**
- * @brief Visitor for mapping IL operands to x86_64 assembly operands
+ * @brief Visitor that maps abstract IL operands to physical x86-64 machine operands.
+ *
+ * `Mapper` is responsible for determining the storage location (register or
+ * stack slot) for every `il::Operand` in a function. It calculates the necessary
+ * stack frame size and handles calling convention details like parameter passing.
+ *
+ * @see il::Visitor, il::Operand, Register, Memory, RegisterAllocater
  */
 class Mapper final : il::Visitor {
 public:
     /**
-     * @brief Constructs a Mapper for a given function
+     * @brief Constructs a `Mapper` for the specified IL function.
      *
-     * @param function The IL function to map
+     * @param function The `il::Function` to process.
      */
     explicit Mapper(il::Function& function);
 
     /**
-     * @brief Accesses or creates a mapping for an IL variable
+     * @brief Retrieves the machine operand associated with an IL variable.
      *
-     * @param variable The IL variable
-     *
-     * @return The corresponding x86_64 operand
+     * @param variable The source IL variable.
+     * @return A reference to the mapped `x86_64::Operand`.
      */
     [[nodiscard]] Operand& operator[](const il::Variable& variable);
 
     /**
-     * @brief Returns the x86_64 operand for a given IL operand
+     * @brief Retrieves the machine operand associated with a generic IL operand.
      *
-     * @param operand The IL operand
-     *
-     * @return The x86_64 operand
+     * @param operand The source IL operand.
+     * @return The mapped `x86_64::Operand`.
      */
     [[nodiscard]] Operand operator[](const il::Operand& operand);
 
     /**
-     * @brief Returns the total size of the stack frame
+     * @brief Returns the total size of the stack frame in bytes.
      *
-     * @return The stack size in bytes
+     * This includes space for spilled variables and local allocations.
+     *
+     * @return The stack size.
      */
     [[nodiscard]] size_t stack_size() const;
 
     /**
-     * @brief Returns the IL function associated with this mapper
+     * @brief Returns the IL function associated with this mapper.
      *
-     * @return A reference to the function
+     * @return A constant reference to the `il::Function`.
      */
     [[nodiscard]] auto& function() const { return _function; }
 
     /**
-     * @brief Returns the register used for return values of the given type
+     * @brief Determines the physical register used for returning a specific type.
      *
-     * @param target The type of the return value
+     * For example, integers are typically returned in `RAX`.
      *
-     * @return The return register
+     * @param target The semantic type being returned.
+     * @return The corresponding `Register`.
      */
     [[nodiscard]] static Register return_register(const sem::Type& target);
 
     /**
-     * @brief Aligns a size to 16 bytes
+     * @brief Rounds up a size to satisfy the x86-64 16-byte stack alignment.
      *
-     * @param input The size to be aligned
-     *
-     * @return The aligned size
+     * @param input The raw size in bytes.
+     * @return The aligned size.
      */
     [[nodiscard]] static size_t align_size(size_t input);
 
 private:
     /**
-     * @brief Visits an IL Module (empty implementation)
+     * @brief Modules are not directly mapped by this visitor.
+     *
+     * @param module The `il::Module` node to visit.
      */
-    void visit(il::Module&) override { }
+    void visit([[maybe_unused]] il::Module& module) override { }
 
     /**
-     * @brief Visits an IL Function
+     * @brief Maps the function structure and its parameters.
      *
-     * @param function The function to visit
+     * @param function The `il::Function` node to visit.
      */
     void visit(il::Function& function) override;
 
     /**
-     * @brief Visits an IL BasicBlock
+     * @brief Maps all instructions within a basic block.
      *
-     * @param block The basic block to visit
+     * @param block The `il::BasicBlock` node to visit.
      */
     void visit(il::BasicBlock& block) override;
 
     /**
-     * @brief Visits an IL Binary instruction
+     * @brief Maps operands for a binary operation.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `il::Binary` node to visit.
      */
     void visit(il::Binary& instruction) override;
 
     /**
-     * @brief Visits an IL Cast instruction
+     * @brief Maps operands for a type cast.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `il::Cast` node to visit.
      */
     void visit(il::Cast& instruction) override;
 
     /**
-     * @brief Visits an IL Return instruction
+     * @brief Maps the return value operand.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `il::Return` node to visit.
      */
     void visit(il::Return& instruction) override;
 
     /**
-     * @brief Visits an IL Call instruction
+     * @brief Maps argument operands for a function call.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `il::Call` node to visit.
      */
     void visit(il::Call& instruction) override;
 
     /**
-     * @brief Maps function parameters to registers or stack locations
+     * @brief Places function parameters into their initial registers or stack slots.
      *
-     * @param parameters The list of parameters
-     * @param use_redzone Whether to utilize the x86_64 red zone
+     * @param parameters The formal parameters of the function.
+     * @param use_redzone Whether the function can utilize the 128-byte red zone.
      */
     void _map_parameters(const std::vector<il::Variable>& parameters, bool use_redzone);
 
     /**
-     * @brief Visits an IL If instruction (empty implementation)
-     */
-    void visit(il::If&) override { }
-
-    /**
-     * @brief Visits an IL Goto instruction (empty implementation)
-     */
-    void visit(il::Goto&) override { }
-
-    /**
-     * @brief Visits an IL Alloca instruction
+     * @brief Jumps do not define new operand mappings.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `il::If` node to visit.
+     */
+    void visit([[maybe_unused]] il::If& instruction) override { }
+
+    /**
+     * @brief Jumps do not define new operand mappings.
+     *
+     * @param instruction The `il::Goto` node to visit.
+     */
+    void visit([[maybe_unused]] il::Goto& instruction) override { }
+
+    /**
+     * @brief Maps a stack allocation to a specific memory operand.
+     *
+     * @param instruction The `il::Alloca` node to visit.
      */
     void visit(il::Alloca& instruction) override;
 
     /**
-     * @brief Visits an IL Store instruction (empty implementation)
+     * @brief Stores are handled via their source operands.
+     *
+     * @param instruction The `il::Store` node to visit.
      */
-    void visit(il::Store&) override { }
+    void visit([[maybe_unused]] il::Store& instruction) override { }
 
     /**
-     * @brief Visits an IL Load instruction
+     * @brief Maps a memory load to a destination operand.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `il::Load` node to visit.
      */
     void visit(il::Load& instruction) override;
 
     /**
-     * @brief Visits an IL Constant instruction
+     * @brief Maps a constant assignment.
      *
-     * @param instruction The instruction to visit
+     * @param instruction The `il::Constant` node to visit.
      */
     void visit(il::Constant& instruction) override;
 
     /**
-     * @brief Adds an operand to the set of locals
+     * @brief Registers an IL operand as a local that needs storage.
      *
-     * @param operand The operand to add
+     * @param operand The operand to track.
      */
     void _add_local(const il::Operand& operand);
 
     /**
-     * @brief Adds a mapping from an IL variable to a register
+     * @brief Creates a mapping to a physical machine register.
      *
-     * @param variable The IL variable
-     * @param reg The x86_64 register
+     * @param variable The variable which should get mapped.
+     * @param reg The target register of the mapped variable.
      */
     void _add_register(const il::Variable& variable, const Register& reg);
 
     /**
-     * @brief Adds a mapping from an IL variable to a memory location
+    * @brief Creates a mapping to a relative memory address (on the stack).
      *
-     * @param variable The IL variable
-     * @param memory The x86_64 memory location
+     * @param variable The variable which should get mapped.
+     * @param memory The target memory location of the mapped variable.
      */
     void _add_memory(const il::Variable& variable, const Memory& memory);
 

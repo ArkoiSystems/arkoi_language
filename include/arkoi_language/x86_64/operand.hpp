@@ -8,12 +8,15 @@
 
 namespace arkoi::x86_64 {
 /**
- * @brief Represents an x86_64 register
+ * @brief Represents a physical x86-64 machine register.
+ *
+ * A `Register` is defined by its base architectural identifier (e.g., RAX, RDI)
+ * and its current access size (BYTE, WORD, DWORD, or QWORD).
  */
 class Register {
 public:
     /**
-     * @brief Enumeration of register bases
+     * @brief Architectural register bases for x86-64.
      */
     enum class Base {
         A, C, D, B, SI, DI, SP, BP, R8, R9, R10, R11, R12, R13, R14, R15,
@@ -22,50 +25,48 @@ public:
 
 public:
     /**
-     * @brief Constructs a Register with the given base and size
+     * @brief Constructs a `Register`.
      *
-     * @param base The base of the register
-     * @param size The size of the register
+     * @param base The architectural base identifier.
+     * @param size The bit-width to use for access.
      */
     constexpr Register(const Base base, const Size size) :
         _size(size), _base(base) { }
 
     /**
-     * @brief Equality compares the size and base
+     * @brief Equality compares the size and base.
      *
-     * @param other Right-hand register
-     *
-     * @return True if both register refer the same size and base
+     * @param other Right-hand register.
+     * @return True if both register refer the same size and base.
      */
     bool operator==(const Register& other) const;
 
     /**
-     * @brief Inequality based on `==`
+     * @brief Inequality based on `==`.
      *
-     * @param other Right-hand register
-     *
-     * @return True if the registers differ
+     * @param other Right-hand register.
+     * @return True if the registers differ.
      */
     bool operator!=(const Register& other) const;
 
     /**
-     * @brief Sets the size of the register
+     * @brief Sets the access size of the register.
      *
-     * @param size The size to set
+     * @param size The new `Size`.
      */
     void set_size(const Size size) { _size = size; }
 
     /**
-     * @brief Returns the size of the register
+     * @brief Returns the access size of the register.
      *
-     * @return The size
+     * @return The `Size` enumeration value.
      */
     [[nodiscard]] auto size() const { return _size; }
 
     /**
-     * @brief Returns the base of the register
+     * @brief Returns the architectural base identifier.
      *
-     * @return The base
+     * @return The `Base` enumeration value.
      */
     [[nodiscard]] auto base() const { return _base; }
 
@@ -75,12 +76,16 @@ private:
 };
 
 /**
- * @brief Represents a memory operand in x86_64 assembly
+ * @brief Represents a memory operand in x86-64 assembly (e.g., `[rbp - 8]`).
+ *
+ * Supports complex addressing modes including base, index, scale, and displacement.
  */
 class Memory {
 public:
     /**
-     * @brief Represents a memory address (label, offset, or register)
+     * @brief Represents the base address of a memory access.
+     *
+     * Can be a symbolic label (string), a fixed offset (int64), or a register.
      */
     struct Address : std::variant<std::string, int64_t, Register> {
         using variant::variant;
@@ -88,86 +93,84 @@ public:
 
 public:
     /**
-     * @brief Constructs a Memory operand with the given parameters
+     * @brief Full constructor for complex addressing modes.
      *
-     * @param size The size of the memory access
-     * @param address The base address
-     * @param index The index register index (optional)
-     * @param scale The scale factor
-     * @param displacement The displacement value
+     * @param size The size of the memory access (e.g., QWORD).
+     * @param address The base address component.
+     * @param index The index component.
+     * @param scale The scale factor for the index.
+     * @param displacement The constant displacement.
      */
     Memory(Size size, Register address, int64_t index, int64_t scale, int64_t displacement) :
         _index(index), _scale(scale), _displacement(displacement), _address(address), _size(size) { }
 
     /**
-     * @brief Constructs a Memory operand with base address and displacement
+     * @brief Short constructor for common base+displacement addressing.
      *
-     * @param size The size of the memory access
-     * @param address The base address register
-     * @param displacement The displacement value
+     * @param size The size of the memory access.
+     * @param address The base register.
+     * @param displacement The constant offset.
      */
     Memory(Size size, Register address, int64_t displacement) :
         _index(1), _scale(1), _displacement(displacement), _address(address), _size(size) { }
 
     /**
-     * @brief Constructs a Memory operand with an Address
+     * @brief Minimal constructor for simple symbolic or fixed addresses.
      *
-     * @param size The size of the memory access
-     * @param address The address
+     * @param size The size of the memory access.
+     * @param address The symbolic or fixed base address.
      */
     Memory(Size size, Address address) :
         _index(1), _scale(1), _displacement(0), _address(std::move(address)), _size(size) { }
 
     /**
-     * @brief Equality compares index, scale, displacement, address, and size
+     * @brief Equality compares index, scale, displacement, address, and size.
      *
-     * @param other Right-hand memory location
-     *
-     * @return True if both memory location are the same
+     * @param other Right-hand memory location.
+     * @return True if both memory location are the same.
      */
     bool operator==(const Memory& other) const;
 
     /**
-     * @brief Inequality based on `==`
+     * @brief Inequality based on `==`.
      *
-     * @param other Right-hand memory location
-     *
-     * @return True if the memory locations differ
+     * @param other Right-hand memory location.
+     * @return True if the memory locations differ.
      */
     bool operator!=(const Memory& other) const;
 
     /**
-     * @brief Returns the displacement value
+     * @brief Returns the displacement value.
      *
-     * @return The displacement
+     * @return The displacement of the address.
      */
     [[nodiscard]] auto displacement() const { return _displacement; }
 
     /**
-     * @brief Returns the base address
+     * @brief Returns the base address component.
      *
-     * @return A reference to the address
+     * @return A reference to the address.
      */
     [[nodiscard]] auto& address() const { return _address; }
 
     /**
-     * @brief Returns the scale factor
+     * @brief Returns the scale factor.
      *
-     * @return The scale
+     * @return The scale of the address.
      */
     [[nodiscard]] auto scale() const { return _scale; }
 
     /**
-     * @brief Returns the index value
+     * @brief Returns the index component.
      *
-     * @return The index
+     * @return The index of the address.
      */
     [[nodiscard]] auto index() const { return _index; }
 
     /**
-     * @brief Returns the size of the memory access
+     * @brief Returns the size of the memory access.
      *
-     * @return The size
+     * @return The size of the address.
      */
     [[nodiscard]] auto size() const { return _size; }
 
@@ -178,14 +181,18 @@ private:
 };
 
 /**
- * @brief Represents an immediate value in x86_64 assembly
+ * @brief Represents an immediate (literal) value in machine code.
+ *
+ * Immediates can be labels, integral values, or floating-point values.
  */
 struct Immediate : std::variant<std::string, uint64_t, int64_t, uint32_t, int32_t, double, float, bool> {
     using variant::variant;
 };
 
 /**
- * @brief Represents a generic x86_64 operand (memory, register, or immediate)
+ * @brief A generic container for any x86-64 machine operand.
+ *
+ * `Operand` is a `std::variant` of `Memory`, `Register`, and `Immediate`.
  */
 struct Operand : std::variant<Memory, Register, Immediate> {
     using variant::variant;
@@ -193,62 +200,56 @@ struct Operand : std::variant<Memory, Register, Immediate> {
 } // namespace arkoi::x86_64
 
 /**
- * @brief Streams a readable description of a `x86_64::Register`
+ * @brief Streams a detailed description of a `Register`.
  *
- * @param os Output stream to write to
- * @param reg Register to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param reg The register to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register& reg);
 
 /**
- * @brief Streams a readable description of a `x86_64::Register::Base`
+ * @brief Streams a detailed description of a `Register::Base`.
  *
- * @param os Output stream to write to
- * @param base Base to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param base The register base to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register::Base& base);
 
 /**
- * @brief Streams a readable description of a `x86_64::Memory`
+ * @brief Streams a detailed description of a `Memory`.
  *
- * @param os Output stream to write to
- * @param memory Memory to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param memory The memory to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Memory& memory);
 
 /**
- * @brief Streams a readable description of a `x86_64::Memory::Address`
+ * @brief Streams a detailed description of a `Memory::Address`.
  *
- * @param os Output stream to write to
- * @param address Address to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param address The memory address to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Memory::Address& address);
 
 /**
- * @brief Streams a readable description of a `x86_64::Immediate`
+ * @brief Streams a detailed description of a `Immediate`.
  *
- * @param os Output stream to write to
- * @param immediate Immediate to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param immediate The immediate to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Immediate& immediate);
 
 /**
- * @brief Streams a readable description of a `x86_64::Operand`
+ * @brief Streams a detailed description of a `Operand`.
  *
- * @param os Output stream to write to
- * @param operand Operand to describe
- *
- * @return Reference to @p os
+ * @param os The output stream.
+ * @param operand The operand to describe.
+ * @return A reference to the output stream @p os
  */
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Operand& operand);
 

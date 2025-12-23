@@ -5,192 +5,185 @@
 
 namespace arkoi::sem {
 /**
- * @brief Performs type resolution on the AST
+ * @brief Visitor that performs type resolution and inference on the AST.
+ *
+ * `TypeResolver` traverses the AST to determine the semantic type of every
+ * expression and statement. It handles implicit type conversions, validates
+ * operand types for operators, and ensures that function return values match
+ * their declarations.
+ *
+ * @see ast::Visitor, Type, NameResolver
  */
 class TypeResolver final : ast::Visitor {
 private:
     /**
-     * @brief Construct a TypeResolver
-     *
-     * Private to enforce usage through the static resolve() entry point
+     * @brief Constructs a `TypeResolver`.
+
+     * Private to enforce usage through the static @ref resolve entry point.
      */
     TypeResolver() = default;
 
 public:
     /**
-     * @brief Perform type resolution on a program
-     *
-     * @param node The program AST to resolve
-     *
-     * @return A TypeResolver instance containing the resolution result
+     * @brief Performs type resolution on an entire AST program.
+
+     * @param node The root `ast::Program` node to resolve.
+     * @return A `TypeResolver` instance containing the result state.
      */
     [[nodiscard]] static TypeResolver resolve(ast::Program& node);
 
     /**
-     * @brief Check whether type resolution failed
-     *
-     * @return True if one or more type resolution errors occurred, false otherwise
+     * @brief Indicates whether any type resolution errors were encountered.
+
+     * @return True if one or more typing errors occurred, false otherwise.
      */
     [[nodiscard]] auto has_failed() const { return _failed; }
 
 private:
     /**
-     * @brief Visits a Program node
+     * @brief Resolves types in the global program scope.
      *
-     * @param node The Program node to visit
+     * @param node The `Program` node to visit.
      */
     void visit(ast::Program& node) override;
 
     /**
-     * @brief Visit a Function node as a prototype
-
-     * @param node The Function node to register
+     * @brief First-pass visitor for function prototypes.
+     *
+     * @param node The `Function` node to visit.
      */
     void visit_as_prototype(ast::Function& node);
 
     /**
-     * @brief Visits a Function node
+     * @brief Resolves types within a function body.
      *
-     * @param node The Function node to visit
+     * @param node The `Function` node to visit.
      */
     void visit(ast::Function& node) override;
 
     /**
-     * @brief Visits a Block node
+     * @brief Resolves types within a nested block.
      *
-     * @param node The Block node to visit
+     * @param node The `Block` node to visit.
      */
     void visit(ast::Block& node) override;
 
     /**
-     * @brief Visits a Parameter node
+     * @brief Resolves types for function parameters.
      *
-     * @param node The Parameter node to visit
+     * @param node The `Parameter` node to visit.
      */
     void visit(ast::Parameter& node) override;
 
     /**
-     * @brief Visits an Immediate node
+     * @brief Resolves the type of a literal expression.
      *
-     * @param node The Immediate node to visit
+     * @param node The `Immediate` node to visit.
      */
     void visit(ast::Immediate& node) override;
 
     /**
-     * @brief Visits an Integer Immediate node
+     * @brief Resolves types for integer literals.
      *
-     * @param node The Integer Immediate node to visit
+     * @param node The `Immediate` node to visit.
      */
     void visit_integer(ast::Immediate& node);
 
     /**
-     * @brief Visits a Floating immediate node
+     * @brief Resolves types for floating-point literals.
      *
-     * @param node The Floating Immediate node to visit
+     * @param node The `Immediate` node to visit.
      */
     void visit_floating(ast::Immediate& node);
 
     /**
-     * @brief Visits a Boolean Immediate node
+     * @brief Resolves types for boolean literals.
      *
-     * @param node The Boolean Immediate node to visit
+     * @param node The `Immediate` node to visit.
      */
     void visit_boolean(ast::Immediate& node);
 
     /**
-     * @brief Visits a Variable node
+     * @brief Resolves types within a variable declaration.
      *
-     * @param node The Variable node to visit
+     * @param node The `Variable` node to visit.
      */
     void visit(ast::Variable& node) override;
 
     /**
-     * @brief Visits a Return node
+     * @brief Resolves types within a return statement.
      *
-     * @param node The Return node to visit
+     * @param node The `Return` node to visit.
      */
     void visit(ast::Return& node) override;
 
     /**
-     * @brief Visits an Identifier node
+     * @brief Resolves the type of an identifier reference.
      *
-     * @param node The Identifier node to visit
+     * @param node The `Identifier` node to visit.
      */
     void visit(ast::Identifier& node) override;
 
     /**
-     * @brief Visits a Binary node
+     * @brief Resolves types for a binary operation, including promotion.
      *
-     * @param node The Binary node to visit
+     * @param node The `Binary` node to visit.
      */
     void visit(ast::Binary& node) override;
 
     /**
-     * @brief Visits a Cast node
+     * @brief Resolves types for an explicit type cast.
      *
-     * @param node The Cast node to visit
+     * @param node The `Cast` node to visit.
      */
     void visit(ast::Cast& node) override;
 
     /**
-     * @brief Visits an Assign node
+     * @brief Resolves types for an assignment statement.
      *
-     * @param node The Assign node to visit
+     * @param node The `Assign` node to visit.
      */
-
     void visit(ast::Assign& node) override;
+
     /**
-     * @brief Visits a Call node
+     * @brief Resolves types for a function call, checking arguments.
      *
-     * @param node The Call node to visit
+     * @param node The `Call` node to visit.
      */
     void visit(ast::Call& node) override;
 
     /**
-     * @brief Visits an If node
+     * @brief Resolves types within an if-else statement.
      *
-     * @param node The If node to visit
+     * @param node The `If` node to visit.
      */
     void visit(ast::If& node) override;
 
-private:
     /**
-     * @brief Perform arithmetic type conversion
+     * @brief Determines the common result type for an operation between two types.
      *
-     * Determines the common result type of an arithmetic operation
-     * between two operand types
-     *
-     * @param left_type The type of the left operand
-     * @param right_type The type of the right operand
-     *
-     * @return The resulting type after arithmetic conversion
+     * @param left_type The type of the left operand.
+     * @param right_type The type of the right operand.
+     * @return The promoted resulting `Type`.
      */
     static Type _arithmetic_conversion(const Type& left_type, const Type& right_type);
 
     /**
-     * @brief Check whether an implicit type conversion is allowed
+     * @brief Checks if a source type can be implicitly converted to a target type.
      *
-     * Determines whether a value of one type can be implicitly
-     * converted to another type without an explicit cast
-     *
-     * @param from The source type
-     * @param destination The target type
-     *
-     * @return True if the conversion is allowed implicitly, false otherwise
+     * @param from The source `Type`.
+     * @param destination The target `Type`.
+     * @return True if implicit conversion is legal.
      */
     static bool _can_implicit_convert(const Type& from, const Type& destination);
 
     /**
-     * @brief Insert an explicit cast node into the AST
+     * @brief Wraps an AST node in an explicit `ast::Cast` node.
      *
-     * Wraps the given AST node in a cast expression converting it
-     * from one type to another
-     *
-     * @param node The AST node to cast
-     * @param from The original type of the node
-     * @param to The target type of the cast
-     *
-     * @return A new AST node representing the cast expression
+     * @param node The expression `Node` to wrap.
+     * @param from The current type of the node.
+     * @param to The target type of the cast.
+     * @return A unique pointer to the new `ast::Cast` node.
      */
     static std::unique_ptr<ast::Node> _cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to);
 

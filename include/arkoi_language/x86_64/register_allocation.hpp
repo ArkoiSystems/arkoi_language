@@ -7,49 +7,61 @@
 
 namespace arkoi::x86_64 {
 /**
- * @brief Performs register allocation for an x86-64 function
+ * @brief Performs register allocation for an x86-64 function using graph coloring.
+ *
+ * `RegisterAllocater` maps virtual IL variables to physical machine registers.
+ * It uses an `InterferenceGraph` built from liveness analysis to determine
+ * which variables can share registers. If the graph cannot be colored with the
+ * available registers, some variables are marked as "spilled" to memory.
+ *
+ * @see InterferenceGraph, il::InstructionLivenessAnalysis, Register
  */
 class RegisterAllocater {
 public:
+    /**
+     * @brief Mapping from virtual IL variables to physical register bases.
+     */
     using Mapping = std::unordered_map<il::Variable, Register::Base>;
 
 public:
     /**
-     * @brief Construct a RegisterAllocater with the given parameters
+     * @brief Constructs a `RegisterAllocater` and performs the allocation.
      *
-     * @param function The IL function to allocate registers for
-     * @param precolored Initial variable-to-register mappings
+     * @param function The `il::Function` whose variables need allocation.
+     * @param precolored Initial assignments (e.g., for calling conventions).
      */
     RegisterAllocater(il::Function& function, Mapping precolored);
 
     /**
-     * @brief Retrieve the register assignments
+     * @brief Returns the successful virtual-to-physical register assignments.
      *
-     * @return A mapping of IL variables to assigned physical registers
+     * @return A constant reference to the `Mapping`.
      */
     [[nodiscard]] auto& assigned() { return _assigned; }
 
     /**
-     * @brief Retrieve the spilled variables
+     * @brief Returns the variables that could not be assigned a register.
      *
-     * @return A list of variables that could not be allocated to registers
-     *         and must be spilled to memory
+     * Spilled variables must be handled by the code generator by using
+     * stack slots instead of registers.
+     *
+     * @return A constant reference to the vector of spilled `il::Variable` objects.
      */
     [[nodiscard]] auto& spilled() { return _spilled; }
 
 private:
     /**
-     * @brief Executes the dataflow analysis for coloring the graph
+     * @brief Re-indexes variables to ensure unique identification during allocation.
      */
     void _renumber();
 
     /**
-     * @brief Build the interference graph
+     * @brief Constructs the interference graph using liveness analysis results.
      */
     void _build();
 
     /**
-     * @brief Simplify the interference graph
+     * @brief Attempts to color the interference graph using available registers.
      */
     void _simplify();
 

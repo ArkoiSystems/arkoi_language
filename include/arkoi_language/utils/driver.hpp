@@ -8,21 +8,30 @@
 
 namespace arkoi::driver {
 /**
- * @brief Generate a temporary filesystem path
+ * @brief Generate a unique temporary filesystem path.
  *
- * @return A filesystem path to a temporary location
+ * This function creates a path in the system's temporary directory, suitable
+ * for storing intermediate compilation artifacts like object files or assembly.
+ *
+ * @return A `std::filesystem::path` to a unique temporary location.
  */
 std::filesystem::path generate_temp_path();
 
 /**
- * @brief Compile a source unit through the compilation pipeline
+ * @brief Compile a source unit through the entire compilation pipeline.
  *
- * @param source The source input with diagnostic support
- * @param il_ostream Optional output stream for the intermediate language
- * @param cfg_ostream Optional output stream for the control-flow graph
- * @param asm_ostream Optional output stream for the generated assembly
+ * This function coordinates the front-end (parsing, semantic analysis),
+ * intermediate representation generation, optimizations, and back-end (code generation).
  *
- * @return The compilation exit code (0 on success, non-zero on failure)
+ * @param source The source input with diagnostic support from `pretty_diagnostics`.
+ * @param il_ostream Optional output stream for the intermediate language (IL).
+ *                   If provided, the IL will be printed to this stream after generation.
+ * @param cfg_ostream Optional output stream for the control-flow graph (CFG).
+ *                    If provided, the CFG will be printed in DOT format.
+ * @param asm_ostream Optional output stream for the generated x86-64 assembly.
+ *
+ * @return The compilation status code (0 on success, non-zero on failure).
+ * @see assemble, link
  */
 int32_t compile(
     const std::shared_ptr<pretty_diagnostics::Source>& source,
@@ -32,33 +41,39 @@ int32_t compile(
 );
 
 /**
- * @brief Execute a compiled binary
+ * @brief Execute a compiled binary and capture its result.
  *
- * @param path The filesystem path to the binary
+ * @param path The filesystem path to the executable binary.
  *
- * @return The exit code returned by the executed program
+ * @return The exit code returned by the executed program.
  */
 int32_t run_binary(const std::string& path);
 
 /**
- * @brief Link object files into a final output
+ * @brief Link object files into a final executable output.
  *
- * @param object_files A list of paths to object files
- * @param output Output stream for linker messages
- * @param verbose Enable verbose linker output
+ * This typically invokes the system linker (e.g., `ld` or `gcc`).
  *
- * @return The linker exit code (0 on success, non-zero on failure)
+ * @param object_files A list of paths to object files to be linked.
+ * @param output Output stream for capturing linker messages (stdout/stderr).
+ * @param verbose If true, enables verbose output from the linker.
+ *
+ * @return The linker exit code (0 on success, non-zero on failure).
+ * @see assemble
  */
 int32_t link(const std::vector<std::string>& object_files, std::ofstream& output, bool verbose = false);
 
 /**
- * @brief Assemble an assembly file into an object file
+ * @brief Assemble an assembly file into a relocatable object file.
  *
- * @param input_file Path to the assembly source file
- * @param output Output stream for assembler messages
- * @param verbose Enable verbose assembler output
+ * This typically invokes a system assembler (e.g., `nasm` or `as`).
  *
- * @return The assembler exit code (0 on success, non-zero on failure)
+ * @param input_file Path to the assembly source file (.s or .asm).
+ * @param output Output stream for capturing assembler messages (stdout/stderr).
+ * @param verbose If true, enables verbose output from the assembler.
+ *
+ * @return The assembler exit code (0 on success, non-zero on failure).
+ * @see compile, link
  */
 int32_t assemble(const std::string& input_file, std::ofstream& output, bool verbose = false);
 } // namespace arkoi::driver
