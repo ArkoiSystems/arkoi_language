@@ -10,8 +10,8 @@ namespace arkoi::il {
  * @brief Specifies the direction of information flow in a dataflow analysis.
  */
 enum class DataflowDirection {
-    Forward,  ///< Information flows from entry to exit (e.g., reaching definitions)
-    Backward  ///< Information flows from exit to entry (e.g., liveness analysis)
+    Forward, ///< Information flows from entry to exit (e.g., reaching definitions)
+    Backward ///< Information flows from exit to entry (e.g., liveness analysis)
 };
 
 /**

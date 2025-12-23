@@ -9,10 +9,10 @@
  * variables, types, and machine instructions.
  */
 enum class Size : size_t {
-    BYTE  = 1,  ///< 1 byte (8 bits)
-    WORD  = 2,  ///< 2 bytes (16 bits)
-    DWORD = 4,  ///< 4 bytes (32 bits)
-    QWORD = 8,  ///< 8 bytes (64 bits)
+    BYTE  = 1, ///< 1 byte (8 bits)
+    WORD  = 2, ///< 2 bytes (16 bits)
+    DWORD = 4, ///< 4 bytes (32 bits)
+    QWORD = 8, ///< 8 bytes (64 bits)
 };
 
 /**

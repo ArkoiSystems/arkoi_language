@@ -18,52 +18,52 @@ public:
      * @brief Enumeration of all possible token types in the Arkoi language.
      */
     enum class Type {
-        Indentation,  ///< Increase in indentation level
-        Dedentation,  ///< Decrease in indentation level
-        Newline,      ///< End of line
+        Indentation, ///< Increase in indentation level
+        Dedentation, ///< Decrease in indentation level
+        Newline,     ///< End of line
 
-        Integer,      ///< Integer literal
-        Floating,     ///< Floating-point literal
-        Identifier,   ///< User-defined name
-        Comment,      ///< Source code comment
+        Integer,    ///< Integer literal
+        Floating,   ///< Floating-point literal
+        Identifier, ///< User-defined name
+        Comment,    ///< Source code comment
 
         // Keywords
-        If,           ///< 'if'
-        Else,         ///< 'else'
-        Fun,          ///< 'fun'
-        Return,       ///< 'return'
-        U8,           ///< 'u8'
-        S8,           ///< 's8'
-        U16,          ///< 'u16'
-        S16,          ///< 's16'
-        U32,          ///< 'u32'
-        S32,          ///< 's32'
-        U64,          ///< 'u64'
-        S64,          ///< 's64'
-        USize,        ///< 'usize'
-        SSize,        ///< 'ssize'
-        F32,          ///< 'f32'
-        F64,          ///< 'f64'
-        Bool,         ///< 'bool'
-        True,         ///< 'true'
-        False,        ///< 'false'
+        If,     ///< 'if'
+        Else,   ///< 'else'
+        Fun,    ///< 'fun'
+        Return, ///< 'return'
+        U8,     ///< 'u8'
+        S8,     ///< 's8'
+        U16,    ///< 'u16'
+        S16,    ///< 's16'
+        U32,    ///< 'u32'
+        S32,    ///< 's32'
+        U64,    ///< 'u64'
+        S64,    ///< 's64'
+        USize,  ///< 'usize'
+        SSize,  ///< 'ssize'
+        F32,    ///< 'f32'
+        F64,    ///< 'f64'
+        Bool,   ///< 'bool'
+        True,   ///< 'true'
+        False,  ///< 'false'
 
         // Special characters and operators
-        LParent,      ///< '('
-        RParent,      ///< ')'
-        At,           ///< '@'
-        Comma,        ///< ','
-        Plus,         ///< '+'
-        Minus,        ///< '-'
-        Slash,        ///< '/'
-        Asterisk,     ///< '*'
-        GreaterThan,  ///< '>'
-        LessThan,     ///< '<'
-        Equal,        ///< '='
-        Colon,        ///< ':'
+        LParent,     ///< '('
+        RParent,     ///< ')'
+        At,          ///< '@'
+        Comma,       ///< ','
+        Plus,        ///< '+'
+        Minus,       ///< '-'
+        Slash,       ///< '/'
+        Asterisk,    ///< '*'
+        GreaterThan, ///< '>'
+        LessThan,    ///< '<'
+        Equal,       ///< '='
+        Colon,       ///< ':'
 
-        EndOfFile,    ///< End of source input
-        Unknown,      ///< Unrecognized token
+        EndOfFile, ///< End of source input
+        Unknown,   ///< Unrecognized token
     };
 
 public:
