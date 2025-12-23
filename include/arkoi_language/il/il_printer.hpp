@@ -39,7 +39,6 @@ public:
      */
     [[nodiscard]] auto& output() const { return _output; }
 
-private:
     /**
      * @brief Prints a representation of the entire module.
      */
