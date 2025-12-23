@@ -37,7 +37,7 @@ public:
      * @brief Equality compares the size and base.
      *
      * @param other Right-hand register.
-     * @return True if both register refer the same size and base.
+     * @return True if both registers refer to the same size and base.
      */
     bool operator==(const Register& other) const;
 
@@ -83,7 +83,7 @@ private:
 class Memory {
 public:
     /**
-     * @brief Represents the base address of a memory access.
+     * @brief Represents the base address of the memory access.
      *
      * Can be a symbolic label (string), a fixed offset (int64), or a register.
      */
@@ -101,7 +101,7 @@ public:
      * @param scale The scale factor for the index.
      * @param displacement The constant displacement.
      */
-    Memory(Size size, Register address, int64_t index, int64_t scale, int64_t displacement) :
+    Memory(const Size size, Register address, const int64_t index, const int64_t scale, const int64_t displacement) :
         _index(index), _scale(scale), _displacement(displacement), _address(address), _size(size) { }
 
     /**
@@ -111,7 +111,7 @@ public:
      * @param address The base register.
      * @param displacement The constant offset.
      */
-    Memory(Size size, Register address, int64_t displacement) :
+    Memory(const Size size, Register address, const int64_t displacement) :
         _index(1), _scale(1), _displacement(displacement), _address(address), _size(size) { }
 
     /**
@@ -120,14 +120,14 @@ public:
      * @param size The size of the memory access.
      * @param address The symbolic or fixed base address.
      */
-    Memory(Size size, Address address) :
+    Memory(const Size size, Address address) :
         _index(1), _scale(1), _displacement(0), _address(std::move(address)), _size(size) { }
 
     /**
      * @brief Equality compares index, scale, displacement, address, and size.
      *
      * @param other Right-hand memory location.
-     * @return True if both memory location are the same.
+     * @return True if both memory locations are the same.
      */
     bool operator==(const Memory& other) const;
 

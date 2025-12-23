@@ -7,7 +7,7 @@ namespace arkoi::opt {
  * @brief Optimization pass that propagates constant values through the CFG.
  *
  * `ConstantPropagation` tracks variables that are assigned constant values and
- * replaces subsequent uses of those variables with the constants themselves.
+ * replaces later uses of those variables with the constants themselves.
  * This is a local optimization performed within basic blocks.
  *
  * Example:

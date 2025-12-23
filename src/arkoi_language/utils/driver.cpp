@@ -1,22 +1,22 @@
 #include "arkoi_language/utils/driver.hpp"
 
-#include <sys/wait.h>
-#include <unistd.h>
-#include <iostream>
 #include <fstream>
-#include <sstream>
+#include <iostream>
 #include <random>
+#include <sstream>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #include "arkoi_language/front/parser.hpp"
 #include "arkoi_language/front/scanner.hpp"
 #include "arkoi_language/il/cfg_printer.hpp"
-#include "arkoi_language/il/il_printer.hpp"
 #include "arkoi_language/il/generator.hpp"
-#include "arkoi_language/opt/dead_code_elimination.hpp"
-#include "arkoi_language/opt/constant_propagation.hpp"
+#include "arkoi_language/il/il_printer.hpp"
 #include "arkoi_language/opt/constant_folding.hpp"
-#include "arkoi_language/opt/simplify_cfg.hpp"
+#include "arkoi_language/opt/constant_propagation.hpp"
+#include "arkoi_language/opt/dead_code_elimination.hpp"
 #include "arkoi_language/opt/pass.hpp"
+#include "arkoi_language/opt/simplify_cfg.hpp"
 #include "arkoi_language/sem/name_resolver.hpp"
 #include "arkoi_language/sem/type_resolver.hpp"
 #include "arkoi_language/x86_64/generator.hpp"

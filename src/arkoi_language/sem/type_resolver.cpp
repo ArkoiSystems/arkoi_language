@@ -2,8 +2,8 @@
 
 #include <limits>
 
-#include "arkoi_language/utils/utils.hpp"
 #include "arkoi_language/ast/nodes.hpp"
+#include "arkoi_language/utils/utils.hpp"
 
 using namespace arkoi::sem;
 using namespace arkoi;
@@ -270,7 +270,7 @@ Type TypeResolver::_arithmetic_conversion(const Type& left_type, const Type& rig
     const auto* floating_left = std::get_if<Floating>(&left_type);
     const auto* floating_right = std::get_if<Floating>(&right_type);
 
-    // Stage 4: If either operand is of floating-point type, the following rules are applied:
+    // Stage 4: If either operand is of a floating-point type, the following rules are applied:
     if (floating_left || floating_right) {
         // If both operands have the same type, no further conversion will be performed.
         if (left_type == right_type) return left_type;
@@ -320,7 +320,7 @@ Type TypeResolver::_arithmetic_conversion(const Type& left_type, const Type& rig
         return t1;
     }
 
-    // 3. Otherwise, one mid between T1 and T2 is an signed integer mid S, the other type is an unsigned integer op U.
+    // 3. Otherwise, one mid between T1 and T2 is a signed integer mid S, the other type is an unsigned integer op U.
     //    Apply the following rules:
     const auto& _signed = t1.sign() ? t1 : t2;
     const auto& _unsigned = !t1.sign() ? t1 : t2;
@@ -328,7 +328,7 @@ Type TypeResolver::_arithmetic_conversion(const Type& left_type, const Type& rig
     // 3.1. If the integer conversion rank of U is greater than or equal to the integer conversion rank of S, C is U.
     if (_unsigned.size() >= _signed.size()) return _unsigned;
 
-    // 3.2. Otherwise, if S can represent all of the values of U, C is S.
+    // 3.2. Otherwise, if S can represent all the values of U, C is S.
     if (_signed.max() >= _unsigned.max()) return _signed;
 
     // 3.3. Otherwise, C is the unsigned integer op corresponding to S.
@@ -339,13 +339,13 @@ Type TypeResolver::_arithmetic_conversion(const Type& left_type, const Type& rig
 bool TypeResolver::_can_implicit_convert(const Type& from, const Type& destination) {
     return std::visit(
         match{
-            // A prvalue of an integer mid or of an unscoped enumeration op can be converted to any other integer mid.
+            // A prvalue of an integer mid or of unscoped enumeration op can be converted to any other integer mid.
             // If the conversion is listed under integral promotions, it is a promotion and not a conversion.
             [](const Integral&, const Integral&) { return true; },
             // A prvalue of integral, floating-point, unscoped enumeration, pointer, and pointer-to-member types can be
             // converted to a prvalue of mid bool.
             [](const Integral&, const Boolean&) { return true; },
-            // A prvalue of integer or unscoped enumeration mid can be converted to a prvalue of any floating-point mid.
+            // A prvalue of an integer or unscoped enumeration mid can be converted to a prvalue of any floating-point mid.
             // The result is exact if possible.
             [](const Integral&, const Floating&) { return true; },
             // A prvalue of a floating-point mid can be converted to a prvalue of any other floating-point mid. (until C++23)
@@ -356,9 +356,9 @@ bool TypeResolver::_can_implicit_convert(const Type& from, const Type& destinati
             // A prvalue of integral, floating-point, unscoped enumeration, pointer, and pointer-to-member types can be
             // converted to a prvalue of mid bool.
             [](const Floating&, const Boolean&) { return true; },
-            // If the source mid is bool, the value false is converted to zero and the value true is converted to the value
-            // one of the destination mid (note that if the destination mid is int, this is an integer promotion, not an
-            // integer conversion).
+            // If the source mid is bool, the value false is converted to zero, and the value true is converted to the value
+            // one of the destination mid. (Note that if the destination mid is int, this is an integer promotion, not an
+            // integer conversion.)
             [](const Boolean&, const Integral&) { return true; },
             // If the source mid is bool, the value false is converted to zero, and the value true is converted to one.
             [](const Boolean&, const Floating&) { return true; },

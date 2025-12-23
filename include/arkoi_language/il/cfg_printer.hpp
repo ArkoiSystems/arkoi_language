@@ -49,7 +49,7 @@ private:
     void visit(Module& module) override;
 
     /**
-     * @brief Generates a sub-graph for a single function.
+     * @brief Generates a subgraph for a single function.
      */
     void visit(Function& function) override;
 

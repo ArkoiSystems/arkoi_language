@@ -12,7 +12,7 @@ std::shared_ptr<Symbol>& SymbolTable::insert(const std::string& name, Args&&... 
 
 template <typename... Types>
 [[nodiscard]] std::shared_ptr<Symbol>& SymbolTable::lookup(const std::string& name) {
-    auto found = _symbols.find(name);
+    const auto found = _symbols.find(name);
     if (found != _symbols.end() && (std::holds_alternative<Types>(*found->second) || ...)) {
         return found->second;
     }

@@ -171,7 +171,7 @@ struct Type final : TypeBase, std::variant<Integral, Floating, Boolean> {
 } // namespace arkoi::sem
 
 /**
- * @brief Streams a detailed description of a `Integral`.
+ * @brief Streams a detailed description of an `Integral`.
  *
  * @param os The output stream.
  * @param type The integral type to describe.

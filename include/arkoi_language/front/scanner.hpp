@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "arkoi_language/front/token.hpp"
@@ -135,7 +134,7 @@ private:
      * @brief Attempts to consume @p expected, returning true on success.
      *
      * If the current character matches @p expected, it is consumed and the
-     * scanner advances. Otherwise, the scanner remains at the same position.
+     * scanner advances. Otherwise, the scanner remains in the same position.
      *
      * @param expected The character to try and consume.
      * @return True if consumed, false otherwise.
@@ -275,7 +274,7 @@ public:
      * @param expected Description of what was expected.
      * @param got The character actually encountered.
      */
-    UnexpectedChar(const std::string& expected, char got) :
+    UnexpectedChar(const std::string& expected, const char got) :
         ScannerError("Expected " + expected + " but got " + std::string(1, got)) { }
 };
 
@@ -289,7 +288,7 @@ public:
      *
      * @param got The unrecognized character.
      */
-    explicit UnknownChar(char got) :
+    explicit UnknownChar(const char got) :
         ScannerError("Didn't expect " + std::string(1, got)) { }
 };
 

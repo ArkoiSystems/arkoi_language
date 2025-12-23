@@ -228,15 +228,6 @@ void Scanner::_consume(const char expected) {
     _consume([&](const char input) { return input == expected; }, std::string(1, expected));
 }
 
-bool Scanner::_try_consume(const char expected) {
-    try {
-        _consume(expected);
-        return true;
-    } catch (const ScannerError&) {
-        return false;
-    }
-}
-
 char Scanner::_consume(const std::function<bool(char)>& predicate, const std::string& expected) {
     const auto current = _current_char();
     if (_is_eol()) {
@@ -250,6 +241,15 @@ char Scanner::_consume(const std::function<bool(char)>& predicate, const std::st
     _next();
 
     return current;
+}
+
+bool Scanner::_try_consume(const char expected) {
+    try {
+        _consume(expected);
+        return true;
+    } catch (const ScannerError&) {
+        return false;
+    }
 }
 
 std::optional<char> Scanner::_try_consume(const std::function<bool(char)>& predicate) {

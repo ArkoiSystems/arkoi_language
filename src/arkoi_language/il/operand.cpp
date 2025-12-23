@@ -47,6 +47,10 @@ sem::Type Immediate::type() const {
     );
 }
 
+sem::Type Operand::type() const {
+    return std::visit([](const auto& value) { return value.type(); }, *this);
+}
+
 std::ostream& operator<<(std::ostream& os, const Immediate& operand) {
     std::visit(
         match{
@@ -55,11 +59,6 @@ std::ostream& operator<<(std::ostream& os, const Immediate& operand) {
         },
         operand
     );
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Operand& operand) {
-    std::visit([&os](const auto& other) { os << other; }, operand);
     return os;
 }
 
@@ -78,8 +77,9 @@ std::ostream& operator<<(std::ostream& os, const Memory& operand) {
     return os;
 }
 
-sem::Type Operand::type() const {
-    return std::visit([](const auto& value) { return value.type(); }, *this);
+std::ostream& operator<<(std::ostream& os, const Operand& operand) {
+    std::visit([&os](const auto& other) { os << other; }, operand);
+    return os;
 }
 
 namespace std {

@@ -73,7 +73,7 @@ public:
     [[nodiscard]] virtual State initialize(Function& function, Target& target) = 0;
 
     /**
-     * @brief The transfer function: computes the output state based on input state and target.
+     * @brief The transfer function: computes the output state based on the input state and target.
      *
      * @param target The block or instruction being processed.
      * @param state The input dataflow state (from `merge` or previous iteration).
@@ -93,7 +93,7 @@ concept DataflowPassConcept = requires {
 } && std::is_base_of_v<DataflowPass<typename T::Result, T::Direction, T::Granularity>, T>;
 
 /**
- * @brief The execution engine for dataflow analyses.
+ * @brief The execution engine for dataflow analysis.
  *
  * `DataflowAnalysis` implements the worklist algorithm to compute the fixed-point
  * solution for a given `DataflowPass`. It stores the computed `in` and `out` states
@@ -136,7 +136,7 @@ public:
      * In a forward analysis, this is the state *after* the target.
      * In a backward analysis, this is the state *before* the target.
      *
-     * @return A map from target pointer to `State`.
+     * @return A map from the target pointer to `State`.
      */
     [[nodiscard]] auto& out() const { return _out; }
 
@@ -146,7 +146,7 @@ public:
      * In a forward analysis, this is the state *before* the target.
      * In a backward analysis, this is the state *after* the target.
      *
-     * @return A map from target pointer to `State`.
+     * @return A map from the target pointer to `State`.
      */
     [[nodiscard]] auto& in() const { return _in; }
 

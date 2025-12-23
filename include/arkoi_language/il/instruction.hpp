@@ -209,7 +209,7 @@ public:
     /**
      * @brief Returns the list of argument operands.
      *
-     * @return A reference to the arguments vector.
+     * @return A reference to the argument vector.
      */
     [[nodiscard]] auto& arguments() { return _arguments; }
 
@@ -307,7 +307,7 @@ public:
      * @param right The right operand.
      * @param op_type The semantic type of the operands.
      */
-    Binary(Variable result, Operand left, Operator op, Operand right, sem::Type op_type) :
+    Binary(Variable result, Operand left, const Operator op, Operand right, sem::Type op_type) :
         _left(std::move(left)), _right(std::move(right)), _result(std::move(result)),
         _op_type(std::move(op_type)), _op(op) { }
 

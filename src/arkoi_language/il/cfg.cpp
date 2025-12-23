@@ -60,6 +60,9 @@ BlockIterator BlockIterator::operator++(int) {
     return temp;
 }
 
+Function::Function(const std::string& name, std::vector<Variable> parameters, sem::Type type) :
+    Function(name, std::move(parameters), std::move(type), name + "_entry", name + "_exit") { }
+
 Function::Function(
     std::string name, std::vector<Variable> parameters, sem::Type type, std::string entry_label,
     std::string exit_label
@@ -68,9 +71,6 @@ Function::Function(
     _entry = emplace_back(std::move(entry_label));
     _exit = emplace_back(std::move(exit_label));
 }
-
-Function::Function(const std::string& name, std::vector<Variable> parameters, sem::Type type) :
-    Function(name, std::move(parameters), std::move(type), name + "_entry", name + "_exit") { }
 
 bool Function::is_leaf() {
     for (auto& block : *this) {

@@ -48,8 +48,8 @@ public:
     /**
      * @brief Removes dead instructions from a basic block.
      *
-     * An instruction is removed if it defines a variable that is not in the
-     * pre-calculated `_used` set and the instruction has no side effects.
+     * An instruction is removed if it defines a variable not in the
+     * pre-calculated `_used` set, and the instruction has no side effects.
      *
      * @param block The `il::BasicBlock` to optimize.
      * @return True if any instructions were removed, false otherwise.

@@ -129,7 +129,7 @@ private:
      * @brief Places function parameters into their initial registers or stack slots.
      *
      * @param parameters The formal parameters of the function.
-     * @param use_redzone Whether the function can utilize the 128-byte red zone.
+     * @param use_redzone Whether the function can use the 128-byte red zone.
      */
     void _map_parameters(const std::vector<il::Variable>& parameters, bool use_redzone);
 

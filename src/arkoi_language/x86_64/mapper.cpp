@@ -35,6 +35,39 @@ Operand Mapper::operator[](const il::Operand& operand) {
     );
 }
 
+size_t Mapper::stack_size() const {
+    size_t stack_size = 0;
+
+    for (const auto& local : _locals) {
+        const auto size = size_to_bytes(local.type().size());
+        stack_size += size;
+    }
+
+    return align_size(stack_size);
+}
+
+Register Mapper::return_register(const sem::Type& target) {
+    return std::visit(
+        match{
+            [&](const sem::Integral& type) -> Register {
+                return { Register::Base::A, type.size() };
+            },
+            [&](const sem::Floating& type) -> Register {
+                return { Register::Base::XMM0, type.size() };
+            },
+            [&](const sem::Boolean&) -> Register {
+                return { Register::Base::A, Size::BYTE };
+            }
+        },
+        target
+    );
+}
+
+size_t Mapper::align_size(const size_t input) {
+    static constexpr size_t STACK_ALIGNMENT = 16;
+    return (input + (STACK_ALIGNMENT - 1)) & ~(STACK_ALIGNMENT - 1);
+}
+
 void Mapper::visit(il::Function& function) {
     for (auto& block : function) {
         block.accept(*this);
@@ -71,6 +104,33 @@ void Mapper::visit(il::Function& function) {
     }
 }
 
+void Mapper::visit(il::BasicBlock& block) {
+    for (auto& instruction : block) {
+        instruction.accept(*this);
+    }
+}
+
+void Mapper::visit(il::Binary& instruction) {
+    _add_local(instruction.result());
+}
+
+void Mapper::visit(il::Cast& instruction) {
+    _add_local(instruction.result());
+}
+
+void Mapper::visit(il::Return& instruction) {
+    const auto* variable = std::get_if<il::Variable>(&instruction.value());
+    if (!variable) return;
+
+    const auto result_reg = return_register(variable->type());
+    _add_register(*variable, result_reg);
+}
+
+void Mapper::visit(il::Call& instruction) {
+    const auto result_reg = return_register(instruction.result().type());
+    _add_register(instruction.result(), result_reg);
+}
+
 void Mapper::_map_parameters(const std::vector<il::Variable>& parameters, const bool use_redzone) {
     size_t stack = 0, integer = 0, floating = 0;
     const auto stack_reg = use_redzone ? RSP : RBP;
@@ -101,33 +161,6 @@ void Mapper::_map_parameters(const std::vector<il::Variable>& parameters, const 
     }
 }
 
-void Mapper::visit(il::BasicBlock& block) {
-    for (auto& instruction : block) {
-        instruction.accept(*this);
-    }
-}
-
-void Mapper::visit(il::Binary& instruction) {
-    _add_local(instruction.result());
-}
-
-void Mapper::visit(il::Cast& instruction) {
-    _add_local(instruction.result());
-}
-
-void Mapper::visit(il::Return& instruction) {
-    const auto* variable = std::get_if<il::Variable>(&instruction.value());
-    if (!variable) return;
-
-    const auto result_reg = return_register(variable->type());
-    _add_register(*variable, result_reg);
-}
-
-void Mapper::visit(il::Call& instruction) {
-    const auto result_reg = return_register(instruction.result().type());
-    _add_register(instruction.result(), result_reg);
-}
-
 void Mapper::visit(il::Alloca& instruction) {
     _add_local(instruction.result());
 }
@@ -152,39 +185,6 @@ void Mapper::_add_register(const il::Variable& variable, const Register& reg) {
 void Mapper::_add_memory(const il::Variable& variable, const Memory& memory) {
     _locals.erase(variable);
     _mappings.insert_or_assign(variable, memory);
-}
-
-size_t Mapper::stack_size() const {
-    size_t stack_size = 0;
-
-    for (const auto& local : _locals) {
-        const auto size = size_to_bytes(local.type().size());
-        stack_size += size;
-    }
-
-    return align_size(stack_size);
-}
-
-Register Mapper::return_register(const sem::Type& target) {
-    return std::visit(
-        match{
-            [&](const sem::Integral& type) -> Register {
-                return { Register::Base::A, type.size() };
-            },
-            [&](const sem::Floating& type) -> Register {
-                return { Register::Base::XMM0, type.size() };
-            },
-            [&](const sem::Boolean&) -> Register {
-                return { Register::Base::A, Size::BYTE };
-            }
-        },
-        target
-    );
-}
-
-size_t Mapper::align_size(const size_t input) {
-    static constexpr size_t STACK_ALIGNMENT = 16;
-    return (input + (STACK_ALIGNMENT - 1)) & ~(STACK_ALIGNMENT - 1);
 }
 
 //==============================================================================

@@ -31,7 +31,7 @@ public:
     /**
      * @brief Returns the symbols representing the function's parameters.
      *
-     * @return A constant reference to the vector of parameter shared pointers.
+     * @return A constant reference to the vector of parameter-shared pointers.
      */
     [[nodiscard]] auto& parameters() const { return _parameters; }
 

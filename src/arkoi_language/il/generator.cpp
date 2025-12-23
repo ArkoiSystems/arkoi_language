@@ -105,7 +105,7 @@ void Generator::visit_integer(const ast::Immediate& node) {
 
     Immediate immediate;
     if (number_string.front() == '\'' && number_string.back() == '\'') {
-        immediate = static_cast<char>(number_string[1]);
+        immediate = number_string[1];
     } else if (sign) {
         const auto value = std::stoll(number_string);
         if (value > std::numeric_limits<int32_t>::max()) {
@@ -210,15 +210,6 @@ void Generator::visit(ast::Binary& node) {
     _current_block->emplace_back<Binary>(result, left, type, right, node.op_type());
 }
 
-void Generator::visit(ast::Assign& node) {
-    // This will set _current_operand
-    node.expression()->accept(*this);
-    auto expression = _current_operand;
-
-    auto alloca_temp = _allocas.at(node.name().symbol());
-    _current_block->emplace_back<Store>(alloca_temp, expression);
-}
-
 void Generator::visit(ast::Cast& node) {
     // This will set _current_operand
     node.expression()->accept(*this);
@@ -228,6 +219,15 @@ void Generator::visit(ast::Cast& node) {
     _current_operand = result;
 
     _current_block->emplace_back<Cast>(result, expression, node.from());
+}
+
+void Generator::visit(ast::Assign& node) {
+    // This will set _current_operand
+    node.expression()->accept(*this);
+    auto expression = _current_operand;
+
+    auto alloca_temp = _allocas.at(node.name().symbol());
+    _current_block->emplace_back<Store>(alloca_temp, expression);
 }
 
 void Generator::visit(ast::Call& node) {

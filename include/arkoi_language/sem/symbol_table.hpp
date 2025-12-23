@@ -34,7 +34,7 @@ public:
      * @param name The name identifier for the symbol.
      * @param args Arguments to pass to the symbol constructor.
      * @return A shared pointer to the newly created `Symbol`.
-     * @throws IdentifierAlreadyTaken if @p name already exists in the current scope.
+     * @throws IdentifierAlreadyTaken if the @p name already exists in the current scope.
      */
     template <typename Type, typename... Args>
     std::shared_ptr<Symbol>& insert(const std::string& name, Args&&... args);

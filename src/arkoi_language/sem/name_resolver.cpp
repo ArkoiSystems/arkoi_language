@@ -1,6 +1,5 @@
 #include "arkoi_language/sem/name_resolver.hpp"
 
-#include "arkoi_language/utils/utils.hpp"
 #include "arkoi_language/ast/nodes.hpp"
 
 using namespace arkoi::sem;
@@ -53,17 +52,17 @@ void NameResolver::visit(ast::Function& node) {
     _scopes.pop();
 }
 
-void NameResolver::visit(ast::Parameter& node) {
-    std::ignore = _check_non_existence<Variable>(node.name().value());
-    node.name().accept(*this);
-}
-
 void NameResolver::visit(ast::Block& node) {
     _scopes.push(node.table());
     for (const auto& item : node.statements()) {
         item->accept(*this);
     }
     _scopes.pop();
+}
+
+void NameResolver::visit(ast::Parameter& node) {
+    std::ignore = _check_non_existence<Variable>(node.name().value());
+    node.name().accept(*this);
 }
 
 void NameResolver::visit(ast::Identifier& node) {
@@ -98,14 +97,6 @@ void NameResolver::visit(ast::Cast& node) {
     node.expression()->accept(*this);
 }
 
-void NameResolver::visit(ast::If& node) {
-    node.condition()->accept(*this);
-
-    node.branch()->accept(*this);
-
-    if (node.next()) node.next()->accept(*this);
-}
-
 void NameResolver::visit(ast::Assign& node) {
     node.name().accept(*this);
 
@@ -118,6 +109,14 @@ void NameResolver::visit(ast::Call& node) {
     for (const auto& argument : node.arguments()) {
         argument->accept(*this);
     }
+}
+
+void NameResolver::visit(ast::If& node) {
+    node.condition()->accept(*this);
+
+    node.branch()->accept(*this);
+
+    if (node.next()) node.next()->accept(*this);
 }
 
 //==============================================================================

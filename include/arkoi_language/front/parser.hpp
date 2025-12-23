@@ -237,7 +237,7 @@ private:
      *
      * @param type The required token type.
      * @return A reference to the consumed `Token`.
-     * @throws UnexpectedToken if the current token doesn't match @p type.
+     * @throws UnexpectedToken if the current token doesn't match the @p type.
      */
     const Token& _consume(Token::Type type);
 

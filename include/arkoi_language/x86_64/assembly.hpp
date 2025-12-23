@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ostream>
 #include <variant>
 #include <vector>
 
@@ -88,7 +87,7 @@ public:
     /**
      * @brief Returns the instruction's operands.
      *
-     * @return A constant reference to the operands vector.
+     * @return A constant reference to the operand vector.
      */
     [[nodiscard]] auto& operands() const { return _operands; }
 

@@ -2,6 +2,14 @@
 
 #include <utility>
 
+size_t size_to_bytes(const Size& size) {
+    return std::to_underlying(size);
+}
+
+size_t size_to_bits(const Size& size) {
+    return 8 * size_to_bytes(size);
+}
+
 std::ostream& operator<<(std::ostream& os, const Size& size) {
     switch (size) {
         case Size::BYTE: return os << "BYTE";
@@ -12,14 +20,6 @@ std::ostream& operator<<(std::ostream& os, const Size& size) {
 
     // As the -Wswitch flag is set, this will never be reached.
     std::unreachable();
-}
-
-size_t size_to_bytes(const Size& size) {
-    return std::to_underlying(size);
-}
-
-size_t size_to_bits(const Size& size) {
-    return 8 * size_to_bytes(size);
 }
 
 //==============================================================================

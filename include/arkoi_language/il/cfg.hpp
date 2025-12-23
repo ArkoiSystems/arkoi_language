@@ -125,7 +125,7 @@ private:
 /**
  * @brief An iterator for traversing basic blocks in a `Function`.
  *
- * This iterator performs a traversal (typically DFS or BFS depending on internal queue)
+ * This iterator performs a traversal (typically DFS or BFS depending on the internal queue)
  * of the CFG starting from the entry block.
  */
 class BlockIterator {
@@ -347,7 +347,7 @@ public:
     Functions::iterator begin() { return _functions.begin(); }
 
     /**
-     * @brief Returns an iterator to the end of the functions list.
+     * @brief Returns an iterator to the end of the function list.
      *
      * @return A `std::vector<Function>::iterator` representing the end state.
      */

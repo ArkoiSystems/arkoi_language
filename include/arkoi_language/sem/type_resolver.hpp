@@ -76,7 +76,7 @@ private:
     void visit(ast::Parameter& node) override;
 
     /**
-     * @brief Resolves the type of a literal expression.
+     * @brief Resolves the type of literal expression.
      *
      * @param node The `Immediate` node to visit.
      */
@@ -118,7 +118,7 @@ private:
     void visit(ast::Return& node) override;
 
     /**
-     * @brief Resolves the type of an identifier reference.
+     * @brief Resolves the type of identifier reference.
      *
      * @param node The `Identifier` node to visit.
      */

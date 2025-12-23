@@ -57,7 +57,7 @@ void Generator::visit(il::BasicBlock& block) {
     if (_current_mapper->function().entry() == &block) {
         // If we are in a leaf function and the stack size in less or equal to 128 bytes (redzone), we can skip the enter
         // instruction.
-        if (!_current_mapper->function().is_leaf() || stack_size > 128) _enter(stack_size, 0);
+        if (!_current_mapper->function().is_leaf() || stack_size > 128) _enter(stack_size);
     } else {
         // Just a normal block.
         _label(block.label());
@@ -167,7 +167,7 @@ void Generator::_mul(const Operand& result, Operand left, const Operand& right, 
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
         left = _adjust_to_reg(left, type);
 
-        // When discarding the upper part of the multiplication result, imul and mul are indistinguisable. Thus, just
+        // When discarding the upper part of the multiplication result, imul and mul are indistinguishable. Thus, just
         // imul is used as it also is easier to handle.
         _imul(left, right);
 
@@ -307,7 +307,7 @@ void Generator::_int_to_int(
 
     if (from.sign() == to.sign() && !from.sign() && from.size() == Size::DWORD && to.size() == Size::QWORD) {
         // This catches the case when you want to transform a 32bit unsigned integer to a 64bit unsigned integer.
-        // There is no zero extension of such operand types, as all 32bit operations implicilty zero-extend 32bit to
+        // There is no zero extension of such operand types, as all 32bit operations implicitly zero-extend 32bit to
         // 64bit.
 
         // Thus adjust the source operand to a register of from-size (32bit). This will automatically also zero-extend
@@ -680,6 +680,14 @@ void Generator::_store(Operand source, const Operand& destination, const sem::Ty
     }
 }
 
+Register Generator::_adjust_to_reg(const Operand& target, const sem::Type& type) {
+    // Early exit if the target operand already is a register.
+    if (std::holds_alternative<Register>(target)) return std::get<Register>(target);
+
+    // Otherwise if the result is not a register, store the lhs in a temp register.
+    return _store_temp_1(target, type);
+}
+
 Register Generator::_store_temp_1(const Operand& source, const sem::Type& type) {
     auto temp = _temp_1_register(type);
     _store(source, temp, type);
@@ -700,14 +708,6 @@ Register Generator::_store_temp_2(const Operand& source, const sem::Type& type) 
 Register Generator::_temp_2_register(const sem::Type& type) {
     auto reg_base = (std::holds_alternative<sem::Floating>(type) ? Register::Base::XMM11 : Register::Base::R11);
     return { reg_base, type.size() };
-}
-
-Register Generator::_adjust_to_reg(const Operand& target, const sem::Type& type) {
-    // Early exit if the target operand already is a register.
-    if (std::holds_alternative<Register>(target)) return std::get<Register>(target);
-
-    // Otherwise if the result is not a register, store the lhs in a temp register.
-    return _store_temp_1(target, type);
 }
 
 void Generator::_directive(const std::string& directive, std::vector<AssemblyItem>& output) {
@@ -878,8 +878,8 @@ void Generator::_setp(const Operand& destination) {
     _text.emplace_back(Instruction(Instruction::Opcode::SETP, { destination }));
 }
 
-void Generator::_enter(uint16_t size, uint8_t nesting_level) {
-    _text.emplace_back(Instruction(Instruction::Opcode::ENTER, { size, nesting_level }));
+void Generator::_enter(uint16_t size) {
+    _text.emplace_back(Instruction(Instruction::Opcode::ENTER, { size }));
 }
 
 void Generator::_syscall() {

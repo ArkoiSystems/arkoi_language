@@ -11,7 +11,7 @@ namespace arkoi::x86_64 {
  * @brief Categorizes function arguments into registers and stack slots.
  *
  * Following the x86-64 System V ABI, arguments are passed in specific
- * registers (integer or SSE) if available, otherwise they are spilled
+ * registers (integer or SSE) if available; otherwise they are spilled
  * to the stack.
  */
 struct ClassifiedArguments {
@@ -153,7 +153,7 @@ private:
      *
      * @param result The operand in which the result should be stored.
      * @param source The source operand, which should get converted to a float.
-     * @param from The from-type that should be changed to @p.
+     * @param from The from-type that should be changed @p to.
      * @param to The target to-type of the cast.
      */
     void _float_to_float(const Operand& result, Operand source, const sem::Floating& from, const sem::Floating& to);
@@ -163,7 +163,7 @@ private:
      *
      * @param result The operand in which the result should be stored.
      * @param source The source operand, which should get converted to an integer.
-     * @param from The from-type that should be changed to @p.
+     * @param from The from-type that should be changed @p to.
      * @param to The target to-type of the cast.
      */
     void _int_to_int(const Operand& result, Operand source, const sem::Integral& from, const sem::Integral& to);
@@ -173,7 +173,7 @@ private:
      *
      * @param result The operand in which the result should be stored.
      * @param source The source operand, which should get converted to an integer.
-     * @param from The from-type that should be changed to @p.
+     * @param from The from-type that should be changed @p to.
      * @param to The target to-type of the cast.
      */
     void _float_to_int(const Operand& result, const Operand& source, const sem::Floating& from, const sem::Integral& to);
@@ -183,7 +183,7 @@ private:
      *
      * @param result The operand in which the result should be stored.
      * @param source The source operand, which should get converted to a boolean.
-     * @param from The from-type that should be changed to @p.
+     * @param from The from-type that should be changed @p to.
      * @param to The target to-type of the cast.
      */
     void _float_to_bool(const Operand& result, const Operand& source, const sem::Floating& from, const sem::Boolean& to);
@@ -193,7 +193,7 @@ private:
      *
      * @param result The operand in which the result should be stored.
      * @param source The source operand, which should get converted to a float.
-     * @param from The from-type that should be changed to @p.
+     * @param from The from-type that should be changed @p to.
      * @param to The target to-type of the cast.
      */
     void _int_to_float(const Operand& result, Operand source, const sem::Integral& from, const sem::Floating& to);
@@ -203,7 +203,7 @@ private:
      *
      * @param result The operand in which the result should be stored.
      * @param source The source operand, which should get converted to a boolean.
-     * @param from The from-type that should be changed to @p.
+     * @param from The from-type that should be changed @p to.
      * @param to The target to-type of the cast.
      */
     void _int_to_bool(const Operand& result, Operand source, const sem::Integral& from, const sem::Boolean& to);
@@ -213,7 +213,7 @@ private:
      *
      * @param result The operand in which the result should be stored.
      * @param source The source operand, which should get converted to a float.
-     * @param from The from-type that should be changed to @p.
+     * @param from The from-type that should be changed @p to.
      * @param to The target to-type of the cast.
      */
     void _bool_to_float(const Operand& result, Operand source, const sem::Boolean& from, const sem::Floating& to);
@@ -223,7 +223,7 @@ private:
      *
      * @param result The operand in which the result should be stored.
      * @param source The source operand, which should get converted to an integer.
-     * @param from The from-type that should be changed to @p.
+     * @param from The from-type that should be changed @p to.
      * @param to The target to-type of the cast.
      */
     void _bool_to_int(const Operand& result, Operand source, const sem::Boolean& from, const sem::Integral& to);
@@ -673,9 +673,8 @@ private:
      * @brief Emplace an ENTER instruction (create stack frame).
      *
      * @param size The size of the stack frame.
-     * @param nesting_level The nesting level.
      */
-    void _enter(uint16_t size, uint8_t nesting_level);
+    void _enter(uint16_t size);
 
     /**
      * @brief Emplace a SYSCALL instruction.

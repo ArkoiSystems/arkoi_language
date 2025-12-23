@@ -106,7 +106,7 @@ public:
      * @param type The semantic type of the variable.
      * @param version The SSA version of the variable (defaults to 0).
      */
-    Variable(std::string name, sem::Type type, size_t version = 0) :
+    Variable(std::string name, sem::Type type, const size_t version = 0) :
         _name(std::move(name)), _version(version), _type(std::move(type)) { }
 
     /**

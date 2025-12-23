@@ -15,8 +15,8 @@
 template <typename T>
 class OrderedSet {
 public:
-    using const_iterator = typename std::vector<T>::const_iterator;
-    using iterator = typename std::vector<T>::iterator;
+    using const_iterator = std::vector<T>::const_iterator;
+    using iterator = std::vector<T>::iterator;
 
 public:
     /**

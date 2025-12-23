@@ -26,10 +26,10 @@ public:
      * In a backward analysis, the merge operation typically performs a union
      * of the live sets from all successors.
      *
-     * @param successors The liveness sets from all successor basic blocks.
+     * @param predecessors The liveness sets from all predecessor basic blocks.
      * @return The combined liveness state.
      */
-    [[nodiscard]] State merge(const std::vector<State>& successors) override;
+    [[nodiscard]] State merge(const std::vector<State>& predecessors) override;
 
     /**
      * @brief Initializes the liveness state for a specific basic block.
@@ -72,10 +72,10 @@ public:
     /**
      * @brief Merges liveness states from the succeeding program point.
      *
-     * @param successors The liveness states from successor points.
+     * @param predecessors The liveness states from predecessor points.
      * @return The merged liveness state.
      */
-    [[nodiscard]] State merge(const std::vector<State>& successors) override;
+    [[nodiscard]] State merge(const std::vector<State>& predecessors) override;
 
     /**
      * @brief Initializes the liveness state for an instruction point.

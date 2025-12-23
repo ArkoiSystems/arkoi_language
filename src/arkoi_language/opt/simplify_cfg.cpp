@@ -11,15 +11,6 @@ bool SimplifyCFG::enter_function(il::Function&) {
     return false;
 }
 
-bool SimplifyCFG::on_block(il::BasicBlock& block) {
-    if (is_simple_block(block)) {
-        _simple_blocks.insert(&block);
-    } else if (_is_proxy_block(block)) {
-        _proxy_blocks.insert(&block);
-    }
-    return false;
-}
-
 bool SimplifyCFG::exit_function(il::Function& function) {
     bool changed = false;
 
@@ -36,11 +27,20 @@ bool SimplifyCFG::exit_function(il::Function& function) {
     return changed;
 }
 
+bool SimplifyCFG::on_block(il::BasicBlock& block) {
+    if (is_simple_block(block)) {
+        _simple_blocks.insert(&block);
+    } else if (_is_proxy_block(block)) {
+        _proxy_blocks.insert(&block);
+    }
+    return false;
+}
+
 void SimplifyCFG::_remove_proxy_block(il::Function& function, il::BasicBlock& block) {
     const auto& target = std::get<il::Goto>(block.instructions().front());
     auto* target_block = block.next();
 
-    // Replace every predecessor goto with a copy of the current one. Also delete the predecessor, as a
+    // Replace every predecessor goto with a copy of the current one. Also, delete the predecessor, as an
     // empty predecessor vector is needed to delete a BasicBlock from a function.
     std::erase_if(
         block.predecessors(),

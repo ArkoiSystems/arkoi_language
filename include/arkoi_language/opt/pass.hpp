@@ -63,8 +63,7 @@ public:
 /**
  * @brief Orchestrates the execution of multiple optimization passes.
  *
- * `PassManager` stores a sequence of passes and applies them in order
- * to an IL module.
+ * `PassManager` stores a sequence of passes and applies them to an IL module.
  */
 class PassManager {
 public:
