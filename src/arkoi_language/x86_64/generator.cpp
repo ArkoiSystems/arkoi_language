@@ -1,14 +1,14 @@
 #include "arkoi_language/x86_64/generator.hpp"
 
-#include "arkoi_language/il/il_printer.hpp"
 #include "arkoi_language/il/cfg.hpp"
+#include "arkoi_language/il/il_printer.hpp"
 #include "arkoi_language/utils/utils.hpp"
 
 using namespace arkoi::x86_64;
 using namespace arkoi;
 
-Generator::Generator(il::Module& module) :
-    _module(module) {
+Generator::Generator(const std::shared_ptr<pretty_diagnostics::Source>& source, il::Module& module) :
+    _source(source), _module(module) {
     module.accept(*this);
 }
 
@@ -25,6 +25,7 @@ void Generator::visit(il::Module& module) {
     _directive(".section .data", _data);
 
     _directive(".intel_syntax noprefix", _text);
+    _directive(".file 1 \"" + _source->path() + "\"", _text);
     _directive(".section .text", _text);
     _directive(".global _start", _text);
     _newline(_text);
@@ -52,6 +53,9 @@ void Generator::visit(il::Function& function) {
 }
 
 void Generator::visit(il::BasicBlock& block) {
+    // Reset the debug span every time a new basic block is being generated.
+    _debug_span = { };
+
     const auto stack_size = _current_mapper->stack_size();
 
     if (_current_mapper->function().entry() == &block) {
@@ -70,7 +74,16 @@ void Generator::visit(il::BasicBlock& block) {
         instruction.accept(printer);
 
         _directive(output.str(), _text);
+        if (instruction.span().has_value()) {
+            _debug_line(instruction.span().value());
+        }
         instruction.accept(*this);
+
+        // Whenever a call instruction is generated, reset the debug span so a new debug line will
+        // be created.
+        if (std::holds_alternative<il::Call>(instruction)) {
+            _debug_span = { };
+        }
     }
 
     if (_current_mapper->function().exit() == &block) {
@@ -714,6 +727,15 @@ void Generator::_directive(const std::string& directive, std::vector<AssemblyIte
     output.emplace_back(Directive(directive));
 }
 
+void Generator::_debug_line(const pretty_diagnostics::Span& span) {
+    if (_debug_span.has_value()) {
+        if (_debug_span->start().row() == span.start().row()) return;
+    }
+
+    _directive("\t.loc 1 " + std::to_string(span.start().row() + 1) + " 0", _text);
+    _debug_span = span;
+}
+
 void Generator::_label(const std::string& name) {
     _text.emplace_back(Label(name));
 }
@@ -879,7 +901,7 @@ void Generator::_setp(const Operand& destination) {
 }
 
 void Generator::_enter(uint16_t size) {
-    _text.emplace_back(Instruction(Instruction::Opcode::ENTER, { size }));
+    _text.emplace_back(Instruction(Instruction::Opcode::ENTER, { size, 0 }));
 }
 
 void Generator::_syscall() {

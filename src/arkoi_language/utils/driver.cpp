@@ -81,7 +81,7 @@ int32_t driver::compile(
         *cfg_ostream << cfg_output.str();
     }
 
-    auto assembly_generator = x86_64::Generator(module);
+    auto assembly_generator = x86_64::Generator(source, module);
     if (asm_ostream) {
         *asm_ostream << assembly_generator.output().str();
     }

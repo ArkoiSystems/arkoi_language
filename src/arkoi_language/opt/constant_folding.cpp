@@ -14,7 +14,7 @@ bool ConstantFolding::on_block(il::BasicBlock& block) {
 
         if (auto* const cast = std::get_if<il::Cast>(&instruction)) {
             const auto value = _cast(*cast);
-            instruction = il::Constant(cast->result(), value);
+            instruction = il::Constant(cast->result(), value, cast->span());
             changed = true;
         }
     }

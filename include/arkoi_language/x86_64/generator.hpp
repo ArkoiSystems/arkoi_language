@@ -36,7 +36,7 @@ public:
      *
      * @param module The `il::Module` to be translated.
      */
-    explicit Generator(il::Module& module);
+    Generator(const std::shared_ptr<pretty_diagnostics::Source>& source, il::Module& module);
 
     /**
      * @brief Finalizes generation and returns the assembly source as a stream.
@@ -352,6 +352,14 @@ private:
      * @param output The output in which the directive will be placed in.
      */
     static void _directive(const std::string& directive, std::vector<AssemblyItem>& output);
+
+    /**
+     * @brief Emits a ".loc" directive that refers to the file and the given
+     *        span location.
+     *
+     * @param span The given span for the debug line output.
+     */
+    void _debug_line(const pretty_diagnostics::Span &span);
 
     /**
      * @brief Emplace a label.
@@ -699,6 +707,8 @@ private:
     static void _newline(std::vector<AssemblyItem>& output);
 
 private:
+    std::optional<pretty_diagnostics::Span> _debug_span{ };
+    std::shared_ptr<pretty_diagnostics::Source> _source;
     std::unique_ptr<Mapper> _current_mapper{ };
     std::vector<AssemblyItem> _data{ };
     std::vector<AssemblyItem> _text{ };

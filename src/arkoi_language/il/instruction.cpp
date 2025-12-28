@@ -28,8 +28,12 @@ std::vector<Operand> Instruction::uses() const {
     return std::visit([&](auto& item) { return item.uses(); }, *this);
 }
 
-bool Instruction::is_constant() {
+bool Instruction::is_constant() const {
     return std::visit([&](auto& item) { return item.is_constant(); }, *this);
+}
+
+std::optional<pretty_diagnostics::Span> Instruction::span() const {
+    return std::visit([&](auto& item) { return item.span(); }, *this);
 }
 
 std::ostream& operator<<(std::ostream& os, const Binary::Operator& op) {

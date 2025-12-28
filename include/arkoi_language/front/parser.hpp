@@ -98,7 +98,7 @@ private:
      *
      * @return The parsed `sem::Type`.
      */
-    [[nodiscard]] sem::Type _parse_type();
+    [[nodiscard]] std::pair<sem::Type, pretty_diagnostics::Span> _parse_type();
 
     /**
      * @brief Parses a block of statements.

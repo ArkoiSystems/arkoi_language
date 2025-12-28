@@ -55,7 +55,18 @@ public:
      *
      * @return True if the instruction is constant-evaluable, false otherwise.
      */
-    [[nodiscard]] virtual bool is_constant() = 0;
+    [[nodiscard]] virtual bool is_constant() const = 0;
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] virtual std::optional<pretty_diagnostics::Span> span() const = 0;
 };
 
 /**
@@ -67,9 +78,10 @@ public:
      * @brief Constructs a `Goto` instruction.
      *
      * @param label The name of the target basic block label.
+     * @param span The source location of this instruction.
      */
-    explicit Goto(std::string label) :
-        _label(std::move(label)) { }
+    explicit Goto(std::string label, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _label(std::move(label)) { }
 
     /**
      * @brief Accepts a visitor to process this `Goto` instruction.
@@ -83,7 +95,18 @@ public:
      *
      * @return Always false for `Goto`.
      */
-    [[nodiscard]] bool is_constant() override { return false; }
+    [[nodiscard]] bool is_constant() const override { return false; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the target label of the jump.
@@ -93,6 +116,7 @@ public:
     [[nodiscard]] auto& label() const { return _label; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     std::string _label;
 };
 
@@ -110,9 +134,11 @@ public:
      * @param condition The operand to evaluate as a boolean.
      * @param next The label to jump to if the condition is false.
      * @param branch The label to jump to if the condition is true.
+     * @param span The source location of this instruction.
      */
-    If(Operand condition, std::string next, std::string branch) :
-        _next(std::move(next)), _branch(std::move(branch)), _condition(std::move(condition)) { }
+    If(Operand condition, std::string next, std::string branch, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _next(std::move(next)), _branch(std::move(branch)),
+        _condition(std::move(condition)) { }
 
     /**
      * @brief Accepts a visitor to process this `If` instruction.
@@ -133,7 +159,18 @@ public:
      *
      * @return True if `_condition` is an `Immediate`.
      */
-    [[nodiscard]] bool is_constant() override { return std::holds_alternative<Immediate>(_condition); }
+    [[nodiscard]] bool is_constant() const override { return std::holds_alternative<Immediate>(_condition); }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the condition operand.
@@ -157,6 +194,7 @@ public:
     [[nodiscard]] auto& next() const { return _next; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     std::string _next, _branch;
     Operand _condition;
 };
@@ -174,9 +212,12 @@ public:
      * @param result The variable where the function's return value will be stored.
      * @param name The name of the function to be called.
      * @param arguments The list of operands passed as arguments.
+     * @param span The source location of this instruction.
      */
-    Call(Variable result, std::string name, std::vector<Operand>&& arguments) :
-        _arguments(std::move(arguments)), _name(std::move(name)), _result(std::move(result)) { }
+    Call(Variable result, std::string name, std::vector<Operand>&& arguments,
+         std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _arguments(std::move(arguments)), _name(std::move(name)),
+        _result(std::move(result)) { }
 
     /**
      * @brief Accepts a visitor to process this `Call` instruction.
@@ -204,7 +245,18 @@ public:
      *
      * @return Always false for `Call`.
      */
-    [[nodiscard]] bool is_constant() override { return false; }
+    [[nodiscard]] bool is_constant() const override { return false; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the list of argument operands.
@@ -228,6 +280,7 @@ public:
     [[nodiscard]] auto& name() const { return _name; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     std::vector<Operand> _arguments;
     std::string _name;
     Variable _result;
@@ -244,9 +297,10 @@ public:
      * @brief Constructs a `Return` instruction.
      *
      * @param value The operand containing the value to return.
+     * @param span The source location of this instruction.
      */
-    explicit Return(Operand value) :
-        _value(std::move(value)) { }
+    explicit Return(Operand value, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _value(std::move(value)) { }
 
     /**
      * @brief Accepts a visitor to process this `Return` instruction.
@@ -267,7 +321,18 @@ public:
      *
      * @return Always false for `Return`.
      */
-    [[nodiscard]] bool is_constant() override { return false; }
+    [[nodiscard]] bool is_constant() const override { return false; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the operand being returned.
@@ -277,6 +342,7 @@ public:
     [[nodiscard]] auto& value() { return _value; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     Operand _value;
 };
 
@@ -306,10 +372,12 @@ public:
      * @param op The binary operator to apply.
      * @param right The right operand.
      * @param op_type The semantic type of the operands.
+     * @param span The source location of this instruction.
      */
-    Binary(Variable result, Operand left, const Operator op, Operand right, sem::Type op_type) :
-        _left(std::move(left)), _right(std::move(right)), _result(std::move(result)),
-        _op_type(std::move(op_type)), _op(op) { }
+    Binary(Variable result, Operand left, const Operator op, Operand right, sem::Type op_type,
+           std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _left(std::move(left)), _right(std::move(right)),
+        _result(std::move(result)), _op_type(std::move(op_type)), _op(op) { }
 
     /**
      * @brief Accepts a visitor to process this `Binary` instruction.
@@ -337,9 +405,20 @@ public:
      *
      * @return True if both `_left` and `_right` are `Immediate`.
      */
-    [[nodiscard]] bool is_constant() override {
+    [[nodiscard]] bool is_constant() const override {
         return std::holds_alternative<Immediate>(_left) && std::holds_alternative<Immediate>(_right);
     }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the result variable.
@@ -385,6 +464,7 @@ public:
     [[nodiscard]] static Operator node_to_instruction(ast::Binary::Operator op);
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     Operand _left, _right;
     Variable _result;
     sem::Type _op_type;
@@ -402,9 +482,11 @@ public:
      * @param result The target variable for the casted value.
      * @param source The operand to be converted.
      * @param from The original semantic type of the operand.
+     * @param span The source location of this instruction.
      */
-    Cast(Variable result, Operand source, sem::Type from) :
-        _result(std::move(result)), _source(std::move(source)), _from(std::move(from)) { }
+    Cast(Variable result, Operand source, sem::Type from, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _result(std::move(result)), _source(std::move(source)),
+        _from(std::move(from)) { }
 
     /**
      * @brief Accepts a visitor to process this `Cast` instruction.
@@ -432,7 +514,18 @@ public:
      *
      * @return True if `_source` is an `Immediate`.
      */
-    [[nodiscard]] bool is_constant() override { return std::holds_alternative<Immediate>(_source); }
+    [[nodiscard]] bool is_constant() const override { return std::holds_alternative<Immediate>(_source); }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the source operand.
@@ -456,6 +549,7 @@ public:
     [[nodiscard]] auto& from() const { return _from; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     Variable _result;
     Operand _source;
     sem::Type _from;
@@ -472,9 +566,10 @@ public:
      * @brief Constructs an `Alloca` instruction.
      *
      * @param result The memory location representing the stack allocation.
+     * @param span The source location of this instruction.
      */
-    explicit Alloca(Memory result) :
-        _result(std::move(result)) { }
+    Alloca(Memory result, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _result(std::move(result)) { }
 
     /**
      * @brief Accepts a visitor to process this `Alloca` instruction.
@@ -495,7 +590,18 @@ public:
      *
      * @return Always false for `Alloca`.
      */
-    [[nodiscard]] bool is_constant() override { return false; }
+    [[nodiscard]] bool is_constant() const override { return false; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the allocated memory location.
@@ -505,6 +611,7 @@ public:
     [[nodiscard]] auto& result() const { return _result; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     Memory _result;
 };
 
@@ -520,9 +627,10 @@ public:
      *
      * @param result The variable to store the loaded value.
      * @param source The memory location to read from.
+     * @param span The source location of this instruction.
      */
-    Load(Variable result, Memory source) :
-        _result(std::move(result)), _source(std::move(source)) { }
+    Load(Variable result, Memory source, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _result(std::move(result)), _source(std::move(source)) { }
 
     /**
      * @brief Accepts a visitor to process this `Load` instruction.
@@ -550,7 +658,18 @@ public:
      *
      * @return Always false for `Load`.
      */
-    [[nodiscard]] bool is_constant() override { return false; }
+    [[nodiscard]] bool is_constant() const override { return false; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the target variable.
@@ -567,6 +686,7 @@ public:
     [[nodiscard]] auto& source() const { return _source; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     Variable _result;
     Memory _source;
 };
@@ -583,9 +703,10 @@ public:
      *
      * @param result The target memory location to write to.
      * @param source The operand whose value will be stored.
+     * @param span The source location of this instruction.
      */
-    Store(Memory result, Operand source) :
-        _result(std::move(result)), _source(std::move(source)) { }
+    Store(Memory result, Operand source, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _result(std::move(result)), _source(std::move(source)) { }
 
     /**
      * @brief Accepts a visitor to process this `Store` instruction.
@@ -608,7 +729,18 @@ public:
      *
      * @return Always false for `Store`.
      */
-    [[nodiscard]] bool is_constant() override { return false; }
+    [[nodiscard]] bool is_constant() const override { return false; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the target memory location.
@@ -625,6 +757,7 @@ public:
     [[nodiscard]] auto& source() { return _source; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     Memory _result;
     Operand _source;
 };
@@ -639,9 +772,10 @@ public:
      *
      * @param result The variable to store the constant value.
      * @param immediate The literal value to assign.
+     * @param span The source location of this instruction.
      */
-    Constant(Variable result, Immediate immediate) :
-        _immediate(std::move(std::move(immediate))), _result(std::move(result)) { }
+    Constant(Variable result, Immediate immediate, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _immediate(std::move(immediate)), _result(std::move(result)) { }
 
     /**
      * @brief Accepts a visitor to process this `Constant` instruction.
@@ -669,7 +803,18 @@ public:
      *
      * @return Always true for `Constant`.
      */
-    [[nodiscard]] bool is_constant() override { return true; }
+    [[nodiscard]] bool is_constant() const override { return true; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
 
     /**
      * @brief Returns the target result variable.
@@ -686,6 +831,7 @@ public:
     [[nodiscard]] auto& immediate() { return _immediate; }
 
 private:
+    std::optional<pretty_diagnostics::Span> _span;
     Immediate _immediate;
     Variable _result;
 };
@@ -721,7 +867,12 @@ struct Instruction final : InstructionBase, std::variant<
     /**
      * @brief Forwards the `is_constant` call to the underlying instruction.
      */
-    [[nodiscard]] bool is_constant() override;
+    [[nodiscard]] bool is_constant() const override;
+
+    /**
+     * @brief Forwards the `span` call to the underlying instruction.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override;
 };
 } // namespace arkoi::il
 

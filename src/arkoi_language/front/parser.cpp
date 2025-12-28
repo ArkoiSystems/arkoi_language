@@ -73,7 +73,7 @@ std::unique_ptr<ast::Function> Parser::_parse_function(const Token& keyword) {
 
     auto parameters = _parse_parameters();
 
-    auto return_type = _parse_type();
+    auto [return_type, return_span] = _parse_type();
 
     _consume(Token::Type::Colon);
 
@@ -85,7 +85,14 @@ std::unique_ptr<ast::Function> Parser::_parse_function(const Token& keyword) {
 
     const auto span = keyword.span().join(block->span());
 
-    return std::make_unique<ast::Function>(identifier, std::move(parameters), return_type, std::move(block), span, own_scope);
+    return std::make_unique<ast::Function>(
+        identifier,
+        std::move(parameters),
+        return_type,
+        std::move(block),
+        span,
+        own_scope
+    );
 }
 
 std::vector<ast::Parameter> Parser::_parse_parameters() {
@@ -136,32 +143,34 @@ ast::Parameter Parser::_parse_parameter() {
     const auto& name = _consume(Token::Type::Identifier);
     auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable, name.span());
 
-    auto type = _parse_type();
+    auto [type, type_span] = _parse_type();
 
-    // TODO: This is not quite right yet. The end span must be the consumed one not the current one.
-    const auto span = name.span().join(_current().span());
+    auto span = name.span().join(type_span);
 
     return { identifier, type, span };
 }
 
-sem::Type Parser::_parse_type() {
-    _consume(Token::Type::At);
+std::pair<sem::Type, pretty_diagnostics::Span> Parser::_parse_type() {
+    const auto &start_token = _consume(Token::Type::At);
 
     const auto token = _consume_any();
+
+    const auto span = start_token.span().join(token.span());
+
     switch (token.type()) {
-        case Token::Type::U8: return sem::Integral(Size::BYTE, false);
-        case Token::Type::S8: return sem::Integral(Size::BYTE, true);
-        case Token::Type::U16: return sem::Integral(Size::WORD, false);
-        case Token::Type::S16: return sem::Integral(Size::WORD, true);
-        case Token::Type::U32: return sem::Integral(Size::DWORD, false);
-        case Token::Type::S32: return sem::Integral(Size::DWORD, true);
-        case Token::Type::U64: return sem::Integral(Size::QWORD, false);
-        case Token::Type::S64: return sem::Integral(Size::QWORD, true);
-        case Token::Type::USize: return sem::Integral(Size::QWORD, false);
-        case Token::Type::SSize: return sem::Integral(Size::QWORD, true);
-        case Token::Type::F32: return sem::Floating(Size::DWORD);
-        case Token::Type::F64: return sem::Floating(Size::QWORD);
-        case Token::Type::Bool: return sem::Boolean();
+        case Token::Type::U8: return { sem::Integral(Size::BYTE, false), span };
+        case Token::Type::S8: return { sem::Integral(Size::BYTE, true), span };
+        case Token::Type::U16: return { sem::Integral(Size::WORD, false), span };
+        case Token::Type::S16: return { sem::Integral(Size::WORD, true), span };
+        case Token::Type::U32: return { sem::Integral(Size::DWORD, false), span };
+        case Token::Type::S32: return { sem::Integral(Size::DWORD, true), span };
+        case Token::Type::U64: return { sem::Integral(Size::QWORD, false), span };
+        case Token::Type::S64: return { sem::Integral(Size::QWORD, true), span };
+        case Token::Type::USize: return { sem::Integral(Size::QWORD, false), span };
+        case Token::Type::SSize: return { sem::Integral(Size::QWORD, true), span };
+        case Token::Type::F32: return { sem::Floating(Size::DWORD), span };
+        case Token::Type::F64: return { sem::Floating(Size::QWORD), span };
+        case Token::Type::Bool: return { sem::Boolean(), span };
         default: throw UnexpectedToken("u8, s8, u16, s16, u32, s32, u64, s64, usize, ssize, bool", token);
     }
 }
@@ -299,7 +308,7 @@ std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token& name) {
 std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token& name) {
     auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable, name.span());
 
-    auto type = _parse_type();
+    auto [type, type_span] = _parse_type();
 
     _consume(Token::Type::Equal);
 
@@ -393,10 +402,9 @@ std::unique_ptr<ast::Node> Parser::_parse_primary() {
         auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Integer, consumed.span());
         if (_current().type() != Token::Type::At) return node;
 
-        const auto type = _parse_type();
+        const auto [type, type_span] = _parse_type();
 
-        // TODO: This is not quite right yet. The end span must be the consumed one not the current one.
-        const auto span = node->span().join(_current().span());
+        const auto span = consumed.span().join(type_span);
 
         return std::make_unique<ast::Cast>(std::move(node), type, span);
     }
@@ -405,10 +413,9 @@ std::unique_ptr<ast::Node> Parser::_parse_primary() {
         auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Floating, consumed.span());
         if (_current().type() != Token::Type::At) return node;
 
-        const auto type = _parse_type();
+        const auto [type, type_span] = _parse_type();
 
-        // TODO: This is not quite right yet. The end span must be the consumed one not the current one.
-        const auto span = node->span().join(_current().span());
+        const auto span = consumed.span().join(type_span);
 
         return std::make_unique<ast::Cast>(std::move(node), type, span);
     }

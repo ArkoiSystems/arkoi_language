@@ -39,7 +39,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] virtual pretty_diagnostics::Span span() = 0;
+    [[nodiscard]] virtual pretty_diagnostics::Span span() const = 0;
 };
 
 /**
@@ -75,7 +75,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the program.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the statements contained within the program.
@@ -129,7 +129,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the block.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the statements contained within the block.
@@ -195,7 +195,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the identifier.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the resolved symbol for this identifier.
@@ -279,7 +279,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the parameter.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the semantic type of the parameter.
@@ -341,7 +341,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the function.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the parameters of the function.
@@ -415,7 +415,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the return statement.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the type of the expression being returned.
@@ -490,7 +490,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the if-else statement.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the `then` branch of the if statement.
@@ -555,7 +555,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the assignment.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the expression being assigned.
@@ -619,7 +619,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the variable declaration.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the initial value expression.
@@ -685,7 +685,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the call.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the arguments passed to the function.
@@ -751,7 +751,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the literal.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the token representing the literal value.
@@ -857,7 +857,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the binary expression.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the binary operator.
@@ -992,7 +992,7 @@ public:
      *
      * @return The `pretty_diagnostics::Span` of the cast.
      */
-    [[nodiscard]] pretty_diagnostics::Span span() override { return _span; }
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
 
     /**
      * @brief Returns the expression being cast.
