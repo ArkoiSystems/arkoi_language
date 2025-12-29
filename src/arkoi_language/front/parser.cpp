@@ -151,7 +151,7 @@ ast::Parameter Parser::_parse_parameter() {
 }
 
 std::pair<sem::Type, pretty_diagnostics::Span> Parser::_parse_type() {
-    const auto &start_token = _consume(Token::Type::At);
+    const auto& start_token = _consume(Token::Type::At);
 
     const auto token = _consume_any();
 

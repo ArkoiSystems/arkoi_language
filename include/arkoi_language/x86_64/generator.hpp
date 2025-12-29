@@ -359,7 +359,7 @@ private:
      *
      * @param span The given span for the debug line output.
      */
-    void _debug_line(const pretty_diagnostics::Span &span);
+    void _debug_line(const pretty_diagnostics::Span& span);
 
     /**
      * @brief Emplace a label.

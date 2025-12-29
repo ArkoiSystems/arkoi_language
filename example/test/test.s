@@ -1,14 +1,16 @@
 .intel_syntax noprefix
 .file 1 "test.ark"
+
 .section .text
 .global _start
-
 _start:
 	call main
 	mov rdi, rax
 	mov rax, 60
 	syscall
 
+.global main
+.type main, @function
 main:
 	enter 16, 0
 	# %01 @u64 = alloca
@@ -47,7 +49,10 @@ main:
 	# ret $22
 	leave
 	ret
+.size main, .-main
 
+.global ok
+.type ok, @function
 ok:
 	enter 16, 0
 	# %01 @bool = alloca
@@ -125,7 +130,10 @@ L6:
 	# ret $23
 	leave
 	ret
+.size ok, .-ok
 
+.global test1
+.type test1, @function
 test1:
 	# %01 @f32 = alloca
 	# %02 @s32 = alloca
@@ -213,7 +221,10 @@ L14:
 	movss xmm0, DWORD PTR [rsp - 4]
 	# ret $26
 	ret
+.size test1, .-test1
 
+.global test2
+.type test2, @function
 test2:
 	# %01 @f32 = alloca
 	# %02 @s32 = alloca
@@ -282,6 +293,7 @@ L16:
 	movss xmm0, DWORD PTR [rsp - 4]
 	# ret $19
 	ret
+.size test2, .-test2
 
 .section .data
 	float0: .double	5.000000

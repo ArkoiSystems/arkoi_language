@@ -26,10 +26,10 @@ void Generator::visit(il::Module& module) {
 
     _directive(".intel_syntax noprefix", _text);
     _directive(".file 1 \"" + _source->path() + "\"", _text);
-    _directive(".section .text", _text);
-    _directive(".global _start", _text);
     _newline(_text);
 
+    _directive(".section .text", _text);
+    _directive(".global _start", _text);
     _label("_start");
     _call("main");
     _mov(RDI, RAX);
@@ -39,17 +39,23 @@ void Generator::visit(il::Module& module) {
 
     for (auto& function : module) {
         function.accept(*this);
+        _newline(_text);
     }
 }
 
 void Generator::visit(il::Function& function) {
     _current_mapper = std::make_unique<Mapper>(function);
 
-    _label(function.name());
+    _directive(".global " + function.name(), _text);
+    _directive(".type " + function.name() + ", @function", _text);
 
+    _label(function.name());
     for (auto& block : function) {
         block.accept(*this);
     }
+
+
+    _directive(".size " + function.name() + ", .-" + function.name(), _text);
 }
 
 void Generator::visit(il::BasicBlock& block) {
@@ -92,7 +98,6 @@ void Generator::visit(il::BasicBlock& block) {
         if (!_current_mapper->function().is_leaf() || stack_size > 128) _leave();
 
         _ret();
-        _newline(_text);
     }
 }
 

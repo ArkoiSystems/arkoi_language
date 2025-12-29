@@ -214,8 +214,10 @@ public:
      * @param arguments The list of operands passed as arguments.
      * @param span The source location of this instruction.
      */
-    Call(Variable result, std::string name, std::vector<Operand>&& arguments,
-         std::optional<pretty_diagnostics::Span> span) :
+    Call(
+        Variable result, std::string name, std::vector<Operand>&& arguments,
+        std::optional<pretty_diagnostics::Span> span
+    ) :
         _span(std::move(span)), _arguments(std::move(arguments)), _name(std::move(name)),
         _result(std::move(result)) { }
 
@@ -374,8 +376,10 @@ public:
      * @param op_type The semantic type of the operands.
      * @param span The source location of this instruction.
      */
-    Binary(Variable result, Operand left, const Operator op, Operand right, sem::Type op_type,
-           std::optional<pretty_diagnostics::Span> span) :
+    Binary(
+        Variable result, Operand left, const Operator op, Operand right, sem::Type op_type,
+        std::optional<pretty_diagnostics::Span> span
+    ) :
         _span(std::move(span)), _left(std::move(left)), _right(std::move(right)),
         _result(std::move(result)), _op_type(std::move(op_type)), _op(op) { }
 
