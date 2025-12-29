@@ -78,6 +78,9 @@ Checklist convention:
 - [x] Register allocation
   - Summary: Assigns virtual registers to physical and handles spills
   - Files: include/x86_64/register_allocation.hpp, src/x86_64/register_allocation.cpp
+- [x] Simple DWARF generation (only stepping)
+  - Summary: Generates DWARF debug information for the generated assembly
+  - Files: include/x86_64/generator.hpp, src/x86_64/generator.cpp
 - [x] Interference graph utility
   - Summary: Builds and queries interference for allocation decisions
   - Files: include/utils/interference_graph.hpp, src/utils/interference_graph.tpp
@@ -92,7 +95,7 @@ Checklist convention:
 - [x] Snapshot tests for scanner
   - Summary: Ensures tokenization output remains stable
   - Files: test/snapshot/scanner/*
-- [ ] Snapshot tests for parser
+- [x] Snapshot tests for parser
   - Summary: Ensures parsed output remains stable
   - Files: test/snapshot/parser/*
 - [x] End-to-end tests

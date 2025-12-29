@@ -54,13 +54,13 @@ void Generator::visit(ast::Function& node) {
     for (auto& parameter : node.parameters()) {
         auto alloca_temp = _make_memory(parameter.type());
         _allocas.emplace(parameter.name().symbol(), alloca_temp);
-        _current_block->emplace_back<Alloca>(alloca_temp, parameter.span());
+        _current_block->emplace_back<Alloca>(alloca_temp, std::nullopt);
     }
 
     for (auto& parameter : node.parameters()) {
         auto destination = _allocas.at(parameter.name().symbol());
         auto source = Variable(parameter.name().value().span().substr(), parameter.type());
-        _current_block->emplace_back<Store>(destination, source, parameter.span());
+        _current_block->emplace_back<Store>(destination, source, std::nullopt);
     }
 
     node.block()->accept(*this);

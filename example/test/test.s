@@ -57,7 +57,6 @@ ok:
 	enter 16, 0
 	# %01 @bool = alloca
 	# %02 @f64 = alloca
-	.loc 1 5 0
 	# store @f64 foo1, %02
 	movsd QWORD PTR [rbp - 9], xmm0
 	# $03 @f64 = load %02
@@ -137,7 +136,6 @@ L6:
 test1:
 	# %01 @f32 = alloca
 	# %02 @s32 = alloca
-	.loc 1 11 0
 	# %03 @f64 = alloca
 	# store @s32 foo2, %02
 	mov DWORD PTR [rsp - 8], edi
@@ -228,7 +226,6 @@ L14:
 test2:
 	# %01 @f32 = alloca
 	# %02 @s32 = alloca
-	.loc 1 17 0
 	# %03 @f64 = alloca
 	# store @s32 foo2, %02
 	mov DWORD PTR [rsp - 8], edi
