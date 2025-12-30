@@ -1,0 +1,8 @@
+fun main() @u32:
+    return factorial(4)
+
+fun factorial(n @u32) @u32:
+    if n < 2:
+        return 1
+    else:
+        return n * factorial(n - 1)

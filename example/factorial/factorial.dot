@@ -1,0 +1,17 @@
+digraph CFG {
+	graph [fontname = "Monospace"];
+	node  [fontname = "Monospace", shape=box, style=filled, margin=0.1];
+	edge  [fontname = "Monospace"];
+	bgcolor = "#f7f7f7";
+	splines = false;
+
+	L0 [label="fun main() @u32:\l %01 @u32 = alloca\l $03 @u32 = const 4\l $04 @u32 = call factorial($03)\l store @u32 $04, %01\l $05 @u32 = load %01\l ret $05\l\lIN:  { }\lOUT: { }\l"];
+	L2 [label="fun factorial(n @u32) @u32:\l %01 @u32 = alloca\l %02 @u32 = alloca\l store @u32 n, %02\l $03 @u32 = load %02\l $06 @bool = lth @u32 $03, 2\l if $06 then L4 else L5\l\lIN:  { n }\lOUT: { %01 %02 }\l"];
+	L2 -> L5 [label="Next"];
+	L2 -> L4 [label="Branch"];
+	L5 [label="L5:\l $09 @u32 = load %02\l $10 @u32 = load %02\l $13 @u32 = sub @u32 $10, 1\l $14 @u32 = call factorial($13)\l $15 @u32 = mul @u32 $09, $14\l store @u32 $15, %01\l goto L3\l\lIN:  { %02 %01 }\lOUT: { %01 }\l"];
+	L5 -> L3 [label="Next"];
+	L4 [label="L4:\l store @u32 1, %01\l goto L3\l\lIN:  { %01 }\lOUT: { %01 }\l"];
+	L4 -> L3 [label="Next"];
+	L3 [label="L3:\l $16 @u32 = load %01\l ret $16\l\lIN:  { %01 }\lOUT: { }\l"];
+}
