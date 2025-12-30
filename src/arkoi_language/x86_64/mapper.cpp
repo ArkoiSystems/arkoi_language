@@ -14,10 +14,6 @@ Mapper::Mapper(il::Function& function) :
     function.accept(*this);
 }
 
-Operand& Mapper::operator[](const il::Variable& variable) {
-    return _mappings.at(variable);
-}
-
 Operand Mapper::operator[](const il::Operand& operand) {
     return std::visit(
         match{
@@ -68,32 +64,55 @@ size_t Mapper::align_size(const size_t input) {
     return (input + (STACK_ALIGNMENT - 1)) & ~(STACK_ALIGNMENT - 1);
 }
 
+void Mapper::visit(il::Module&) {
+    throw std::runtime_error("Mapper::visit(Module) should never be called.");
+}
+
 void Mapper::visit(il::Function& function) {
+    // --- Phase 1: Create the mappings and precoloring ---
+
+    // Clear the precolored mappings on every new function.
+    _precolored.clear();
+
+    // Iterate over each block and their corresponding instructions
+    // to map operands to their mapped x86_64 equivalent.
     for (auto& block : function) {
         block.accept(*this);
     }
 
-    RegisterAllocater::Mapping precolored;
-    for (const auto& [source, target] : _mappings) {
-        const auto* variable = std::get_if<il::Variable>(&source);
-        if (!variable) continue;
+    _map_parameters(function.parameters());
 
-        const auto* reg = std::get_if<Register>(&target);
-        if (!reg) continue;
+    // --- Phase 2: Try to reduce locals by using register allocation ---
 
-        precolored.insert_or_assign(*variable, reg->base());
-    }
-
-    auto allocator = RegisterAllocater(function, precolored);
+    auto allocator = RegisterAllocater(function, _precolored);
     for (const auto& [variable, base] : allocator.assigned()) {
-        _add_register(variable, Register(base, variable.type().size()));
+        const auto target = Register(base, variable.type().size());
+        _add_register(variable, target);
     }
 
-    const auto stack_size = this->stack_size();
-    const auto use_redzone = function.is_leaf() && stack_size <= 128;
+    // --- Phase 3: Use the redzone for the remaining memory operands if applicable ---
+
+    const auto use_redzone = function.is_leaf() && this->stack_size() <= 128;
     const auto stack_reg = use_redzone ? RSP : RBP;
 
-    _map_parameters(function.parameters(), use_redzone);
+    if (use_redzone) {
+        // If we can use the redzone, overwrite all the stack-allocated memory operands
+        // to use RSP instead of RBP.
+        for (auto& [source, target] : _mappings) {
+            auto* variable = std::get_if<il::Variable>(&source);
+            if (!variable) continue;
+
+            auto* memory = std::get_if<Memory>(&target);
+            if (!memory) continue;
+
+            auto *reg = std::get_if<Register>(&memory->address());
+            if (!reg || *reg != RBP) continue;
+
+            memory->set_address(stack_reg);
+        }
+    }
+
+    // --- Phase 4: Transform the remaining locals to be stored on the stack ---
 
     int64_t local_offset = 0;
     for (auto& local : _locals) {
@@ -131,9 +150,8 @@ void Mapper::visit(il::Call& instruction) {
     _add_register(instruction.result(), result_reg);
 }
 
-void Mapper::_map_parameters(const std::vector<il::Variable>& parameters, const bool use_redzone) {
+void Mapper::_map_parameters(const std::vector<il::Variable>& parameters) {
     size_t stack = 0, integer = 0, floating = 0;
-    const auto stack_reg = use_redzone ? RSP : RBP;
 
     for (auto& parameter : parameters) {
         const auto& type = parameter.type();
@@ -155,7 +173,7 @@ void Mapper::_map_parameters(const std::vector<il::Variable>& parameters, const 
         }
 
         const auto offset = static_cast<int64_t>(16 + 8 * stack);
-        auto memory = Memory(type.size(), stack_reg, offset);
+        auto memory = Memory(type.size(), RBP, offset);
         _add_memory(parameter, memory);
         stack++;
     }
@@ -180,6 +198,7 @@ void Mapper::_add_local(const il::Operand& operand) {
 void Mapper::_add_register(const il::Variable& variable, const Register& reg) {
     _locals.erase(variable);
     _mappings.insert_or_assign(variable, reg);
+    _precolored.insert_or_assign(variable, reg.base());
 }
 
 void Mapper::_add_memory(const il::Variable& variable, const Memory& memory) {

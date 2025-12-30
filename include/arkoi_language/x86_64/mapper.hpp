@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "register_allocation.hpp"
 #include "arkoi_language/il/instruction.hpp"
 #include "arkoi_language/utils/ordered_set.hpp"
 #include "arkoi_language/x86_64/operand.hpp"
@@ -24,14 +25,6 @@ public:
      * @param function The `il::Function` to process.
      */
     explicit Mapper(il::Function& function);
-
-    /**
-     * @brief Retrieves the machine operand associated with an IL variable.
-     *
-     * @param variable The source IL variable.
-     * @return A reference to the mapped `x86_64::Operand`.
-     */
-    [[nodiscard]] Operand& operator[](const il::Variable& variable);
 
     /**
      * @brief Retrieves the machine operand associated with a generic IL operand.
@@ -81,7 +74,7 @@ private:
      *
      * @param module The `il::Module` node to visit.
      */
-    void visit([[maybe_unused]] il::Module& module) override { }
+    void visit([[maybe_unused]] il::Module& module) override;
 
     /**
      * @brief Maps the function structure and its parameters.
@@ -129,9 +122,8 @@ private:
      * @brief Places function parameters into their initial registers or stack slots.
      *
      * @param parameters The formal parameters of the function.
-     * @param use_redzone Whether the function can use the 128-byte red zone.
      */
-    void _map_parameters(const std::vector<il::Variable>& parameters, bool use_redzone);
+    void _map_parameters(const std::vector<il::Variable>& parameters);
 
     /**
      * @brief Jumps do not define new operand mappings.
@@ -200,6 +192,7 @@ private:
 
 private:
     std::unordered_map<il::Operand, Operand> _mappings{ };
+    RegisterAllocater::Mapping _precolored{ };
     OrderedSet<il::Operand> _locals{ };
     il::Function& _function;
 };

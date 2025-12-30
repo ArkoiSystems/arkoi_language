@@ -147,6 +147,13 @@ public:
     [[nodiscard]] auto displacement() const { return _displacement; }
 
     /**
+     * @brief Sets the base address to the given one.
+     *
+     * @param address The given address.
+     */
+    void set_address(const Address& address) { _address = address; }
+
+    /**
      * @brief Returns the base address component.
      *
      * @return A reference to the address.
