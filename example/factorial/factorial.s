@@ -14,16 +14,17 @@ _start:
 main:
 	enter 16, 0
 	# %01 @u32 = alloca
-	# $04 @u32 = call factorial(4)
+	# arg @u32 4
+	# $05 @u32 = call factorial, 1
 	.loc 1 2 0
 	mov edi, 4
 	call factorial
-	# store @u32 $04, %01
+	# store @u32 $05, %01
 	.loc 1 2 0
 	mov DWORD PTR [rbp - 4], eax
-	# $05 @u32 = load %01
+	# $06 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
-	# ret $05
+	# ret $06
 	leave
 	ret
 .size main, .-main
@@ -54,14 +55,15 @@ L5:
 	mov ebx, DWORD PTR [rbp - 8]
 	# $13 @u32 = sub @u32 $10, 1
 	sub ebx, 1
-	# $14 @u32 = call factorial($13)
+	# arg @u32 $13
+	# $15 @u32 = call factorial, 1
 	mov edi, ebx
 	call factorial
-	# $15 @u32 = mul @u32 $09, $14
+	# $16 @u32 = mul @u32 $09, $15
 	.loc 1 8 0
 	imul r12d, eax
 	mov ebx, r12d
-	# store @u32 $15, %01
+	# store @u32 $16, %01
 	mov DWORD PTR [rbp - 4], ebx
 	# goto L3
 	jmp L3
@@ -72,9 +74,9 @@ L4:
 	# goto L3
 	jmp L3
 L3:
-	# $16 @u32 = load %01
+	# $17 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
-	# ret $16
+	# ret $17
 	leave
 	ret
 .size factorial, .-factorial

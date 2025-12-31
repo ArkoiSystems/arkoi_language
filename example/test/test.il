@@ -1,18 +1,21 @@
 fun main() @u64:
 L0:
   %01 @u64 = alloca
-  $06 @bool = call ok(5)
-  $07 @u32 = cast @bool $06
-  $08 @u32 = mul @u32 1, $07
-  $11 @u32 = add @u32 $08, 1
-  $12 @s32 = cast @u32 $11
-  $15 @f32 = call test1($12, 10.5)
-  $17 @f32 = mul @f32 $15, 2.01
-  $20 @f32 = sub @f32 $17, 42
-  $21 @u64 = cast @f32 $20
-  store @u64 $21, %01
-  $22 @u64 = load %01
-  ret $22
+  arg @f64 5
+  $07 @bool = call ok, 1
+  $08 @u32 = cast @bool $07
+  $09 @u32 = mul @u32 1, $08
+  $12 @u32 = add @u32 $09, 1
+  $13 @s32 = cast @u32 $12
+  arg @s32 $13
+  arg @f64 10.5
+  $18 @f32 = call test1, 2
+  $20 @f32 = mul @f32 $18, 2.01
+  $23 @f32 = sub @f32 $20, 42
+  $24 @u64 = cast @f32 $23
+  store @u64 $24, %01
+  $25 @u64 = load %01
+  ret $25
 
 fun ok(foo1 @f64) @bool:
 L2:
@@ -37,12 +40,14 @@ L4:
   goto L6
 L6:
   $19 @s32 = div @s32 4, 2
-  $20 @f64 = load %02
-  $21 @f32 = call test2($19, $20)
-  $22 @bool = cast @f32 $21
-  store @bool $22, %01
-  $23 @bool = load %01
-  ret $23
+  arg @s32 $19
+  $21 @f64 = load %02
+  arg @f64 $21
+  $23 @f32 = call test2, 2
+  $24 @bool = cast @f32 $23
+  store @bool $24, %01
+  $25 @bool = load %01
+  ret $25
 
 fun test1(foo2 @s32, bar @f64) @f32:
 L10:

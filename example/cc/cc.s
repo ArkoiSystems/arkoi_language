@@ -14,27 +14,34 @@ _start:
 main:
 	enter 16, 0
 	# %01 @u32 = alloca
-	# $19 @u64 = call calling_convention(1, 2, 3, 4, 5, 6, 7, 8)
+	# arg @u32 1
+	# arg @u32 2
+	# arg @u32 3
+	# arg @u32 4
+	# arg @u32 5
+	# arg @u32 6
+	# arg @u32 7
+	# arg @u32 8
+	# $27 @u64 = call calling_convention, 8
 	.loc 1 3 0
-	sub rsp, 16
 	mov edi, 1
 	mov esi, 2
 	mov edx, 3
 	mov ecx, 4
 	mov r8d, 5
 	mov r9d, 6
-	mov DWORD PTR [rsp], 7
-	mov DWORD PTR [rsp + 8], 8
+	push 8
+	push 7
 	call calling_convention
 	add rsp, 16
-	# $20 @u32 = cast @u64 $19
+	# $28 @u32 = cast @u64 $27
 	.loc 1 3 0
 	mov ebx, eax
-	# store @u32 $20, %01
+	# store @u32 $28, %01
 	mov DWORD PTR [rbp - 4], ebx
-	# $21 @u32 = load %01
+	# $29 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
-	# ret $21
+	# ret $29
 	leave
 	ret
 .size main, .-main

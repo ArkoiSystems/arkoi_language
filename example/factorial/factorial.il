@@ -1,10 +1,11 @@
 fun main() @u32:
 L0:
   %01 @u32 = alloca
-  $04 @u32 = call factorial(4)
-  store @u32 $04, %01
-  $05 @u32 = load %01
-  ret $05
+  arg @u32 4
+  $05 @u32 = call factorial, 1
+  store @u32 $05, %01
+  $06 @u32 = load %01
+  ret $06
 
 fun factorial(n @u32) @u32:
 L2:
@@ -18,14 +19,15 @@ L5:
   $09 @u32 = load %02
   $10 @u32 = load %02
   $13 @u32 = sub @u32 $10, 1
-  $14 @u32 = call factorial($13)
-  $15 @u32 = mul @u32 $09, $14
-  store @u32 $15, %01
+  arg @u32 $13
+  $15 @u32 = call factorial, 1
+  $16 @u32 = mul @u32 $09, $15
+  store @u32 $16, %01
   goto L3
 L4:
   store @u32 1, %01
   goto L3
 L3:
-  $16 @u32 = load %01
-  ret $16
+  $17 @u32 = load %01
+  ret $17
 
