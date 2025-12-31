@@ -14,10 +14,9 @@ _start:
 main:
 	enter 16, 0
 	# %01 @u32 = alloca
-	# $03 @u32 = const 4
+	# $04 @u32 = call factorial(4)
 	.loc 1 2 0
 	mov edi, 4
-	# $04 @u32 = call factorial($03)
 	call factorial
 	# store @u32 $04, %01
 	.loc 1 2 0
@@ -55,8 +54,8 @@ L5:
 	mov ebx, DWORD PTR [rbp - 8]
 	# $13 @u32 = sub @u32 $10, 1
 	sub ebx, 1
-	mov edi, ebx
 	# $14 @u32 = call factorial($13)
+	mov edi, ebx
 	call factorial
 	# $15 @u32 = mul @u32 $09, $14
 	.loc 1 8 0

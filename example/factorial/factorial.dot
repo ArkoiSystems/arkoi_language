@@ -5,7 +5,7 @@ digraph CFG {
 	bgcolor = "#f7f7f7";
 	splines = false;
 
-	L0 [label="fun main() @u32:\l %01 @u32 = alloca\l $03 @u32 = const 4\l $04 @u32 = call factorial($03)\l store @u32 $04, %01\l $05 @u32 = load %01\l ret $05\l\lIN:  { }\lOUT: { }\l"];
+	L0 [label="fun main() @u32:\l %01 @u32 = alloca\l $04 @u32 = call factorial(4)\l store @u32 $04, %01\l $05 @u32 = load %01\l ret $05\l\lIN:  { }\lOUT: { }\l"];
 	L2 [label="fun factorial(n @u32) @u32:\l %01 @u32 = alloca\l %02 @u32 = alloca\l store @u32 n, %02\l $03 @u32 = load %02\l $06 @bool = lth @u32 $03, 2\l if $06 then L4 else L5\l\lIN:  { n }\lOUT: { %01 %02 }\l"];
 	L2 -> L5 [label="Next"];
 	L2 -> L4 [label="Branch"];

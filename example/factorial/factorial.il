@@ -1,8 +1,7 @@
 fun main() @u32:
 L0:
   %01 @u32 = alloca
-  $03 @u32 = const 4
-  $04 @u32 = call factorial($03)
+  $04 @u32 = call factorial(4)
   store @u32 $04, %01
   $05 @u32 = load %01
   ret $05
