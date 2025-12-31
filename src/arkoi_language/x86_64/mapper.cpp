@@ -123,33 +123,6 @@ void Mapper::visit(il::Function& function) {
     }
 }
 
-void Mapper::visit(il::BasicBlock& block) {
-    for (auto& instruction : block) {
-        instruction.accept(*this);
-    }
-}
-
-void Mapper::visit(il::Binary& instruction) {
-    _add_local(instruction.result());
-}
-
-void Mapper::visit(il::Cast& instruction) {
-    _add_local(instruction.result());
-}
-
-void Mapper::visit(il::Return& instruction) {
-    const auto* variable = std::get_if<il::Variable>(&instruction.value());
-    if (!variable) return;
-
-    const auto result_reg = return_register(variable->type());
-    _add_register(*variable, result_reg);
-}
-
-void Mapper::visit(il::Call& instruction) {
-    const auto result_reg = return_register(instruction.result().type());
-    _add_register(instruction.result(), result_reg);
-}
-
 void Mapper::_map_parameters(const std::vector<il::Variable>& parameters) {
     size_t stack = 0, integer = 0, floating = 0;
 
@@ -177,6 +150,70 @@ void Mapper::_map_parameters(const std::vector<il::Variable>& parameters) {
         _add_memory(parameter, memory);
         stack++;
     }
+}
+
+void Mapper::visit(il::BasicBlock& block) {
+    for (auto& instruction : block) {
+        instruction.accept(*this);
+    }
+}
+
+void Mapper::visit(il::Binary& instruction) {
+    _add_local(instruction.result());
+}
+
+void Mapper::visit(il::Cast& instruction) {
+    _add_local(instruction.result());
+}
+
+void Mapper::visit(il::Return& instruction) {
+    const auto* variable = std::get_if<il::Variable>(&instruction.value());
+    if (!variable) return;
+
+    const auto result_reg = return_register(variable->type());
+    _add_register(*variable, result_reg);
+}
+
+void Mapper::visit(il::Argument& argument) {
+    auto& [
+        integer,
+        floating,
+        stack,
+        stack_size
+    ] = _current_call_frame;
+
+    const auto& result = argument.result();
+    const auto& type = result.type();
+
+    if (std::holds_alternative<sem::Integral>(type) || std::holds_alternative<sem::Boolean>(type)) {
+        if (integer.size() < INTEGER_ARGUMENT_REGISTERS.size()) {
+            const auto reg = Register(INTEGER_ARGUMENT_REGISTERS[integer.size()], type.size());
+            _add_register(result, reg);
+            integer.push_back(&argument);
+            return;
+        }
+    } else if (std::holds_alternative<sem::Floating>(type)) {
+        if (floating.size() < SSE_ARGUMENT_REGISTERS.size()) {
+            const auto reg = Register(SSE_ARGUMENT_REGISTERS[floating.size()], type.size());
+            _add_register(result, reg);
+            floating.push_back(&argument);
+            return;
+        }
+    }
+
+    _add_memory(result, Memory(type.size(), RSP));
+    stack.push_back(&argument);
+    stack_size += 8;
+}
+
+void Mapper::visit(il::Call& instruction) {
+    const auto result_reg = return_register(instruction.result().type());
+    _add_register(instruction.result(), result_reg);
+    // Add the current call frame to the container.
+    _call_frames[&instruction] = _current_call_frame;
+
+    // Reset the current call frame to be empty.
+    _current_call_frame = { };
 }
 
 void Mapper::visit(il::Alloca& instruction) {

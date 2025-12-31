@@ -5,9 +5,14 @@
 
 using namespace arkoi::x86_64;
 
-static constexpr std::array INTEGER_REGISTERS{
+static constexpr std::array INTEGER_CALLEE_SAVED{
     Register::Base::B, Register::Base::R12, Register::Base::R13, Register::Base::R14,
     Register::Base::R15,
+};
+
+static constexpr std::array INTEGER_CALLER_SAVED{
+    Register::Base::A,  Register::Base::SI,  Register::Base::DI, Register::Base::R8,
+    Register::Base::R9, Register::Base::R10, Register::Base::R11
 };
 
 static constexpr std::array FLOATING_REGISTERS{
@@ -71,7 +76,7 @@ void RegisterAllocater::_simplify() {
 
             const auto is_floating = std::holds_alternative<sem::Floating>(node.type());
             if (is_floating && interferences.size() >= FLOATING_REGISTERS.size()) continue;
-            if (!is_floating && interferences.size() >= INTEGER_REGISTERS.size()) continue;
+            if (!is_floating && interferences.size() >= INTEGER_CALLEE_SAVED.size()) continue;
 
             stack.push(node);
             work_list.erase(node);
@@ -106,7 +111,7 @@ void RegisterAllocater::_simplify() {
                 break;
             }
         } else {
-            for (const auto base : INTEGER_REGISTERS) {
+            for (const auto base : INTEGER_CALLEE_SAVED) {
                 if (colors.contains(base)) continue;
                 _assigned[node] = base;
                 found = true;

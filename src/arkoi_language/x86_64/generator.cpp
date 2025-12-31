@@ -1,5 +1,7 @@
 #include "arkoi_language/x86_64/generator.hpp"
 
+#include <ranges>
+
 #include "arkoi_language/il/cfg.hpp"
 #include "arkoi_language/il/il_printer.hpp"
 #include "arkoi_language/utils/utils.hpp"
@@ -80,9 +82,11 @@ void Generator::visit(il::BasicBlock& block) {
         instruction.accept(printer);
 
         _directive(output.str(), _text);
-        if (instruction.span().has_value()) {
-            _debug_line(instruction.span().value());
+
+        if (!(std::holds_alternative<il::Argument>(instruction) || std::holds_alternative<il::Alloca>(instruction))) {
+            _debug_line(instruction);
         }
+
         instruction.accept(*this);
 
         // Whenever a call instruction is generated, reset the debug span so a new debug line will
@@ -540,74 +544,46 @@ void Generator::_bool_to_int(
 }
 
 void Generator::visit(il::Call& instruction) {
+    auto& [
+        integer,
+        floating,
+        stack,
+        stack_size
+    ] = current_mapper().call_frames().at(&instruction);
+
     const auto result = _load(instruction.result());
     const auto type = instruction.result().type();
 
-    const auto stack_size = _generate_arguments(instruction.arguments());
+    for (const auto& current : integer) {
+        _generate_argument(*current);
+    }
+
+    for (const auto& current : floating) {
+        _generate_argument(*current);
+    }
+
+    for (const auto& current : std::views::reverse(stack)) {
+        _generate_argument(*current);
+    }
 
     _call(instruction.name());
 
-    // We need to clean up the stack if there were some stack arguments.
     if (stack_size != 0) _add(RSP, stack_size);
 
     const auto return_reg = Mapper::return_register(type);
     _store(return_reg, result, type);
 }
 
-size_t Generator::_generate_arguments(const std::vector<il::Operand>& arguments) {
-    size_t integer = 0, floating = 0;
+void Generator::_generate_argument(il::Argument& argument) {
+    const auto result = _load(argument.result());
+    const auto source = _load(argument.source());
+    const auto type = argument.result().type();
 
-    // The first iteration is needed to calculate the stack arguments to allocate enough stack.
-    size_t arg_stack_size = 0;
-    for (auto& argument : arguments) {
-        const auto& type = argument.type();
-
-        if (std::holds_alternative<sem::Integral>(type) || std::holds_alternative<sem::Boolean>(type)) {
-            if (integer++ < INTEGER_ARGUMENT_REGISTERS.size()) continue;
-        } else if (std::holds_alternative<sem::Floating>(type)) {
-            if (floating++ < SSE_ARGUMENT_REGISTERS.size()) continue;
-        }
-
-        arg_stack_size += 8;
+    if (std::holds_alternative<Memory>(result)) {
+        _push(source);
+    } else {
+        _store(source, result, type);
     }
-
-    // Align the argument stack size to 16 bytes, so the stack alignment is always fulfilled.
-    arg_stack_size = Mapper::align_size(arg_stack_size);
-
-    // If there are stack arguments, make room for them.
-    if (arg_stack_size != 0) _sub(RSP, arg_stack_size);
-
-    // Reset the integer and floating counter.
-    integer = 0, floating = 0;
-    size_t stack = 0;
-
-    for (auto& argument : arguments) {
-        const auto& type = argument.type();
-        const auto source = _load(argument);
-
-        if (std::holds_alternative<sem::Integral>(type) || std::holds_alternative<sem::Boolean>(type)) {
-            if (integer < INTEGER_ARGUMENT_REGISTERS.size()) {
-                auto destination = Register(INTEGER_ARGUMENT_REGISTERS[integer], type.size());
-                _store(source, destination, type);
-                integer++;
-                continue;
-            }
-        } else if (std::holds_alternative<sem::Floating>(type)) {
-            if (floating < SSE_ARGUMENT_REGISTERS.size()) {
-                auto destination = Register(SSE_ARGUMENT_REGISTERS[floating], type.size());
-                _store(source, destination, type);
-                floating++;
-                continue;
-            }
-        }
-
-        const auto offset = static_cast<int64_t>(8 * stack);
-        auto memory = Memory(type.size(), RSP, offset);
-        _store(source, memory, type);
-        stack++;
-    }
-
-    return arg_stack_size;
 }
 
 void Generator::visit(il::If& instruction) {
@@ -670,10 +646,10 @@ Operand Generator::_load(const il::Operand& operand) {
                 return std::visit([](const auto& value) -> Immediate { return value; }, immediate);
             },
             [&](const il::Memory& memory) -> Operand {
-                return (*_current_mapper)[memory];
+                return current_mapper()[memory];
             },
             [&](const il::Variable& variable) -> Operand {
-                return (*_current_mapper)[variable];
+                return current_mapper()[variable];
             },
         },
         operand
@@ -732,7 +708,10 @@ void Generator::_directive(const std::string& directive, std::vector<AssemblyIte
     output.emplace_back(Directive(directive));
 }
 
-void Generator::_debug_line(const pretty_diagnostics::Span& span) {
+void Generator::_debug_line(const il::Instruction& instruction) {
+    if (!instruction.span().has_value()) return;
+
+    const auto span = instruction.span().value();
     if (_debug_span.has_value()) {
         if (_debug_span->start().row() == span.start().row()) return;
     }
@@ -779,6 +758,10 @@ void Generator::_movsx(const Operand& destination, const Operand& source) {
 
 void Generator::_mov(const Operand& destination, const Operand& source) {
     _text.emplace_back(Instruction(Instruction::Opcode::MOV, { destination, source }));
+}
+
+void Generator::_push(const Operand& source) {
+    _text.emplace_back(Instruction(Instruction::Opcode::PUSH, { source }));
 }
 
 void Generator::_addsd(const Operand& destination, const Operand& source) {
@@ -923,6 +906,11 @@ void Generator::_ret() {
 
 void Generator::_newline(std::vector<AssemblyItem>& output) {
     _directive("", output);
+}
+
+Mapper& Generator::current_mapper() const {
+    if (_current_mapper != nullptr) return *_current_mapper;
+    throw std::runtime_error("No mapper set.");
 }
 
 //==============================================================================

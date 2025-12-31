@@ -2,6 +2,7 @@
 
 namespace arkoi::il {
 class BasicBlock;
+class Argument;
 class Function;
 class Constant;
 class Module;
@@ -69,6 +70,13 @@ public:
      * @param instruction The `Cast` instruction to visit.
      */
     virtual void visit(Cast& instruction) = 0;
+
+    /**
+     * @brief Visits a `Argument` definition.
+     *
+     * @param argument The `Argument` to visit.
+     */
+    virtual void visit(Argument& argument) = 0;
 
     /**
      * @brief Visits a `Call` instruction.

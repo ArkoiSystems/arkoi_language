@@ -234,13 +234,17 @@ void Generator::visit(ast::Call& node) {
     const auto& function = std::get<sem::Function>(*node.name().symbol());
 
     std::vector<Operand> arguments;
-    for (const auto& argument : node.arguments()) {
+    for (size_t index = 0; index < node.arguments().size(); index++) {
+        const auto& parameter = function.parameters()[index];
+        const auto& argument = node.arguments()[index];
+
         // This will set _current_operand
         argument->accept(*this);
         auto expression = _current_operand;
 
-        auto variable = std::get<Variable>(expression);
-        arguments.emplace_back(std::move(variable));
+        auto result = _make_temporary(parameter->type());
+        _current_block->emplace_back<Argument>(result, expression, node.span());
+        arguments.emplace_back(result);
     }
 
     auto result = _make_temporary(function.return_type());

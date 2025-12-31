@@ -229,6 +229,13 @@ private:
     void _bool_to_int(const Operand& result, Operand source, const sem::Boolean& from, const sem::Integral& to);
 
     /**
+     * @brief This translation is getting done in `il::Call`.
+     *
+     * @param instruction The `il::Argument` node to visit.
+     */
+    void visit([[maybe_unused]] il::Argument& instruction) override { }
+
+    /**
      * @brief Translates a function call into machine code, adhering to the ABI.
      *
      * @param instruction The `il::Call` node to visit.
@@ -236,12 +243,11 @@ private:
     void visit(il::Call& instruction) override;
 
     /**
-     * @brief Prepares and emits code for passing arguments to a function call.
+     * @brief Translates a function call argument into machine code.
      *
-     * @param arguments The list of IL operands as arguments.
-     * @return The number of bytes pushed onto the stack for overflow arguments.
+     * @param argument The `il::Argument` to translate.
      */
-    size_t _generate_arguments(const std::vector<il::Operand>& arguments);
+    void _generate_argument(il::Argument &argument);
 
     /**
      * @brief Translates a conditional jump into machine code.
@@ -357,9 +363,9 @@ private:
      * @brief Emits a ".loc" directive that refers to the file and the given
      *        span location.
      *
-     * @param span The given span for the debug line output.
+     * @param instruction The given `il::Instruction` for the debug line output.
      */
-    void _debug_line(const pretty_diagnostics::Span& span);
+    void _debug_line(const il::Instruction& instruction);
 
     /**
      * @brief Emplace a label.
@@ -436,6 +442,13 @@ private:
      * @param source The source operand.
      */
     void _mov(const Operand& destination, const Operand& source);
+
+    /**
+     * @brief Emplace a PUSH instruction.
+     *
+     * @param source The source operand.
+     */
+    void _push(const Operand& source);
 
     /**
      * @brief Emplace an ADDSD instruction (scalar double-precision add).
@@ -705,6 +718,14 @@ private:
      * @param output The output in which the newline will be placed in.
      */
     static void _newline(std::vector<AssemblyItem>& output);
+
+    /**
+     * @brief Returns the current mapper which must be set at calling
+     *        time.
+     *
+     * @return Returns the current mapper.
+     */
+    [[nodiscard]] Mapper& current_mapper() const;
 
 private:
     std::optional<pretty_diagnostics::Span> _debug_span{ };

@@ -76,6 +76,11 @@ private:
     /**
      * @brief Delegates instruction printing to the internal `ILPrinter`.
      */
+    void visit(Argument& instruction) override { _printer.visit(instruction); }
+
+    /**
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
+     */
     void visit(Call& instruction) override { _printer.visit(instruction); }
 
     /**

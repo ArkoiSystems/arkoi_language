@@ -61,6 +61,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction::Opcode& opcode) {
         case Instruction::Opcode::JMP: return os << "jmp";
         case Instruction::Opcode::MOVSD: return os << "movsd";
         case Instruction::Opcode::MOVSS: return os << "movss";
+        case Instruction::Opcode::PUSH: return os << "push";
         default: return os;
     }
 }

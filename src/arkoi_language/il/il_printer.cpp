@@ -57,30 +57,23 @@ void ILPrinter::visit(Return& instruction) {
 }
 
 void ILPrinter::visit(Binary& instruction) {
-    _output << instruction.result() << " @" << instruction.result().type() << " = "
-        << to_string(instruction.op()) << " @" << instruction.op_type()
-        << " " << instruction.left() << ", " << instruction.right();
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = " << to_string(instruction.op()) << " @" << instruction.op_type();
+    _output << " " << instruction.left() << ", " << instruction.right();
 }
 
 void ILPrinter::visit(Cast& instruction) {
-    _output << instruction.result() << " @" << instruction.result().type() << " = cast @"
-        << instruction.from() << " " << instruction.source();
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = cast @" << instruction.from() << " " << instruction.source();
+}
+
+void ILPrinter::visit(Argument& argument) {
+    _output << "arg @" << argument.source().type() << " " << argument.source();
 }
 
 void ILPrinter::visit(Call& instruction) {
-    _output << instruction.result() << " @" << instruction.result().type()
-        << " = call " << instruction.name() << "(";
-
-    for (size_t index = 0; index < instruction.arguments().size(); index++) {
-        auto& argument = instruction.arguments()[index];
-        _output << argument;
-
-        if (index != instruction.arguments().size() - 1) {
-            _output << ", ";
-        }
-    }
-
-    _output << ")";
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = call " << instruction.name() << ", " << instruction.arguments().size();
 }
 
 void ILPrinter::visit(Goto& instruction) {
@@ -88,23 +81,30 @@ void ILPrinter::visit(Goto& instruction) {
 }
 
 void ILPrinter::visit(If& instruction) {
-    _output << "if " << instruction.condition() << " then " << instruction.branch() << " else " << instruction.next();
+    _output << "if " << instruction.condition();
+    _output << " then " << instruction.branch();
+    _output << " else " << instruction.next();
 }
 
 void ILPrinter::visit(Alloca& instruction) {
-    _output << instruction.result() << " @" << instruction.result().type() << " = alloca";
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = alloca";
 }
 
 void ILPrinter::visit(Store& instruction) {
-    _output << "store @" << instruction.result().type() << " " << instruction.source() << ", " << instruction.result();
+    _output << "store @" << instruction.result().type();
+    _output << " " << instruction.source();
+    _output << ", " << instruction.result();
 }
 
 void ILPrinter::visit(Load& instruction) {
-    _output << instruction.result() << " @" << instruction.result().type() << " = load " << instruction.source();
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = load " << instruction.source();
 }
 
 void ILPrinter::visit(Constant& instruction) {
-    _output << instruction.result() << " @" << instruction.result().type() << " = const " << instruction.immediate();
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = const " << instruction.immediate();
 }
 
 //==============================================================================

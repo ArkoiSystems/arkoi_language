@@ -381,7 +381,7 @@ public:
         std::optional<pretty_diagnostics::Span> span
     ) :
         _span(std::move(span)), _left(std::move(left)), _right(std::move(right)),
-        _result(std::move(result)), _op_type(std::move(op_type)), _op(op) { }
+        _op_type(std::move(op_type)), _result(std::move(result)), _op(op) { }
 
     /**
      * @brief Accepts a visitor to process this `Binary` instruction.
@@ -470,8 +470,8 @@ public:
 private:
     std::optional<pretty_diagnostics::Span> _span;
     Operand _left, _right;
-    Variable _result;
     sem::Type _op_type;
+    Variable _result;
     Operator _op;
 };
 
@@ -710,7 +710,7 @@ public:
      * @param span The source location of this instruction.
      */
     Store(Memory result, Operand source, std::optional<pretty_diagnostics::Span> span) :
-        _span(std::move(span)), _result(std::move(result)), _source(std::move(source)) { }
+        _span(std::move(span)), _source(std::move(source)), _result(std::move(result)) { }
 
     /**
      * @brief Accepts a visitor to process this `Store` instruction.
@@ -762,8 +762,8 @@ public:
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
-    Memory _result;
     Operand _source;
+    Memory _result;
 };
 
 /**
@@ -840,6 +840,70 @@ private:
     Variable _result;
 };
 
+class Argument final : public InstructionBase {
+public:
+    Argument(Variable result, Operand source, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _result(std::move(result)), _source(std::move(source)) { }
+
+    /**
+     * @brief Accepts a visitor to process this `Parameter` instruction.
+     *
+     * @param visitor The visitor to accept.
+     */
+    void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    /**
+     * @brief Checks if the instruction is constant.
+     *
+     * @return Always false for `Parameter`.
+     */
+    [[nodiscard]] bool is_constant() const override { return false; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * The span includes the starting and ending positions in the source file.
+     * There may be no span attached to this instruction, so this could also be
+     * std::nullopt.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+
+    /**
+     * @brief Returns the result variable defined by this instruction.
+     *
+     * @return A vector containing the `_result` variable.
+     */
+    [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
+
+    /**
+     * @brief Returns the source operand used by this instruction.
+     *
+     * @return A vector containing the `_source` operand.
+     */
+    [[nodiscard]] std::vector<Operand> uses() const override { return { _source }; }
+
+    /**
+     * @brief Returns the result operand.
+     *
+     * @return A reference to the `_result` variable.
+     */
+    [[nodiscard]] auto& result() { return _result; }
+
+    /**
+     * @brief Returns the source operand.
+     *
+     * @return A reference to the `_source` operand.
+     */
+    [[nodiscard]] auto& source() { return _source; }
+
+private:
+    std::optional<pretty_diagnostics::Span> _span;
+    Variable _result;
+    Operand _source;
+};
+
 /**
  * @brief A container for any IL instruction, implemented as a `std::variant`.
  *
@@ -849,7 +913,8 @@ private:
  */
 struct Instruction final : InstructionBase, std::variant<
                                Goto, If, Cast, Call, Return,
-                               Binary, Alloca, Store, Load, Constant
+                               Binary, Alloca, Store, Load, Constant,
+                               Argument
                            > {
     using variant::variant;
 

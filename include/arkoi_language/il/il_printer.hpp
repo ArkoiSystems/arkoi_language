@@ -70,6 +70,11 @@ public:
     void visit(Cast& instruction) override;
 
     /**
+     * @brief Prints a representation of a call argument.
+     */
+    void visit(Argument& argument) override;
+
+    /**
      * @brief Prints a `Call` instruction.
      */
     void visit(Call& instruction) override;

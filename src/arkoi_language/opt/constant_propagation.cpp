@@ -45,11 +45,10 @@ bool ConstantPropagation::_propagate(il::Instruction& target) {
             [&](il::Store& instruction) {
                 propagated |= _propagate(instruction.source());
             },
-            [&](il::Call& instruction) {
-                for (auto& argument : instruction.arguments()) {
-                    propagated |= _propagate(argument);
-                }
+            [&](il::Argument& instruction) {
+                propagated |= _propagate(instruction.source());
             },
+            [&](il::Call&) { },
             [&](il::Constant&) { },
             [&](il::Alloca&) { },
             [&](il::Load&) { },

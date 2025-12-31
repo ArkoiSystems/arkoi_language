@@ -9,6 +9,48 @@
 
 namespace arkoi::x86_64 {
 /**
+ * @brief Represents the arguments of a function call according to the calling convention.
+ */
+struct CallFrame {
+    /**
+     * @brief Arguments to be passed in integer registers.
+     *
+     * Stores pointers to IL arguments that are integer types (e.g., u32, s64)
+     * and will be assigned to the first available integer registers according
+     * to the calling convention (e.g., RDI, RSI, RDX, etc. on x86-64 SysV ABI).
+     */
+    std::vector<il::Argument *> integer{ };
+
+    /**
+     * @brief Arguments to be passed in floating-point registers.
+     *
+     * Stores pointers to IL arguments that are floating-point types (e.g., f32, f64)
+     * and will be assigned to the first available floating-point registers
+     * according to the calling convention (e.g., XMM0–XMM7 on x86-64 SysV ABI).
+     */
+    std::vector<il::Argument *> floating{ };
+
+    /**
+     * @brief Arguments that must be passed on the stack.
+     *
+     * Stores pointers to IL arguments that cannot fit into registers due to
+     * either exceeding the number of available registers or by calling convention rules.
+     * These arguments will be pushed onto the stack (in reverse order) before
+     * making the function call.
+     */
+    std::vector<il::Argument *> stack{ };
+
+    /**
+     * @brief Total size of the stack portion of the arguments.
+     *
+     * Represents the total number of bytes that need to be allocated on the
+     * stack to hold the stack arguments for this call. This is used to adjust
+     * the stack pointer during code generation and ensure proper alignment.
+     */
+    size_t stack_size{ 0 };
+};
+
+/**
  * @brief Visitor that maps abstract IL operands to physical x86-64 machine operands.
  *
  * `Mapper` is responsible for determining the storage location (register or
@@ -51,6 +93,13 @@ public:
     [[nodiscard]] auto& function() const { return _function; }
 
     /**
+     * @brief Returns all the call frames which got mapped.
+     *
+     * @return A unordered map of call frames associated with `il::Call` instructions.
+     */
+    [[nodiscard]] auto &call_frames() { return _call_frames; }
+
+    /**
      * @brief Determines the physical register used for returning a specific type.
      *
      * For example, integers are typically returned in `RAX`.
@@ -84,6 +133,13 @@ private:
     void visit(il::Function& function) override;
 
     /**
+     * @brief Places function parameters into their initial registers or stack slots.
+     *
+     * @param parameters The formal parameters of the function.
+     */
+    void _map_parameters(const std::vector<il::Variable>& parameters);
+
+    /**
      * @brief Maps all instructions within a basic block.
      *
      * @param block The `il::BasicBlock` node to visit.
@@ -112,18 +168,18 @@ private:
     void visit(il::Return& instruction) override;
 
     /**
+     * @brief Maps the call argument.
+     *
+     * @param argument The `il::Argument` node to visit.
+     */
+    void visit(il::Argument& argument) override;
+
+    /**
      * @brief Maps argument operands for a function call.
      *
      * @param instruction The `il::Call` node to visit.
      */
     void visit(il::Call& instruction) override;
-
-    /**
-     * @brief Places function parameters into their initial registers or stack slots.
-     *
-     * @param parameters The formal parameters of the function.
-     */
-    void _map_parameters(const std::vector<il::Variable>& parameters);
 
     /**
      * @brief Jumps do not define new operand mappings.
@@ -191,9 +247,11 @@ private:
     void _add_memory(const il::Variable& variable, const Memory& memory);
 
 private:
+    std::unordered_map<il::Call *, CallFrame> _call_frames{ };
     std::unordered_map<il::Operand, Operand> _mappings{ };
     RegisterAllocater::Mapping _precolored{ };
     OrderedSet<il::Operand> _locals{ };
+    CallFrame _current_call_frame{ };
     il::Function& _function;
 };
 } // namespace arkoi::x86_64
