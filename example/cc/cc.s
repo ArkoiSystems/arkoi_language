@@ -13,6 +13,7 @@ _start:
 .type main, @function
 main:
 	enter 16, 0
+	push rbx
 	# %01 @u32 = alloca
 	# arg @u32 1
 	# arg @u32 2
@@ -42,6 +43,7 @@ main:
 	# $29 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
 	# ret $29
+	pop rbx
 	leave
 	ret
 .size main, .-main

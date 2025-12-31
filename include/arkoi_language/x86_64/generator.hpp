@@ -451,6 +451,13 @@ private:
     void _push(const Operand& source);
 
     /**
+     * @brief Emplace a POP instruction.
+     *
+     * @param destination The destination operand.
+     */
+    void _pop(const Operand& destination);
+
+    /**
      * @brief Emplace an ADDSD instruction (scalar double-precision add).
      *
      * @param destination The destination operand.

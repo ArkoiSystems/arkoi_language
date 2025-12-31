@@ -2,15 +2,15 @@
 
 #include <ranges>
 
-#include "arkoi_language/x86_64/register_allocation.hpp"
-#include "arkoi_language/utils/utils.hpp"
 #include "arkoi_language/il/cfg.hpp"
+#include "arkoi_language/utils/utils.hpp"
+#include "arkoi_language/x86_64/register_allocation.hpp"
 
 using namespace arkoi::x86_64;
 using namespace arkoi;
 
 Mapper::Mapper(il::Function& function) :
-    _function(function) {
+    _register_allocator(function), _function(function) {
     function.accept(*this);
 }
 
@@ -71,9 +71,6 @@ void Mapper::visit(il::Module&) {
 void Mapper::visit(il::Function& function) {
     // --- Phase 1: Create the mappings and precoloring ---
 
-    // Clear the precolored mappings on every new function.
-    _precolored.clear();
-
     // Iterate over each block and their corresponding instructions
     // to map operands to their mapped x86_64 equivalent.
     for (auto& block : function) {
@@ -83,9 +80,9 @@ void Mapper::visit(il::Function& function) {
     _map_parameters(function.parameters());
 
     // --- Phase 2: Try to reduce locals by using register allocation ---
+    _register_allocator.run();
 
-    auto allocator = RegisterAllocater(function, _precolored);
-    for (const auto& [variable, base] : allocator.assigned()) {
+    for (const auto& [variable, base] : _register_allocator.assigned()) {
         const auto target = Register(base, variable.type().size());
         _add_register(variable, target);
     }
@@ -235,7 +232,7 @@ void Mapper::_add_local(const il::Operand& operand) {
 void Mapper::_add_register(const il::Variable& variable, const Register& reg) {
     _locals.erase(variable);
     _mappings.insert_or_assign(variable, reg);
-    _precolored.insert_or_assign(variable, reg.base());
+    _register_allocator.assigned().insert_or_assign(variable, reg.base());
 }
 
 void Mapper::_add_memory(const il::Variable& variable, const Memory& memory) {

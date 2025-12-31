@@ -25,12 +25,17 @@ public:
 
 public:
     /**
-     * @brief Constructs a `RegisterAllocater` and performs the allocation.
+     * @brief Constructs a `RegisterAllocater`.
      *
      * @param function The `il::Function` whose variables need allocation.
-     * @param precolored Initial assignments (e.g., for calling conventions).
      */
-    RegisterAllocater(il::Function& function, Mapping precolored);
+    explicit RegisterAllocater(il::Function& function) :
+        _function(function) { }
+
+    /**
+     * @brief Executing the entire register allocation.
+     */
+    void run();
 
     /**
      * @brief Returns the successful virtual-to-physical register assignments.
@@ -66,11 +71,11 @@ private:
     void _simplify();
 
 private:
-    il::DataflowAnalysis<il::InstructionLivenessAnalysis> _analysis;
-    InterferenceGraph<il::Variable> _graph;
-    std::vector<il::Variable> _spilled;
+    il::DataflowAnalysis<il::InstructionLivenessAnalysis> _analysis{ };
+    InterferenceGraph<il::Variable> _graph{ };
+    std::vector<il::Variable> _spilled{ };
     il::Function& _function;
-    Mapping _assigned;
+    Mapping _assigned{ };
 };
 } // namespace arkoi::x86_64
 

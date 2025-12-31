@@ -1,5 +1,5 @@
 fun main() @u32:
-    return factorial(4)
+    return factorial(7)
 
 fun factorial(n @u32) @u32:
     if n < 2:

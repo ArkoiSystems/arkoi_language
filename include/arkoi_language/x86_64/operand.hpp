@@ -261,6 +261,22 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Immediate& immed
 std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Operand& operand);
 
 namespace arkoi::x86_64 {
+static constexpr std::array INTEGER_CALLEE_SAVED{
+    Register::Base::B, Register::Base::R12, Register::Base::R13, Register::Base::R14,
+    Register::Base::R15,
+};
+
+static constexpr std::array INTEGER_CALLER_SAVED{
+    Register::Base::A, Register::Base::C, Register::Base::D, Register::Base::SI,
+    Register::Base::DI, Register::Base::R8, Register::Base::R9, Register::Base::R10,
+    Register::Base::R11
+};
+
+static constexpr std::array FLOATING_REGISTERS{
+    Register::Base::XMM8, Register::Base::XMM9, Register::Base::XMM12, Register::Base::XMM13,
+    Register::Base::XMM14, Register::Base::XMM15,
+};
+
 static constexpr std::array INTEGER_ARGUMENT_REGISTERS{
     Register::Base::DI, Register::Base::SI, Register::Base::D,
     Register::Base::C, Register::Base::R8, Register::Base::R9

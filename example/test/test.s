@@ -13,6 +13,7 @@ _start:
 .type main, @function
 main:
 	enter 16, 0
+	push rbx
 	# %01 @u64 = alloca
 	# arg @f64 5
 	# $07 @bool = call ok, 1
@@ -50,6 +51,7 @@ main:
 	# $25 @u64 = load %01
 	mov rax, QWORD PTR [rbp - 8]
 	# ret $25
+	pop rbx
 	leave
 	ret
 .size main, .-main
@@ -58,6 +60,7 @@ main:
 .type ok, @function
 ok:
 	enter 16, 0
+	push rbx
 	# %01 @bool = alloca
 	# %02 @f64 = alloca
 	# store @f64 foo1, %02
@@ -132,6 +135,7 @@ L6:
 	# $25 @bool = load %01
 	mov al, BYTE PTR [rbp - 1]
 	# ret $25
+	pop rbx
 	leave
 	ret
 .size ok, .-ok
@@ -139,6 +143,8 @@ L6:
 .global test1
 .type test1, @function
 test1:
+	push rbx
+	push r12
 	# %01 @f32 = alloca
 	# %02 @s32 = alloca
 	# %03 @f64 = alloca
@@ -224,12 +230,15 @@ L14:
 	# $26 @f32 = load %01
 	movss xmm0, DWORD PTR [rsp - 4]
 	# ret $26
+	pop r12
+	pop rbx
 	ret
 .size test1, .-test1
 
 .global test2
 .type test2, @function
 test2:
+	push rbx
 	# %01 @f32 = alloca
 	# %02 @s32 = alloca
 	# %03 @f64 = alloca
@@ -296,6 +305,7 @@ L16:
 	# $19 @f32 = load %01
 	movss xmm0, DWORD PTR [rsp - 4]
 	# ret $19
+	pop rbx
 	ret
 .size test2, .-test2
 

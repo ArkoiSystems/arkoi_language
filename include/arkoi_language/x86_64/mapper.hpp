@@ -100,6 +100,13 @@ public:
     [[nodiscard]] auto &call_frames() { return _call_frames; }
 
     /**
+     * @brief Returns the register allocator used for this mapping.
+     *
+     * @return A reference to the instance of the `RegisterAllocator`.
+     */
+    [[nodiscard]] auto &register_allocater() { return _register_allocator; }
+
+    /**
      * @brief Determines the physical register used for returning a specific type.
      *
      * For example, integers are typically returned in `RAX`.
@@ -249,7 +256,7 @@ private:
 private:
     std::unordered_map<il::Call *, CallFrame> _call_frames{ };
     std::unordered_map<il::Operand, Operand> _mappings{ };
-    RegisterAllocater::Mapping _precolored{ };
+    RegisterAllocater _register_allocator;
     OrderedSet<il::Operand> _locals{ };
     CallFrame _current_call_frame{ };
     il::Function& _function;

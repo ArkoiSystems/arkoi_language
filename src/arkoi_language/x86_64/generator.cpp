@@ -1,6 +1,7 @@
 #include "arkoi_language/x86_64/generator.hpp"
 
 #include <ranges>
+#include <set>
 
 #include "arkoi_language/il/cfg.hpp"
 #include "arkoi_language/il/il_printer.hpp"
@@ -61,15 +62,28 @@ void Generator::visit(il::Function& function) {
 }
 
 void Generator::visit(il::BasicBlock& block) {
-    // Reset the debug span every time a new basic block is being generated.
+    // Reset the debug span every time a new basic block is generated.
     _debug_span = { };
 
-    const auto stack_size = _current_mapper->stack_size();
 
-    if (_current_mapper->function().entry() == &block) {
+    if (current_mapper().function().entry() == &block) {
         // If we are in a leaf function and the stack size in less or equal to 128 bytes (redzone), we can skip the enter
         // instruction.
-        if (!_current_mapper->function().is_leaf() || stack_size > 128) _enter(stack_size);
+        const auto stack_size = current_mapper().stack_size();
+        if (!current_mapper().function().is_leaf() || stack_size > 128) _enter(stack_size);
+
+        auto &register_allocator = current_mapper().register_allocater();
+        const auto &assigned = register_allocator.assigned();
+
+        std::set<Register::Base> saved_registers;
+        for (const auto& base : assigned | std::views::values) {
+            const auto is_callee_saved = std::ranges::find(INTEGER_CALLEE_SAVED, base) != INTEGER_CALLEE_SAVED.end();
+            if (is_callee_saved) saved_registers.insert(base);
+        }
+
+        for (const auto &base : saved_registers) {
+            _push(Register(base, Size::QWORD));
+        }
     } else {
         // Just a normal block.
         _label(block.label());
@@ -96,10 +110,24 @@ void Generator::visit(il::BasicBlock& block) {
         }
     }
 
-    if (_current_mapper->function().exit() == &block) {
+    if (current_mapper().function().exit() == &block) {
+        auto &register_allocator = current_mapper().register_allocater();
+        const auto &assigned = register_allocator.assigned();
+
+        std::set<Register::Base> saved_registers;
+        for (const auto& base : assigned | std::views::values) {
+            const auto is_callee_saved = std::ranges::find(INTEGER_CALLEE_SAVED, base) != INTEGER_CALLEE_SAVED.end();
+            if (is_callee_saved) saved_registers.insert(base);
+        }
+
+        for (const auto &base : std::views::reverse(saved_registers)) {
+            _pop(Register(base, Size::QWORD));
+        }
+
         // If the function is not a leaf or the stack size exceeds 128 bytes, we need to restore the stack using the
         // leave instruction.
-        if (!_current_mapper->function().is_leaf() || stack_size > 128) _leave();
+        const auto stack_size = current_mapper().stack_size();
+        if (!current_mapper().function().is_leaf() || stack_size > 128) _leave();
 
         _ret();
     }
@@ -762,6 +790,10 @@ void Generator::_mov(const Operand& destination, const Operand& source) {
 
 void Generator::_push(const Operand& source) {
     _text.emplace_back(Instruction(Instruction::Opcode::PUSH, { source }));
+}
+
+void Generator::_pop(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::POP, { destination }));
 }
 
 void Generator::_addsd(const Operand& destination, const Operand& source) {

@@ -14,10 +14,10 @@ _start:
 main:
 	enter 16, 0
 	# %01 @u32 = alloca
-	# arg @u32 4
+	# arg @u32 7
 	# $05 @u32 = call factorial, 1
 	.loc 1 2 0
-	mov edi, 4
+	mov edi, 7
 	call factorial
 	# store @u32 $05, %01
 	.loc 1 2 0
@@ -33,6 +33,8 @@ main:
 .type factorial, @function
 factorial:
 	enter 16, 0
+	push rbx
+	push r12
 	# %01 @u32 = alloca
 	# %02 @u32 = alloca
 	# store @u32 n, %02
@@ -77,6 +79,8 @@ L3:
 	# $17 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
 	# ret $17
+	pop r12
+	pop rbx
 	leave
 	ret
 .size factorial, .-factorial
