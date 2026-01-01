@@ -56,9 +56,9 @@ factorial_recursive:
 	# $03 @u32 = load %02
 	.loc 1 5 0
 	mov ebx, DWORD PTR [rbp - 8]
-	# $06 @bool = lth @u32 $03, 2
-	cmp ebx, 2
-	setb bl
+	# $06 @bool = loe @u32 $03, 1
+	cmp ebx, 1
+	setbe bl
 	# if $06 then L4 else L5
 	test bl, bl
 	jnz L4
@@ -117,9 +117,9 @@ L9:
 	# $06 @u32 = load %02
 	.loc 1 12 0
 	mov ebx, DWORD PTR [rsp - 8]
-	# $09 @bool = gth @u32 $06, 1
-	cmp ebx, 1
-	seta bl
+	# $09 @bool = goe @u32 $06, 2
+	cmp ebx, 2
+	setae bl
 	# if $09 then L10 else L11
 	test bl, bl
 	jnz L10
