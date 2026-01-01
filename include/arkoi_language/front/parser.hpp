@@ -136,6 +136,14 @@ private:
     [[nodiscard]] std::unique_ptr<ast::If> _parse_if(const Token& keyword);
 
     /**
+     * @brief Parses a while statement.
+     *
+     * @param keyword The 'while' keyword token.
+     * @return A `std::unique_ptr` to the parsed `ast::While` node.
+     */
+    [[nodiscard]] std::unique_ptr<ast::While> _parse_while(const Token& keyword);
+
+    /**
      * @brief Parses an assignment statement.
      *
      * @param name The identifier being assigned to.

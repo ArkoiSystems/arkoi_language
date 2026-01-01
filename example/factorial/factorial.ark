@@ -1,8 +1,15 @@
 fun main() @u32:
-    return factorial(7)
+    return factorial_recursive(7) - factorial_while(7)
 
-fun factorial(n @u32) @u32:
+fun factorial_recursive(n @u32) @u32:
     if n < 2:
         return 1
     else:
-        return n * factorial(n - 1)
+        return n * factorial_recursive(n - 1)
+
+fun factorial_while(n @u32) @u32:
+    result @u32 = 1
+    while n > 1:
+        result = result * n
+        n = n - 1
+    return result
