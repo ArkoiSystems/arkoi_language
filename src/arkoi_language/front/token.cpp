@@ -40,6 +40,8 @@ std::optional<Token::Type> Token::lookup_keyword(const std::string_view& value) 
 
 std::optional<Token::Type> Token::lookup_special(const std::string_view& value) {
     static const std::unordered_map<std::string_view, Type> SPECIAL = {
+        { "!=", Type::NotEqual },
+        { "==", Type::Equal },
         { ">=", Type::GreaterEqual },
         { "<=", Type::LessEqual },
         { "(", Type::LParent },
@@ -52,7 +54,7 @@ std::optional<Token::Type> Token::lookup_special(const std::string_view& value) 
         { "*", Type::Asterisk },
         { ">", Type::GreaterThan },
         { "<", Type::LessThan },
-        { "=", Type::Equal },
+        { "=", Type::EqualSign },
         { ":", Type::Colon }
     };
 
@@ -106,9 +108,11 @@ std::ostream& operator<<(std::ostream& os, const Token::Type& type) {
         case Token::Type::Asterisk: return os << "Asterisk";
         case Token::Type::GreaterThan: return os << "GreaterThan";
         case Token::Type::LessThan: return os << "LessThan";
-        case Token::Type::Equal: return os << "Equal";
+        case Token::Type::EqualSign: return os << "Equal";
         case Token::Type::GreaterEqual: return os << "GreaterEqual";
         case Token::Type::LessEqual: return os << "LessEqual";
+        case Token::Type::Equal: return os << "Equal";
+        case Token::Type::NotEqual: return os << "NotEqual";
         case Token::Type::Colon: return os << "Colon";
 
         case Token::Type::EndOfFile: return os << "EndOfFile";

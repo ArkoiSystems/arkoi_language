@@ -12,6 +12,8 @@ Binary::Operator Binary::node_to_instruction(const ast::Binary::Operator op) {
         case ast::Binary::Operator::LessThan: return Operator::LessThan;
         case ast::Binary::Operator::GreaterEqual: return Operator::GreaterEqual;
         case ast::Binary::Operator::LessEqual: return Operator::LessEqual;
+        case ast::Binary::Operator::Equal: return Operator::Equal;
+        case ast::Binary::Operator::NotEqual: return Operator::NotEqual;
     }
 
     // As the -Wswitch flag is set, this will never be reached.
@@ -48,6 +50,8 @@ std::ostream& operator<<(std::ostream& os, const Binary::Operator& op) {
         case Binary::Operator::GreaterThan: return os << "gth";
         case Binary::Operator::GreaterEqual: return os << "goe";
         case Binary::Operator::LessEqual: return os << "loe";
+        case Binary::Operator::Equal: return os << "equ";
+        case Binary::Operator::NotEqual: return os << "neq";
     }
 
     // As the -Wswitch flag is set, this will never be reached.

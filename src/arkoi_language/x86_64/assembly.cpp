@@ -55,6 +55,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction::Opcode& opcode) {
         case Instruction::Opcode::CVTTSD2SI: return os << "cvttsd2si";
         case Instruction::Opcode::CVTTSS2SI: return os << "cvttss2si";
         case Instruction::Opcode::XORPS: return os << "xorps";
+        case Instruction::Opcode::SETE: return os << "sete";
         case Instruction::Opcode::SETNE: return os << "setne";
         case Instruction::Opcode::SETP: return os << "setp";
         case Instruction::Opcode::OR: return os << "or";
@@ -67,8 +68,9 @@ std::ostream& operator<<(std::ostream& os, const Instruction::Opcode& opcode) {
         case Instruction::Opcode::MOVSS: return os << "movss";
         case Instruction::Opcode::PUSH: return os << "push";
         case Instruction::Opcode::POP: return os << "pop";
-        default: std::unreachable();
     }
+
+    std::unreachable();
 }
 
 std::ostream& operator<<(std::ostream& os, const Instruction& instruction) {

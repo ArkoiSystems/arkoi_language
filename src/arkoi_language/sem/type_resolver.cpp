@@ -62,7 +62,6 @@ void TypeResolver::visit(ast::Immediate& node) {
         case ast::Immediate::Kind::Integer: return visit_integer(node);
         case ast::Immediate::Kind::Floating: return visit_floating(node);
         case ast::Immediate::Kind::Boolean: return visit_boolean(node);
-        default: throw std::runtime_error("This immediate type is not implemented yet.");
     }
 }
 
@@ -173,7 +172,9 @@ void TypeResolver::visit(ast::Binary& node) {
         case ast::Binary::Operator::GreaterThan:
         case ast::Binary::Operator::LessThan:
         case ast::Binary::Operator::GreaterEqual:
-        case ast::Binary::Operator::LessEqual: {
+        case ast::Binary::Operator::LessEqual:
+        case ast::Binary::Operator::Equal:
+        case ast::Binary::Operator::NotEqual: {
             _current_type = BOOL_TYPE;
             node.set_result_type(BOOL_TYPE);
             break;

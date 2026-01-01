@@ -60,9 +60,11 @@ public:
         Asterisk,     ///< '*'
         GreaterThan,  ///< '>'
         LessThan,     ///< '<'
-        Equal,        ///< '='
+        EqualSign,    ///< '='
         GreaterEqual, ///< '>='
         LessEqual,    ///< '<='
+        Equal,        ///< '=='
+        NotEqual,     ///< '!='
         Colon,        ///< ':'
 
         EndOfFile, ///< End of source input

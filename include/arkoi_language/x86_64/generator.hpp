@@ -162,6 +162,26 @@ private:
     void _loe(const Operand& result, Operand left, const Operand& right, const sem::Type& type);
 
     /**
+     * @brief Emits machine code for equal comparison.
+     *
+     * @param result The operand in which the result should be stored.
+     * @param left The left-hand operand to perform the equal.
+     * @param right The right-hand operand to perform the equal.
+     * @param type The type of the operands.
+     */
+    void _equ(const Operand& result, Operand left, const Operand& right, const sem::Type& type);
+
+    /**
+     * @brief Emits machine code for not equal comparison.
+     *
+     * @param result The operand in which the result should be stored.
+     * @param left The left-hand operand to perform the not equal.
+     * @param right The right-hand operand to perform the not equal.
+     * @param type The type of the operands.
+     */
+    void _neq(const Operand& result, Operand left, const Operand& right, const sem::Type& type);
+
+    /**
      * @brief Translates an IL type cast into machine code.
      *
      * @param instruction The `il::Cast` node to visit.
@@ -674,6 +694,13 @@ private:
      * @param second The second operand.
      */
     void _cmp(const Operand& first, const Operand& second);
+
+    /**
+     * @brief Emplace a SETE instruction (set byte if equal).
+     *
+     * @param destination The destination operand.
+     */
+    void _sete(const Operand& destination);
 
     /**
      * @brief Emplace a SETNE instruction (set byte if not equal).

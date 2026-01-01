@@ -94,7 +94,6 @@ void Generator::visit(ast::Immediate& node) {
         case ast::Immediate::Kind::Integer: return visit_integer(node);
         case ast::Immediate::Kind::Floating: return visit_floating(node);
         case ast::Immediate::Kind::Boolean: return visit_boolean(node);
-        default: throw std::runtime_error("This immediate type is not implemented yet.");
     }
 }
 

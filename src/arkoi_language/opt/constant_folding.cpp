@@ -42,8 +42,9 @@ il::Immediate ConstantFolding::_evaluate_cast(const sem::Type& to, auto expressi
                     case Size::WORD: return type.sign() ? static_cast<int16_t>(expression) : static_cast<uint16_t>(expression);
                     case Size::DWORD: return type.sign() ? static_cast<int32_t>(expression) : static_cast<uint32_t>(expression);
                     case Size::QWORD: return type.sign() ? static_cast<int64_t>(expression) : static_cast<uint64_t>(expression);
-                    default: std::unreachable();
                 }
+
+                std::unreachable();
             },
             [&](const sem::Floating& type) -> il::Immediate {
                 switch (type.size()) {

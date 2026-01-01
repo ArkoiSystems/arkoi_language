@@ -175,11 +175,18 @@ private:
     [[nodiscard]] std::unique_ptr<ast::Node> _parse_expression();
 
     /**
-     * @brief Parses comparison expressions (e.g., '>', '<').
+     * @brief Parses equality expressions (e.g., '==', '!=').
      *
-     * @return A unique_ptr to the parsed comparison node.
+     * @return A unique_ptr to the parsed equality node.
      */
-    [[nodiscard]] std::unique_ptr<ast::Node> _parse_comparison();
+    [[nodiscard]] std::unique_ptr<ast::Node> _parse_equality();
+
+    /**
+     * @brief Parses relational expressions (e.g., '>', '<').
+     *
+     * @return A unique_ptr to the parsed relational node.
+     */
+    [[nodiscard]] std::unique_ptr<ast::Node> _parse_relation();
 
     /**
      * @brief Parses term-level expressions (addition and subtraction).
@@ -284,13 +291,22 @@ private:
     [[nodiscard]] static bool _is_factor_operator(const Token& token);
 
     /**
-     * @brief Checks if a token is a comparison-level operator (>, <).
+     * @brief Checks if a token is a equality-level operator (==, !=).
      *
      * @param token The token to check.
      *
-     * @return True if it's a comparison operator, false otherwise.
+     * @return True if it's an equality operator, false otherwise.
      */
-    [[nodiscard]] static bool _is_comparison_operator(const Token& token);
+    [[nodiscard]] static bool _is_equality_operator(const Token& token);
+
+    /**
+     * @brief Checks if a token is a relational-level operator (>, <, <=, >=).
+     *
+     * @param token The token to check.
+     *
+     * @return True if it's a relational operator, false otherwise.
+     */
+    [[nodiscard]] static bool _is_relational_operator(const Token& token);
 
     /**
      * @brief Checks if a token is a term-level operator (+, -).

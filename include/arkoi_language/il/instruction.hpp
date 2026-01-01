@@ -365,6 +365,8 @@ public:
         LessThan,     ///< '<'
         GreaterEqual, ///< '>='
         LessEqual,    ///< '<='
+        Equal,        ///< '=='
+        NotEqual,     ///< '!='
     };
 
 public:

@@ -221,7 +221,7 @@ std::unique_ptr<ast::Node> Parser::_parse_block_statement() {
         auto& current = _current();
         if (current.type() == Token::Type::LParent) {
             result = _parse_call(consumed);
-        } else if (current.type() == Token::Type::Equal) {
+        } else if (current.type() == Token::Type::EqualSign) {
             result = _parse_assign(consumed);
         } else if (current.type() == Token::Type::At) {
             result = _parse_variable(consumed);
@@ -316,7 +316,7 @@ std::unique_ptr<ast::While> Parser::_parse_while(const Token& keyword) {
 std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token& name) {
     auto identifier = ast::Identifier(name, ast::Identifier::Kind::Variable, name.span());
 
-    _consume(Token::Type::Equal);
+    _consume(Token::Type::EqualSign);
 
     auto expression = _parse_expression();
 
@@ -330,7 +330,7 @@ std::unique_ptr<ast::Variable> Parser::_parse_variable(const Token& name) {
 
     auto [type, type_span] = _parse_type();
 
-    _consume(Token::Type::Equal);
+    _consume(Token::Type::EqualSign);
 
     auto expression = _parse_expression();
 
@@ -365,13 +365,29 @@ std::unique_ptr<ast::Call> Parser::_parse_call(const Token& name) {
 }
 
 std::unique_ptr<ast::Node> Parser::_parse_expression() {
-    return _parse_comparison();
+    return _parse_equality();
 }
 
-std::unique_ptr<ast::Node> Parser::_parse_comparison() {
+std::unique_ptr<ast::Node> Parser::_parse_equality() {
+    auto expression = _parse_relation();
+
+    while (auto op = _try_consume(_is_equality_operator)) {
+        auto type = _to_binary_operator(op.value());
+
+        auto rhs = _parse_relation();
+
+        const auto span = expression->span().join(rhs->span());
+
+        expression = std::make_unique<ast::Binary>(std::move(expression), type, std::move(rhs), span);
+    }
+
+    return expression;
+}
+
+std::unique_ptr<ast::Node> Parser::_parse_relation() {
     auto expression = _parse_term();
 
-    while (auto op = _try_consume(_is_comparison_operator)) {
+    while (auto op = _try_consume(_is_relational_operator)) {
         auto type = _to_binary_operator(op.value());
 
         auto rhs = _parse_term();
@@ -530,6 +546,8 @@ ast::Binary::Operator Parser::_to_binary_operator(const Token& token) {
         case Token::Type::LessThan: return ast::Binary::Operator::LessThan;
         case Token::Type::GreaterEqual: return ast::Binary::Operator::GreaterEqual;
         case Token::Type::LessEqual: return ast::Binary::Operator::LessEqual;
+        case Token::Type::Equal: return ast::Binary::Operator::Equal;
+        case Token::Type::NotEqual: return ast::Binary::Operator::NotEqual;
         default: std::unreachable();
     }
 }
@@ -538,7 +556,11 @@ bool Parser::_is_factor_operator(const Token& token) {
     return token.type() == Token::Type::Asterisk || token.type() == Token::Type::Slash;
 }
 
-bool Parser::_is_comparison_operator(const Token& token) {
+bool Parser::_is_equality_operator(const Token& token) {
+    return token.type() == Token::Type::Equal || token.type() == Token::Type::NotEqual;
+}
+
+bool Parser::_is_relational_operator(const Token& token) {
     return token.type() == Token::Type::GreaterThan || token.type() == Token::Type::LessThan
            || token.type() == Token::Type::LessEqual || token.type() == Token::Type::GreaterEqual;
 }
