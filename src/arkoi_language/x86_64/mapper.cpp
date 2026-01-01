@@ -204,11 +204,8 @@ void Mapper::visit(il::Argument& argument) {
 }
 
 void Mapper::visit(il::Call& instruction) {
-    const auto result_reg = return_register(instruction.result().type());
-    _add_register(instruction.result(), result_reg);
     // Add the current call frame to the container.
     _call_frames[&instruction] = _current_call_frame;
-
     // Reset the current call frame to be empty.
     _current_call_frame = { };
 }

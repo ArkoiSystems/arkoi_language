@@ -35,9 +35,9 @@ main:
 	push 7
 	call calling_convention
 	add rsp, 16
+	mov rbx, rax
 	# $28 @u32 = cast @u64 $27
 	.loc 1 3 0
-	mov ebx, eax
 	# store @u32 $28, %01
 	mov DWORD PTR [rbp - 4], ebx
 	# $29 @u32 = load %01

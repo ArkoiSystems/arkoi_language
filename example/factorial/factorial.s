@@ -14,26 +14,30 @@ _start:
 main:
 	enter 16, 0
 	push rbx
+	push r12
 	# %01 @u32 = alloca
 	# arg @u32 7
 	# $05 @u32 = call factorial_recursive, 1
 	.loc 1 2 0
 	mov edi, 7
 	call factorial_recursive
+	mov r12d, eax
 	# arg @u32 7
 	# $09 @u32 = call factorial_while, 1
 	.loc 1 2 0
 	mov edi, 7
 	call factorial_while
+	mov ebx, eax
 	# $10 @u32 = sub @u32 $05, $09
 	.loc 1 2 0
-	sub eax, eax
-	mov ebx, eax
+	sub r12d, ebx
+	mov ebx, r12d
 	# store @u32 $10, %01
 	mov DWORD PTR [rbp - 4], ebx
 	# $11 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
 	# ret $11
+	pop r12
 	pop rbx
 	leave
 	ret
@@ -71,9 +75,10 @@ L5:
 	# $15 @u32 = call factorial_recursive, 1
 	mov edi, ebx
 	call factorial_recursive
+	mov ebx, eax
 	# $16 @u32 = mul @u32 $09, $15
 	.loc 1 8 0
-	imul r12d, eax
+	imul r12d, ebx
 	mov ebx, r12d
 	# store @u32 $16, %01
 	mov DWORD PTR [rbp - 4], ebx

@@ -20,9 +20,10 @@ main:
 	.loc 1 3 0
 	movsd xmm0, QWORD PTR [float0]
 	call ok
+	mov bl, al
 	# $08 @u32 = cast @bool $07
 	.loc 1 3 0
-	movzx r10d, al
+	movzx r10d, bl
 	mov ebx, r10d
 	# $09 @u32 = mul @u32 1, $08
 	mov r10d, 1
@@ -37,10 +38,10 @@ main:
 	mov edi, ebx
 	movsd xmm0, QWORD PTR [float1]
 	call test1
+	movss xmm8, xmm0
 	# $20 @f32 = mul @f32 $18, 2.01
 	.loc 1 3 0
-	mulss xmm0, DWORD PTR [float2]
-	movss xmm8, xmm0
+	mulss xmm8, DWORD PTR [float2]
 	# $23 @f32 = sub @f32 $20, 42
 	subss xmm8, DWORD PTR [float3]
 	# $24 @u64 = cast @f32 $23
@@ -122,10 +123,11 @@ L6:
 	mov edi, ebx
 	movsd xmm0, xmm8
 	call test2
+	movss xmm8, xmm0
 	# $24 @bool = cast @f32 $23
 	.loc 1 9 0
 	xorps xmm11, xmm11
-	ucomiss xmm11, xmm0
+	ucomiss xmm11, xmm8
 	setne r10b
 	setp r11b
 	or r10b, r11b
