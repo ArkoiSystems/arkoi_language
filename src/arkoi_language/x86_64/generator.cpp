@@ -146,6 +146,8 @@ void Generator::visit(il::Binary& instruction) {
         case il::Binary::Operator::Div: return _div(result, left, right, type);
         case il::Binary::Operator::GreaterThan: return _gth(result, left, right, type);
         case il::Binary::Operator::LessThan: return _lth(result, left, right, type);
+        case il::Binary::Operator::GreaterEqual: return _goe(result, left, right, type);
+        case il::Binary::Operator::LessEqual: return _loe(result, left, right, type);
     }
 }
 
@@ -304,6 +306,56 @@ void Generator::_lth(const Operand& result, Operand left, const Operand& right, 
 
         const auto* integral = std::get_if<sem::Integral>(&type);
         const auto& instruction = (integral && integral->sign()) ? &Generator::_setl : &Generator::_setb;
+        (this->*instruction)(result);
+    }
+}
+
+void Generator::_goe(const Operand& result, Operand left, const Operand& right, const sem::Type& type) {
+    if (std::holds_alternative<sem::Floating>(type)) {
+        // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
+        // we just need to adjust the lhs to a register, which we always do.
+        // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
+        left = _adjust_to_reg(left, type);
+
+        // Depending on the size of the type, either choose ucomisd or ucomiss.
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
+        (this->*instruction)(left, right);
+
+        _setae(result);
+    } else {
+        // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
+        // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
+        left = _adjust_to_reg(left, type);
+
+        _cmp(left, right);
+
+        const auto* integral = std::get_if<sem::Integral>(&type);
+        const auto& instruction = (integral && integral->sign()) ? &Generator::_setge : &Generator::_setae;
+        (this->*instruction)(result);
+    }
+}
+
+void Generator::_loe(const Operand& result, Operand left, const Operand& right, const sem::Type& type) {
+    if (std::holds_alternative<sem::Floating>(type)) {
+        // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
+        // we just need to adjust the lhs to a register, which we always do.
+        // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
+        left = _adjust_to_reg(left, type);
+
+        // Depending on the size of the type, either choose ucomisd or ucomiss.
+        const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
+        (this->*instruction)(left, right);
+
+        _setbe(result);
+    } else {
+        // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
+        // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
+        left = _adjust_to_reg(left, type);
+
+        _cmp(left, right);
+
+        const auto* integral = std::get_if<sem::Integral>(&type);
+        const auto& instruction = (integral && integral->sign()) ? &Generator::_setle : &Generator::_setbe;
         (this->*instruction)(result);
     }
 }
@@ -904,16 +956,32 @@ void Generator::_setg(const Operand& destination) {
     _text.emplace_back(Instruction(Instruction::Opcode::SETG, { destination }));
 }
 
+void Generator::_setge(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETGE, { destination }));
+}
+
 void Generator::_seta(const Operand& destination) {
     _text.emplace_back(Instruction(Instruction::Opcode::SETA, { destination }));
+}
+
+void Generator::_setae(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETAE, { destination }));
 }
 
 void Generator::_setb(const Operand& destination) {
     _text.emplace_back(Instruction(Instruction::Opcode::SETB, { destination }));
 }
 
+void Generator::_setbe(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETBE, { destination }));
+}
+
 void Generator::_setl(const Operand& destination) {
     _text.emplace_back(Instruction(Instruction::Opcode::SETL, { destination }));
+}
+
+void Generator::_setle(const Operand& destination) {
+    _text.emplace_back(Instruction(Instruction::Opcode::SETLE, { destination }));
 }
 
 void Generator::_setp(const Operand& destination) {

@@ -50,18 +50,20 @@ public:
         While,  ///< 'while'
 
         // Special characters and operators
-        LParent,     ///< '('
-        RParent,     ///< ')'
-        At,          ///< '@'
-        Comma,       ///< ','
-        Plus,        ///< '+'
-        Minus,       ///< '-'
-        Slash,       ///< '/'
-        Asterisk,    ///< '*'
-        GreaterThan, ///< '>'
-        LessThan,    ///< '<'
-        Equal,       ///< '='
-        Colon,       ///< ':'
+        LParent,      ///< '('
+        RParent,      ///< ')'
+        At,           ///< '@'
+        Comma,        ///< ','
+        Plus,         ///< '+'
+        Minus,        ///< '-'
+        Slash,        ///< '/'
+        Asterisk,     ///< '*'
+        GreaterThan,  ///< '>'
+        LessThan,     ///< '<'
+        Equal,        ///< '='
+        GreaterEqual, ///< '>='
+        LessEqual,    ///< '<='
+        Colon,        ///< ':'
 
         EndOfFile, ///< End of source input
         Unknown,   ///< Unrecognized token
@@ -100,12 +102,12 @@ public:
     [[nodiscard]] static std::optional<Type> lookup_keyword(const std::string_view& value);
 
     /**
-     * @brief Determines the token type for a single special character.
+     * @brief Determines if a given string is a special character sequence.
      *
-     * @param value The character to check.
+     * @param value The string to check.
      * @return The corresponding `Type` if recognized, or `std::nullopt` otherwise.
      */
-    [[nodiscard]] static std::optional<Type> lookup_special(char value);
+    [[nodiscard]] static std::optional<Type> lookup_special(const std::string_view& value);
 
 private:
     pretty_diagnostics::Span _span;

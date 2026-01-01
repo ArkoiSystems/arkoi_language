@@ -528,6 +528,8 @@ ast::Binary::Operator Parser::_to_binary_operator(const Token& token) {
         case Token::Type::Minus: return ast::Binary::Operator::Sub;
         case Token::Type::GreaterThan: return ast::Binary::Operator::GreaterThan;
         case Token::Type::LessThan: return ast::Binary::Operator::LessThan;
+        case Token::Type::GreaterEqual: return ast::Binary::Operator::GreaterEqual;
+        case Token::Type::LessEqual: return ast::Binary::Operator::LessEqual;
         default: std::unreachable();
     }
 }
@@ -537,7 +539,8 @@ bool Parser::_is_factor_operator(const Token& token) {
 }
 
 bool Parser::_is_comparison_operator(const Token& token) {
-    return token.type() == Token::Type::GreaterThan || token.type() == Token::Type::LessThan;
+    return token.type() == Token::Type::GreaterThan || token.type() == Token::Type::LessThan
+           || token.type() == Token::Type::LessEqual || token.type() == Token::Type::GreaterEqual;
 }
 
 bool Parser::_is_term_operator(const Token& token) {

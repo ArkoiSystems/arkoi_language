@@ -171,7 +171,9 @@ void TypeResolver::visit(ast::Binary& node) {
     switch (node.op()) {
         // A logical operation always has the return result_type of BOOL_TYPE
         case ast::Binary::Operator::GreaterThan:
-        case ast::Binary::Operator::LessThan: {
+        case ast::Binary::Operator::LessThan:
+        case ast::Binary::Operator::GreaterEqual:
+        case ast::Binary::Operator::LessEqual: {
             _current_type = BOOL_TYPE;
             node.set_result_type(BOOL_TYPE);
             break;

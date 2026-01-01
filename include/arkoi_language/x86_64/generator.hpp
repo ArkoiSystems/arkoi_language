@@ -142,6 +142,26 @@ private:
     void _lth(const Operand& result, Operand left, const Operand& right, const sem::Type& type);
 
     /**
+     * @brief Emits machine code for greater-equal comparison.
+     *
+     * @param result The operand in which the result should be stored.
+     * @param left The left-hand operand to perform the greater-equal.
+     * @param right The right-hand operand to perform the greater-equal.
+     * @param type The type of the operands.
+     */
+    void _goe(const Operand& result, Operand left, const Operand& right, const sem::Type& type);
+
+    /**
+     * @brief Emits machine code for less-equal comparison.
+     *
+     * @param result The operand in which the result should be stored.
+     * @param left The left-hand operand to perform the less-equal.
+     * @param right The right-hand operand to perform the less-equal.
+     * @param type The type of the operands.
+     */
+    void _loe(const Operand& result, Operand left, const Operand& right, const sem::Type& type);
+
+    /**
      * @brief Translates an IL type cast into machine code.
      *
      * @param instruction The `il::Cast` node to visit.
@@ -670,11 +690,25 @@ private:
     void _setg(const Operand& destination);
 
     /**
+     * @brief Emplace a SETGE instruction (set byte if greater or equal, signed).
+     *
+     * @param destination The destination operand.
+     */
+    void _setge(const Operand& destination);
+
+    /**
      * @brief Emplace a SETA instruction (set byte if above, unsigned).
      *
      * @param destination The destination operand.
      */
     void _seta(const Operand& destination);
+
+    /**
+     * @brief Emplace a SETAE instruction (set byte if above or equal, unsigned).
+     *
+     * @param destination The destination operand.
+     */
+    void _setae(const Operand& destination);
 
     /**
      * @brief Emplace a SETB instruction (set byte if below, unsigned).
@@ -684,11 +718,25 @@ private:
     void _setb(const Operand& destination);
 
     /**
+     * @brief Emplace a SETBE instruction (set byte if below or equal, unsigned).
+     *
+     * @param destination The destination operand.
+     */
+    void _setbe(const Operand& destination);
+
+    /**
      * @brief Emplace a SETL instruction (set byte if less, signed).
      *
      * @param destination The destination operand.
      */
     void _setl(const Operand& destination);
+
+    /**
+     * @brief Emplace a SETLE instruction (set byte if less or equal, signed).
+     *
+     * @param destination The destination operand.
+     */
+    void _setle(const Operand& destination);
 
     /**
      * @brief Emplace a SETP instruction (set byte if parity).

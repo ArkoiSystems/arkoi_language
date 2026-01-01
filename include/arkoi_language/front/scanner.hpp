@@ -108,9 +108,22 @@ private:
     [[nodiscard]] pretty_diagnostics::Location _current_location() const;
 
     /**
-     * @brief Advances the internal pointer to the next character in the source.
+     * @brief Returns a view of the next characters from the current column.
+     *
+     * Returns up to `count` characters from the current position in the current line
+     * without advancing the scanner. The view will not go past the end of the line.
+     *
+     * @param count Number of characters to peek.
+     * @return std::string_view of the next characters, or empty if at line end.
      */
-    void _next();
+    [[nodiscard]] std::string_view _peek(size_t count) const;
+
+    /**
+     * @brief Advances the internal pointer to the next character in the source.
+     *
+     * @param count Number of characters to skip.
+     */
+    void _next(size_t count);
 
     /**
      * @brief Consumes a character if it matches the @p expected character.

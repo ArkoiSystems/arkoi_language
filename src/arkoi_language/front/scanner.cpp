@@ -51,11 +51,11 @@ std::vector<Token> Scanner::tokenize() {
             } catch (const UnexpectedChar& error) {
                 std::cerr << error.what() << std::endl;
                 _failed = true;
-                _next();
+                _next(1);
             } catch (const UnknownChar& error) {
                 std::cerr << error.what() << std::endl;
                 _failed = true;
-                _next();
+                _next(1);
             }
         }
 
@@ -105,7 +105,7 @@ Token Scanner::_lex_comment() {
     const auto start_location = _current_location();
 
     _consume('#');
-    while (!_is_eol()) _next();
+    while (!_is_eol()) _next(1);
 
     return { Token::Type::Comment, { _source, start_location, _current_location() } };
 }
@@ -198,13 +198,18 @@ Token Scanner::_lex_char() {
 Token Scanner::_lex_special() {
     const auto start_location = _current_location();
 
-    const auto current = _current_char();
-    if (auto special = Token::lookup_special(current)) {
-        _next();
-        return { *special, { _source, start_location, _current_location() } };
+    for (size_t length = 2; length > 0; length--) {
+        const auto view = _peek(length);
+
+        auto matched = Token::lookup_special(view);
+        if (!matched.has_value()) continue;
+
+        _next(length);
+
+        return { *matched, { _source, start_location, _current_location() } };
     }
 
-    throw UnknownChar(current);
+    throw UnknownChar(_current_char());
 }
 
 char Scanner::_current_char() const {
@@ -220,8 +225,14 @@ pretty_diagnostics::Location Scanner::_current_location() const {
     return _source->from_coords(_row, _column);
 }
 
-void Scanner::_next() {
-    _column += 1;
+std::string_view Scanner::_peek(const size_t count) const {
+    if (_column + count > _current_line.size()) return {};
+
+    return { _current_line.data() + _column, count };
+}
+
+void Scanner::_next(const size_t count) {
+    _column += count;
 }
 
 void Scanner::_consume(const char expected) {
@@ -238,7 +249,7 @@ char Scanner::_consume(const std::function<bool(char)>& predicate, const std::st
         throw UnexpectedChar(expected, current);
     }
 
-    _next();
+    _next(1);
 
     return current;
 }

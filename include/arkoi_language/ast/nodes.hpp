@@ -874,12 +874,14 @@ private:
 class Binary final : public Node {
 public:
 #define BINARY_OPERATOR_TYPES \
-    X(Add)             \
-    X(Sub)             \
-    X(Mul)             \
-    X(Div)             \
-    X(GreaterThan)     \
-    X(LessThan)
+    X(Add)                    \
+    X(Sub)                    \
+    X(Mul)                    \
+    X(Div)                    \
+    X(GreaterThan)            \
+    X(LessThan)               \
+    X(GreaterEqual)           \
+    X(LessEqual)
 
     /**
      * @brief Specifies the binary operator.

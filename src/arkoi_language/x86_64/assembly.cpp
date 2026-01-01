@@ -38,11 +38,15 @@ std::ostream& operator<<(std::ostream& os, const Instruction::Opcode& opcode) {
         case Instruction::Opcode::DIV: return os << "div";
         case Instruction::Opcode::UCOMISD: return os << "ucomisd";
         case Instruction::Opcode::UCOMISS: return os << "ucomiss";
-        case Instruction::Opcode::SETA: return os << "seta";
         case Instruction::Opcode::CMP: return os << "cmp";
+        case Instruction::Opcode::SETA: return os << "seta";
+        case Instruction::Opcode::SETAE: return os << "setae";
         case Instruction::Opcode::SETG: return os << "setg";
+        case Instruction::Opcode::SETGE: return os << "setge";
         case Instruction::Opcode::SETB: return os << "setb";
+        case Instruction::Opcode::SETBE: return os << "setbe";
         case Instruction::Opcode::SETL: return os << "setl";
+        case Instruction::Opcode::SETLE: return os << "setle";
         case Instruction::Opcode::CVTSS2SD: return os << "cvtss2sd";
         case Instruction::Opcode::CVTSD2SS: return os << "cvtsd2ss";
         case Instruction::Opcode::MOVSXD: return os << "movsxd";
@@ -63,7 +67,7 @@ std::ostream& operator<<(std::ostream& os, const Instruction::Opcode& opcode) {
         case Instruction::Opcode::MOVSS: return os << "movss";
         case Instruction::Opcode::PUSH: return os << "push";
         case Instruction::Opcode::POP: return os << "pop";
-        default: return os;
+        default: std::unreachable();
     }
 }
 

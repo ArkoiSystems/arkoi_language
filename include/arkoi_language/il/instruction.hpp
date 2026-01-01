@@ -357,12 +357,14 @@ public:
      * @brief Supported binary operators in the IL.
      */
     enum class Operator {
-        Add,         ///< '+'
-        Sub,         ///< '-'
-        Mul,         ///< '*'
-        Div,         ///< '/'
-        GreaterThan, ///< '>'
-        LessThan,    ///< '<'
+        Add,          ///< '+'
+        Sub,          ///< '-'
+        Mul,          ///< '*'
+        Div,          ///< '/'
+        GreaterThan,  ///< '>'
+        LessThan,     ///< '<'
+        GreaterEqual, ///< '>='
+        LessEqual,    ///< '<='
     };
 
 public:

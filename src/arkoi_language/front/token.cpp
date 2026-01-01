@@ -38,22 +38,30 @@ std::optional<Token::Type> Token::lookup_keyword(const std::string_view& value) 
     return std::nullopt;
 }
 
-std::optional<Token::Type> Token::lookup_special(const char value) {
-    switch (value) {
-        case '(': return Type::LParent;
-        case ')': return Type::RParent;
-        case '@': return Type::At;
-        case ',': return Type::Comma;
-        case '+': return Type::Plus;
-        case '-': return Type::Minus;
-        case '/': return Type::Slash;
-        case '*': return Type::Asterisk;
-        case '>': return Type::GreaterThan;
-        case '<': return Type::LessThan;
-        case '=': return Type::Equal;
-        case ':': return Type::Colon;
-        default: return std::nullopt;
+std::optional<Token::Type> Token::lookup_special(const std::string_view& value) {
+    static const std::unordered_map<std::string_view, Type> SPECIAL = {
+        { ">=", Type::GreaterEqual },
+        { "<=", Type::LessEqual },
+        { "(", Type::LParent },
+        { ")", Type::RParent },
+        { "@", Type::At },
+        { ",", Type::Comma },
+        { "+", Type::Plus },
+        { "-", Type::Minus },
+        { "/", Type::Slash },
+        { "*", Type::Asterisk },
+        { ">", Type::GreaterThan },
+        { "<", Type::LessThan },
+        { "=", Type::Equal },
+        { ":", Type::Colon }
+    };
+
+    const auto special = SPECIAL.find(value);
+    if (special != SPECIAL.end()) {
+        return { special->second };
     }
+
+    return std::nullopt;
 }
 
 std::ostream& operator<<(std::ostream& os, const Token::Type& type) {
@@ -99,6 +107,8 @@ std::ostream& operator<<(std::ostream& os, const Token::Type& type) {
         case Token::Type::GreaterThan: return os << "GreaterThan";
         case Token::Type::LessThan: return os << "LessThan";
         case Token::Type::Equal: return os << "Equal";
+        case Token::Type::GreaterEqual: return os << "GreaterEqual";
+        case Token::Type::LessEqual: return os << "LessEqual";
         case Token::Type::Colon: return os << "Colon";
 
         case Token::Type::EndOfFile: return os << "EndOfFile";
