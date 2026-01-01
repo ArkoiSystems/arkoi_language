@@ -16,7 +16,7 @@ L2:
   %02 @u32 = alloca
   store @u32 n, %02
   $03 @u32 = load %02
-  $06 @bool = loe @u32 $03, 1
+  $06 @bool = equ @u32 $03, 1
   if $06 then L4 else L5
 L5:
   $09 @u32 = load %02
@@ -43,7 +43,7 @@ L7:
   store @u32 1, %03
 L9:
   $06 @u32 = load %02
-  $09 @bool = goe @u32 $06, 2
+  $09 @bool = neq @u32 $06, 0
   if $09 then L10 else L11
 L10:
   $10 @u32 = load %03

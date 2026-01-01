@@ -80,63 +80,81 @@ L5:
 	# $09 @f64 = load %02
 	.loc 1 7 0
 	movsd xmm8, QWORD PTR [rbp - 9]
-	# $12 @bool = gth @f64 $09, 10
+	# $12 @bool = goe @f64 $09, 10
 	ucomisd xmm8, QWORD PTR [float5]
-	seta bl
+	setae bl
 	# if $12 then L7 else L8
 	test bl, bl
 	jnz L7
 	jmp L8
 L8:
-	# store @f64 21, %02
+	# $15 @f64 = load %02
 	.loc 1 8 0
-	movsd xmm10, QWORD PTR [float6]
+	movsd xmm8, QWORD PTR [rbp - 9]
+	# $18 @bool = neq @f64 $15, 0
+	ucomisd xmm8, QWORD PTR [float6]
+	setne bl
+	# if $18 then L10 else L11
+	test bl, bl
+	jnz L10
+	jmp L11
+L11:
+	# store @f64 21, %02
+	.loc 1 9 0
+	movsd xmm10, QWORD PTR [float7]
+	movsd QWORD PTR [rbp - 9], xmm10
+	# goto L6
+	jmp L6
+L10:
+	# store @f64 10, %02
+	.loc 1 8 0
+	movsd xmm10, QWORD PTR [float8]
 	movsd QWORD PTR [rbp - 9], xmm10
 	# goto L6
 	jmp L6
 L7:
 	# store @f64 20, %02
 	.loc 1 7 0
-	movsd xmm10, QWORD PTR [float7]
+	movsd xmm10, QWORD PTR [float9]
 	movsd QWORD PTR [rbp - 9], xmm10
 	# goto L6
 	jmp L6
 L4:
 	# store @f64 0, %02
 	.loc 1 6 0
-	movsd xmm10, QWORD PTR [float8]
+	movsd xmm10, QWORD PTR [float10]
 	movsd QWORD PTR [rbp - 9], xmm10
 	# goto L6
 	jmp L6
 L6:
-	# $19 @s32 = div @s32 4, 2
-	.loc 1 9 0
+	# $25 @s32 = div @s32 4, 2
+	.loc 1 10 0
 	mov eax, 4
 	mov r11d, 2
 	idiv r11d
 	mov ebx, eax
-	# arg @s32 $19
-	# $21 @f64 = load %02
+	# arg @s32 $25
+	# $27 @f64 = load %02
 	movsd xmm8, QWORD PTR [rbp - 9]
-	# arg @f64 $21
-	# $23 @f32 = call test2, 2
+	# arg @f64 $27
+	# $29 @f32 = call test2, 2
 	mov edi, ebx
 	movsd xmm0, xmm8
 	call test2
 	movss xmm8, xmm0
-	# $24 @bool = cast @f32 $23
-	.loc 1 9 0
+	# $30 @bool = cast @f32 $29
+	.loc 1 10 0
 	xorps xmm11, xmm11
 	ucomiss xmm11, xmm8
 	setne r10b
 	setp r11b
 	or r10b, r11b
 	mov bl, r10b
-	# store @bool $24, %01
+	# store @bool $30, %01
 	mov BYTE PTR [rbp - 1], bl
-	# $25 @bool = load %01
+	# $31 @bool = load %01
 	mov al, BYTE PTR [rbp - 1]
-	# ret $25
+	# ret $31
 	pop rbx
 	leave
 	ret
@@ -156,45 +174,72 @@ test1:
 	movsd QWORD PTR [rsp - 16], xmm0
 	# %04 @f32 = alloca
 	# store @f32 0, %04
-	.loc 1 12 0
-	movss xmm10, DWORD PTR [float9]
+	.loc 1 13 0
+	movss xmm10, DWORD PTR [float11]
 	movss DWORD PTR [rsp - 20], xmm10
 	# $06 @s32 = load %02
-	.loc 1 13 0
+	.loc 1 14 0
 	mov ebx, DWORD PTR [rsp - 8]
 	# $07 @f64 = cast @s32 $06
 	cvtsi2sd xmm10, ebx
-	movsd xmm9, xmm10
+	movsd xmm8, xmm10
 	# $08 @f64 = load %03
-	movsd xmm8, QWORD PTR [rsp - 16]
-	# $09 @bool = lth @f64 $07, $08
-	ucomisd xmm9, xmm8
-	setb bl
-	# if $09 then L12 else L13
+	movsd xmm9, QWORD PTR [rsp - 16]
+	# $09 @bool = loe @f64 $07, $08
+	ucomisd xmm8, xmm9
+	setbe bl
+	# if $09 then L15 else L16
 	test bl, bl
-	jnz L12
-	jmp L13
-L13:
+	jnz L15
+	jmp L16
+L16:
 	# $20 @s32 = load %02
-	.loc 1 14 0
+	.loc 1 15 0
 	mov ebx, DWORD PTR [rsp - 8]
 	# $21 @f64 = cast @s32 $20
 	cvtsi2sd xmm10, ebx
 	movsd xmm9, xmm10
 	# $22 @f64 = load %03
 	movsd xmm8, QWORD PTR [rsp - 16]
-	# $23 @f64 = mul @f64 $21, $22
+	# $23 @bool = equ @f64 $21, $22
+	ucomisd xmm9, xmm8
+	sete bl
+	# if $23 then L18 else L19
+	test bl, bl
+	jnz L18
+	jmp L19
+L19:
+	# $26 @s32 = load %02
+	.loc 1 16 0
+	mov ebx, DWORD PTR [rsp - 8]
+	# $27 @f64 = cast @s32 $26
+	cvtsi2sd xmm10, ebx
+	movsd xmm9, xmm10
+	# $28 @f64 = load %03
+	movsd xmm8, QWORD PTR [rsp - 16]
+	# $29 @f64 = mul @f64 $27, $28
 	mulsd xmm9, xmm8
 	movsd xmm8, xmm9
-	# $24 @f32 = cast @f64 $23
+	# $30 @f32 = cast @f64 $29
 	cvtsd2ss xmm8, xmm8
-	# store @f32 $24, %04
+	# store @f32 $30, %04
 	movss DWORD PTR [rsp - 20], xmm8
-	# goto L14
-	jmp L14
-L12:
+	# goto L17
+	jmp L17
+L18:
+	# $24 @s32 = load %02
+	.loc 1 15 0
+	mov ebx, DWORD PTR [rsp - 8]
+	# $25 @f32 = cast @s32 $24
+	cvtsi2ss xmm10, ebx
+	movss xmm8, xmm10
+	# store @f32 $25, %04
+	movss DWORD PTR [rsp - 20], xmm8
+	# goto L17
+	jmp L17
+L15:
 	# $10 @f64 = load %03
-	.loc 1 13 0
+	.loc 1 14 0
 	movsd xmm9, QWORD PTR [rsp - 16]
 	# $11 @s32 = load %02
 	mov ebx, DWORD PTR [rsp - 8]
@@ -221,17 +266,17 @@ L12:
 	cvtsd2ss xmm8, xmm8
 	# store @f32 $19, %04
 	movss DWORD PTR [rsp - 20], xmm8
-	# goto L14
-	jmp L14
-L14:
-	# $25 @f32 = load %04
-	.loc 1 15 0
+	# goto L17
+	jmp L17
+L17:
+	# $31 @f32 = load %04
+	.loc 1 17 0
 	movss xmm8, DWORD PTR [rsp - 20]
-	# store @f32 $25, %01
+	# store @f32 $31, %01
 	movss DWORD PTR [rsp - 4], xmm8
-	# $26 @f32 = load %01
+	# $32 @f32 = load %01
 	movss xmm0, DWORD PTR [rsp - 4]
-	# ret $26
+	# ret $32
 	pop r12
 	pop rbx
 	ret
@@ -249,23 +294,23 @@ test2:
 	# store @f64 bar, %03
 	movsd QWORD PTR [rsp - 16], xmm0
 	# $04 @s32 = load %02
-	.loc 1 18 0
+	.loc 1 20 0
 	mov ebx, DWORD PTR [rsp - 8]
 	# $05 @f64 = cast @s32 $04
 	cvtsi2sd xmm10, ebx
-	movsd xmm9, xmm10
+	movsd xmm8, xmm10
 	# $06 @f64 = load %03
-	movsd xmm8, QWORD PTR [rsp - 16]
+	movsd xmm9, QWORD PTR [rsp - 16]
 	# $07 @bool = lth @f64 $05, $06
-	ucomisd xmm9, xmm8
+	ucomisd xmm8, xmm9
 	setb bl
-	# if $07 then L17 else L18
+	# if $07 then L23 else L24
 	test bl, bl
-	jnz L17
-	jmp L18
-L18:
+	jnz L23
+	jmp L24
+L24:
 	# $13 @s32 = load %02
-	.loc 1 19 0
+	.loc 1 21 0
 	mov ebx, DWORD PTR [rsp - 8]
 	# $14 @f64 = cast @s32 $13
 	cvtsi2sd xmm10, ebx
@@ -277,33 +322,32 @@ L18:
 	# store @f64 $16, %03
 	movsd QWORD PTR [rsp - 16], xmm8
 	# $17 @f64 = load %03
-	.loc 1 20 0
+	.loc 1 22 0
 	movsd xmm8, QWORD PTR [rsp - 16]
 	# $18 @f32 = cast @f64 $17
 	cvtsd2ss xmm8, xmm8
 	# store @f32 $18, %01
 	movss DWORD PTR [rsp - 4], xmm8
-	# goto L16
-	jmp L16
-L17:
+	# goto L22
+	jmp L22
+L23:
 	# $08 @f64 = load %03
-	.loc 1 18 0
-	movsd xmm9, QWORD PTR [rsp - 16]
+	.loc 1 20 0
+	movsd xmm8, QWORD PTR [rsp - 16]
 	# $09 @s32 = load %02
 	mov ebx, DWORD PTR [rsp - 8]
 	# $10 @f64 = cast @s32 $09
 	cvtsi2sd xmm10, ebx
-	movsd xmm8, xmm10
+	movsd xmm9, xmm10
 	# $11 @f64 = mul @f64 $08, $10
-	mulsd xmm9, xmm8
-	movsd xmm8, xmm9
+	mulsd xmm8, xmm9
 	# $12 @f32 = cast @f64 $11
 	cvtsd2ss xmm8, xmm8
 	# store @f32 $12, %01
 	movss DWORD PTR [rsp - 4], xmm8
-	# goto L16
-	jmp L16
-L16:
+	# goto L22
+	jmp L22
+L22:
 	# $19 @f32 = load %01
 	movss xmm0, DWORD PTR [rsp - 4]
 	# ret $19
@@ -318,7 +362,9 @@ L16:
 	float3: .float	42.000000
 	float4: .double	5.000000
 	float5: .double	10.000000
-	float6: .double	21.000000
-	float7: .double	20.000000
-	float8: .double	0.000000
-	float9: .float	0.000000
+	float6: .double	0.000000
+	float7: .double	21.000000
+	float8: .double	10.000000
+	float9: .double	20.000000
+	float10: .double	0.000000
+	float11: .float	0.000000

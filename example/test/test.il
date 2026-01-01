@@ -27,10 +27,17 @@ L2:
   if $06 then L4 else L5
 L5:
   $09 @f64 = load %02
-  $12 @bool = gth @f64 $09, 10
+  $12 @bool = goe @f64 $09, 10
   if $12 then L7 else L8
 L8:
+  $15 @f64 = load %02
+  $18 @bool = neq @f64 $15, 0
+  if $18 then L10 else L11
+L11:
   store @f64 21, %02
+  goto L6
+L10:
+  store @f64 10, %02
   goto L6
 L7:
   store @f64 20, %02
@@ -39,18 +46,18 @@ L4:
   store @f64 0, %02
   goto L6
 L6:
-  $19 @s32 = div @s32 4, 2
-  arg @s32 $19
-  $21 @f64 = load %02
-  arg @f64 $21
-  $23 @f32 = call test2, 2
-  $24 @bool = cast @f32 $23
-  store @bool $24, %01
-  $25 @bool = load %01
-  ret $25
+  $25 @s32 = div @s32 4, 2
+  arg @s32 $25
+  $27 @f64 = load %02
+  arg @f64 $27
+  $29 @f32 = call test2, 2
+  $30 @bool = cast @f32 $29
+  store @bool $30, %01
+  $31 @bool = load %01
+  ret $31
 
 fun test1(foo2 @s32, bar @f64) @f32:
-L10:
+L13:
   %01 @f32 = alloca
   %02 @s32 = alloca
   %03 @f64 = alloca
@@ -61,17 +68,28 @@ L10:
   $06 @s32 = load %02
   $07 @f64 = cast @s32 $06
   $08 @f64 = load %03
-  $09 @bool = lth @f64 $07, $08
-  if $09 then L12 else L13
-L13:
+  $09 @bool = loe @f64 $07, $08
+  if $09 then L15 else L16
+L16:
   $20 @s32 = load %02
   $21 @f64 = cast @s32 $20
   $22 @f64 = load %03
-  $23 @f64 = mul @f64 $21, $22
-  $24 @f32 = cast @f64 $23
-  store @f32 $24, %04
-  goto L14
-L12:
+  $23 @bool = equ @f64 $21, $22
+  if $23 then L18 else L19
+L19:
+  $26 @s32 = load %02
+  $27 @f64 = cast @s32 $26
+  $28 @f64 = load %03
+  $29 @f64 = mul @f64 $27, $28
+  $30 @f32 = cast @f64 $29
+  store @f32 $30, %04
+  goto L17
+L18:
+  $24 @s32 = load %02
+  $25 @f32 = cast @s32 $24
+  store @f32 $25, %04
+  goto L17
+L15:
   $10 @f64 = load %03
   $11 @s32 = load %02
   $12 @f64 = cast @s32 $11
@@ -83,15 +101,15 @@ L12:
   $18 @f64 = add @f64 $13, $17
   $19 @f32 = cast @f64 $18
   store @f32 $19, %04
-  goto L14
-L14:
-  $25 @f32 = load %04
-  store @f32 $25, %01
-  $26 @f32 = load %01
-  ret $26
+  goto L17
+L17:
+  $31 @f32 = load %04
+  store @f32 $31, %01
+  $32 @f32 = load %01
+  ret $32
 
 fun test2(foo2 @s32, bar @f64) @f32:
-L15:
+L21:
   %01 @f32 = alloca
   %02 @s32 = alloca
   %03 @f64 = alloca
@@ -101,8 +119,8 @@ L15:
   $05 @f64 = cast @s32 $04
   $06 @f64 = load %03
   $07 @bool = lth @f64 $05, $06
-  if $07 then L17 else L18
-L18:
+  if $07 then L23 else L24
+L24:
   $13 @s32 = load %02
   $14 @f64 = cast @s32 $13
   $15 @f64 = load %03
@@ -111,16 +129,16 @@ L18:
   $17 @f64 = load %03
   $18 @f32 = cast @f64 $17
   store @f32 $18, %01
-  goto L16
-L17:
+  goto L22
+L23:
   $08 @f64 = load %03
   $09 @s32 = load %02
   $10 @f64 = cast @s32 $09
   $11 @f64 = mul @f64 $08, $10
   $12 @f32 = cast @f64 $11
   store @f32 $12, %01
-  goto L16
-L16:
+  goto L22
+L22:
   $19 @f32 = load %01
   ret $19
 

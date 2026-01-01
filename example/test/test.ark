@@ -3,15 +3,17 @@ fun main() @u64:
     return test1((true * ok(5.0)) + true, 10.5) * 2.01 - '*'
 
 fun ok(foo1 @f64) @bool:
-    if foo1 > 5.0:       foo1 = 0.0
-    else if foo1 > 10.0: foo1 = 20.0
-    else:                foo1 = 21.0
+    if foo1 > 5.0:        foo1 = 0.0
+    else if foo1 >= 10.0: foo1 = 20.0
+    else if foo1 != 0.0:  foo1 = 10.0
+    else:                 foo1 = 21.0
     return test2(4 / 2, foo1)
 
 fun test1(foo2 @s32, bar @f64) @f32:
     result @f32 = 0.0
-    if foo2 < bar: result = (bar * foo2) + (foo2 < foo2)
-    else:          result = foo2 * bar
+    if foo2 <= bar:      result = (bar * foo2) + (foo2 < foo2)
+    else if foo2 == bar: result = foo2
+    else:                result = foo2 * bar
     return result
 
 fun test2(foo2 @s32, bar @f64) @f32:
