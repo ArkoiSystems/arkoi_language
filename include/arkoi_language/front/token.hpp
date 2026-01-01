@@ -47,6 +47,7 @@ public:
         Bool,   ///< 'bool'
         True,   ///< 'true'
         False,  ///< 'false'
+        While,  ///< 'while'
 
         // Special characters and operators
         LParent,     ///< '('

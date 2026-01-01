@@ -265,6 +265,23 @@ void TypeResolver::visit(ast::If& node) {
     if (node.next()) node.next()->accept(*this);
 }
 
+void TypeResolver::visit(ast::While& node) {
+    // This will set _current_type
+    node.condition()->accept(*this);
+    const auto type = _current_type.value();
+
+    if (!_can_implicit_convert(type, BOOL_TYPE)) {
+        throw std::runtime_error("Return statement has a wrong return op.");
+    }
+
+    if (!std::holds_alternative<Boolean>(type)) {
+        auto casted_condition = _cast(node.condition(), type, BOOL_TYPE);
+        node.set_condition(std::move(casted_condition));
+    }
+
+    node.then()->accept(*this);
+}
+
 // https://en.cppreference.com/w/cpp/language/usual_arithmetic_conversions
 Type TypeResolver::_arithmetic_conversion(const Type& left_type, const Type& right_type) {
     const auto* floating_left = std::get_if<Floating>(&left_type);

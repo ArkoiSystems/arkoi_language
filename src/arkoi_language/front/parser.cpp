@@ -230,8 +230,11 @@ std::unique_ptr<ast::Node> Parser::_parse_block_statement() {
     } else if (consumed.type() == Token::Type::If) {
         result = _parse_if(consumed);
         // Don't need to consume a newline, as the then node already parsed it
+    } else if (consumed.type() == Token::Type::While) {
+        result = _parse_while(consumed);
+        // Don't need to consume a newline, as the then node already parsed it
     } else {
-        throw UnexpectedToken("return, if, assign or call", consumed);
+        throw UnexpectedToken("return, if, while, assign or call", consumed);
     }
 
     return result;
@@ -291,6 +294,23 @@ std::unique_ptr<ast::If> Parser::_parse_if(const Token& keyword) {
     span = keyword.span().join(_next->span());
 
     return std::make_unique<ast::If>(std::move(expression), std::move(branch), std::move(_next), span);
+}
+
+std::unique_ptr<ast::While> Parser::_parse_while(const Token& keyword) {
+    auto expression = _parse_expression();
+
+    _consume(Token::Type::Colon);
+
+    std::unique_ptr<ast::Node> then;
+    if (_try_consume(Token::Type::Newline)) {
+        then = _parse_block();
+    } else {
+        then = _parse_block_statement();
+    }
+
+    auto span = keyword.span().join(then->span());
+
+    return std::make_unique<ast::While>(std::move(expression), std::move(then), span);
 }
 
 std::unique_ptr<ast::Assign> Parser::_parse_assign(const Token& name) {

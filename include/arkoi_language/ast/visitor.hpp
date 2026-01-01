@@ -10,6 +10,7 @@ class Program;
 class Assign;
 class Return;
 class Binary;
+class While;
 class Block;
 class Cast;
 class Call;
@@ -120,6 +121,13 @@ public:
      * @param node The `If` node representing an if-else statement.
      */
     virtual void visit(If& node) = 0;
+
+    /**
+     * @brief Visits an `While` node.
+     *
+     * @param node The `While` node representing a while statement.
+     */
+    virtual void visit(While& node) = 0;
 };
 } // namespace arkoi::ast
 

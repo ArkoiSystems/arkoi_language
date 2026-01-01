@@ -160,6 +160,13 @@ private:
     void visit(ast::If& node) override;
 
     /**
+     * @brief Resolves types within a while statement.
+     *
+     * @param node The `While` node to visit.
+     */
+    void visit(ast::While& node) override;
+
+    /**
      * @brief Determines the common result type for an operation between two types.
      *
      * @param left_type The type of the left operand.

@@ -142,6 +142,13 @@ private:
     void visit(ast::If& node) override;
 
     /**
+     * @brief Resolves names within a while statement.
+     *
+     * @param node The `ast::While` node to visit.
+     */
+    void visit(ast::While& node) override;
+
+    /**
      * @brief Validates that a name is NOT yet defined in the current scope.
      *
      * @tparam Type The symbol kind to create.

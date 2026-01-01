@@ -27,6 +27,7 @@ std::optional<Token::Type> Token::lookup_keyword(const std::string_view& value) 
         { "bool", Type::Bool },
         { "true", Type::True },
         { "false", Type::False },
+        { "while", Type::While },
     };
 
     const auto keyword = KEYWORDS.find(value);
@@ -85,6 +86,7 @@ std::ostream& operator<<(std::ostream& os, const Token::Type& type) {
         case Token::Type::Bool: return os << "bool";
         case Token::Type::True: return os << "true";
         case Token::Type::False: return os << "false";
+        case Token::Type::While: return os << "while";
 
         case Token::Type::LParent: return os << "LParent";
         case Token::Type::RParent: return os << "RParent";

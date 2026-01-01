@@ -164,6 +164,13 @@ void ASTPrinter::visit(If& node) {
     print_child([&] { node.next()->accept(*this); }, node.next() != nullptr);
 }
 
+void ASTPrinter::visit(While& node) {
+    _output << "While" << std::endl;
+
+    print_child([&] { node.condition()->accept(*this); }, false);
+    print_child([&] { node.then()->accept(*this); }, true);
+}
+
 //==============================================================================
 // BSD 3-Clause License
 //

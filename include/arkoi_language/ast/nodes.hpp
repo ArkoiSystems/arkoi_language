@@ -526,6 +526,67 @@ private:
     pretty_diagnostics::Span _span;
 };
 
+
+/**
+ * @brief Represents a while statement.
+ */
+class While final : public Node {
+public:
+    /**
+     * @brief Constructs an `While` node.
+     *
+     * @param condition The condition expression.
+     * @param then The node that gets executed if the condition is true.
+     * @param span The source code span of the entire while statement.
+     */
+    While(
+        std::unique_ptr<Node>&& condition,
+        std::unique_ptr<Node>&& then,
+        pretty_diagnostics::Span span
+    ) : _condition(std::move(condition)), _span(std::move(span)),
+        _then(std::move(then)) { }
+
+    /**
+     * @brief Accepts a visitor to process this `If` node.
+     *
+     * @param visitor The visitor to accept.
+     */
+    void accept(Visitor& visitor) override { visitor.visit(*this); }
+
+    /**
+     * @brief Returns the source code span of the while statement.
+     *
+     * @return The `pretty_diagnostics::Span` of the while statement.
+     */
+    [[nodiscard]] pretty_diagnostics::Span span() const override { return _span; }
+
+    /**
+     * @brief Returns the node that is getting executed if the condition is true.
+     *
+     * @return A constant reference to the unique pointer of the `Node`.
+     */
+    [[nodiscard]] auto& then() const { return _then; }
+
+    /**
+     * @brief Returns the condition expression.
+     *
+     * @return A reference to the unique pointer of the condition `Node`.
+     */
+    [[nodiscard]] auto& condition() { return _condition; }
+
+    /**
+     * @brief Sets the condition expression.
+     *
+     * @param condition The condition `Node` to set.
+     */
+    void set_condition(std::unique_ptr<Node>&& condition) { _condition = std::move(condition); }
+
+private:
+    std::unique_ptr<Node> _condition;
+    pretty_diagnostics::Span _span;
+    std::unique_ptr<Node> _then;
+};
+
 /**
  * @brief Represents an assignment statement.
  *

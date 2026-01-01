@@ -141,6 +141,13 @@ public:
     void visit(If& node) override;
 
     /**
+     * @brief Prints a representation of the `While` node.
+     *
+     * @param node The `While` node to visit.
+     */
+    void visit(While& node) override;
+
+    /**
      * @brief Returns the output stream containing the formatted tree.
      *
      * @return A constant reference to the internal `std::stringstream`.

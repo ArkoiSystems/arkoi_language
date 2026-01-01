@@ -313,6 +313,42 @@ void Generator::visit(ast::If& node) {
     }
 }
 
+void Generator::visit(ast::While& node) {
+    auto condition_label = _make_label_symbol();
+    auto* condition_block = _current_function->emplace_back(condition_label);
+
+    auto loop_label = _make_label_symbol();
+    auto* loop_block = _current_function->emplace_back(loop_label);
+
+    auto after_label = _make_label_symbol();
+    auto* after_block = _current_function->emplace_back(after_label);
+
+    { // Entrance block
+        _current_block->set_next(condition_block);
+        _current_block = condition_block;
+
+        // This will set _current_operand
+        node.condition()->accept(*this);
+        auto condition = _current_operand;
+
+        _current_block->emplace_back<If>(condition, after_label, loop_label, node.condition()->span());
+
+        _current_block->set_next(after_block);
+        _current_block->set_branch(loop_block);
+    }
+
+    { // Then block
+        _current_block = loop_block;
+
+        node.then()->accept(*this);
+
+        _current_block->emplace_back<Goto>(condition_label, std::nullopt);
+        _current_block->set_next(condition_block);
+    }
+
+    _current_block = after_block;
+}
+
 std::string Generator::_make_label_symbol() {
     return "L" + to_string(_label_index++);
 }

@@ -118,6 +118,11 @@ private:
     void visit(ast::If& node) override;
 
     /**
+     * @brief Processes a while statement, creating labels and branches in the CFG.
+     */
+    void visit(ast::While& node) override;
+
+    /**
      * @brief Generates a unique symbolic label name (e.g., "L1").
      *
      * @return A new unique label string.

@@ -119,6 +119,12 @@ void NameResolver::visit(ast::If& node) {
     if (node.next()) node.next()->accept(*this);
 }
 
+void NameResolver::visit(ast::While& node) {
+    node.condition()->accept(*this);
+
+    node.then()->accept(*this);
+}
+
 //==============================================================================
 // BSD 3-Clause License
 //
