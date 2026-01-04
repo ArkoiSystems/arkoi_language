@@ -154,38 +154,45 @@ void TypeResolver::visit(ast::Binary& node) {
     node.right()->accept(*this);
     const auto right = _current_type.value();
 
-    auto op_type = _arithmetic_conversion(left, right);
-    node.set_op_type(op_type);
-
-    if (left != op_type) {
-        auto casted_left = _cast(node.left(), left, op_type);
-        node.set_left(std::move(casted_left));
-    }
-
-    if (right != op_type) {
-        auto casted_right = _cast(node.right(), right, op_type);
-        node.set_right(std::move(casted_right));
-    }
-
     switch (node.op()) {
-        // A logical operation always has the return result_type of BOOL_TYPE
         case ast::Binary::Operator::GreaterThan:
         case ast::Binary::Operator::LessThan:
         case ast::Binary::Operator::GreaterEqual:
         case ast::Binary::Operator::LessEqual:
         case ast::Binary::Operator::Equal:
         case ast::Binary::Operator::NotEqual: {
-            _current_type = BOOL_TYPE;
+            const auto converted_type = _arithmetic_conversion(left, right);
+            node.set_op_type(converted_type);
             node.set_result_type(BOOL_TYPE);
+            _current_type = BOOL_TYPE;
             break;
         }
 
-        // Already the right op_type result_type
-        default: {
-            _current_type = op_type;
-            node.set_result_type(op_type);
+        case ast::Binary::Operator::And:
+        case ast::Binary::Operator::Or: {
+            node.set_op_type(BOOL_TYPE);
+            node.set_result_type(BOOL_TYPE);
+            _current_type = BOOL_TYPE;
             break;
         }
+
+        default: {
+            const auto converted_type = _arithmetic_conversion(left, right);
+            node.set_op_type(converted_type);
+            node.set_result_type(converted_type);
+            _current_type = converted_type;
+            break;
+        }
+    }
+
+    if (left != node.op_type()) {
+        auto casted_left = _cast(node.left(), left, node.op_type());
+        node.set_left(std::move(casted_left));
+    }
+
+    if (right != node.op_type()) {
+        auto casted_right = _cast(node.right(), right, node.op_type());
+        node.set_right(std::move(casted_right));
     }
 }
 

@@ -14,6 +14,8 @@ Binary::Operator Binary::node_to_instruction(const ast::Binary::Operator op) {
         case ast::Binary::Operator::LessEqual: return Operator::LessEqual;
         case ast::Binary::Operator::Equal: return Operator::Equal;
         case ast::Binary::Operator::NotEqual: return Operator::NotEqual;
+        case ast::Binary::Operator::And:
+        case ast::Binary::Operator::Or: break;
     }
 
     // As the -Wswitch flag is set, this will never be reached.

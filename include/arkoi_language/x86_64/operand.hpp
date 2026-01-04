@@ -268,8 +268,7 @@ static constexpr std::array INTEGER_CALLEE_SAVED{
 
 static constexpr std::array INTEGER_CALLER_SAVED{
     Register::Base::A, Register::Base::C, Register::Base::D, Register::Base::SI,
-    Register::Base::DI, Register::Base::R8, Register::Base::R9, Register::Base::R10,
-    Register::Base::R11
+    Register::Base::DI, Register::Base::R8, Register::Base::R9
 };
 
 static constexpr std::array FLOATING_REGISTERS{

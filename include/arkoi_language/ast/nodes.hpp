@@ -883,7 +883,9 @@ public:
     X(GreaterEqual)           \
     X(LessEqual)              \
     X(Equal)                  \
-    X(NotEqual)           
+    X(NotEqual)               \
+    X(And)                    \
+    X(Or)
 
     /**
      * @brief Specifies the binary operator.

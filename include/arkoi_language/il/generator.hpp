@@ -98,6 +98,16 @@ private:
     void visit(ast::Binary& node) override;
 
     /**
+     * @brief Processes a logical and, emitting control flow instructions.
+     */
+    void visit_and(ast::Binary& node);
+
+    /**
+     * @brief Processes a logical or, emitting short-circuiting instructions.
+     */
+    void visit_or(ast::Binary& node);
+
+    /**
      * @brief Processes a type cast, emitting an `il::Cast` instruction.
      */
     void visit(ast::Cast& node) override;

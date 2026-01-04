@@ -40,6 +40,8 @@ std::optional<Token::Type> Token::lookup_keyword(const std::string_view& value) 
 
 std::optional<Token::Type> Token::lookup_special(const std::string_view& value) {
     static const std::unordered_map<std::string_view, Type> SPECIAL = {
+        { "&&", Type::And },
+        { "||", Type::Or },
         { "!=", Type::NotEqual },
         { "==", Type::Equal },
         { ">=", Type::GreaterEqual },
@@ -113,6 +115,8 @@ std::ostream& operator<<(std::ostream& os, const Token::Type& type) {
         case Token::Type::LessEqual: return os << "LessEqual";
         case Token::Type::Equal: return os << "Equal";
         case Token::Type::NotEqual: return os << "NotEqual";
+        case Token::Type::And: return os << "And";
+        case Token::Type::Or: return os << "Or";
         case Token::Type::Colon: return os << "Colon";
 
         case Token::Type::EndOfFile: return os << "EndOfFile";

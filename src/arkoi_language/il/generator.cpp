@@ -194,6 +194,12 @@ void Generator::visit(ast::Identifier& node) {
 }
 
 void Generator::visit(ast::Binary& node) {
+    if (node.op() == ast::Binary::Operator::And) {
+        return visit_and(node);
+    } else if (node.op() == ast::Binary::Operator::Or) {
+        return visit_or(node);
+    }
+
     // This will set _current_operand
     node.left()->accept(*this);
     auto left = _current_operand;
@@ -207,6 +213,106 @@ void Generator::visit(ast::Binary& node) {
     _current_operand = result;
 
     _current_block->emplace_back<Binary>(result, left, type, right, node.op_type(), node.span());
+}
+
+void Generator::visit_and(ast::Binary& node) {
+    auto result = _make_memory(sem::Boolean{});
+
+    auto true_label = _make_label_symbol();
+    auto* true_block = _current_function->emplace_back(true_label);
+
+    auto right_label = _make_label_symbol();
+    auto* right_block = _current_function->emplace_back(right_label);
+
+    auto merge_label = _make_label_symbol();
+    auto* merge_block = _current_function->emplace_back(merge_label);
+
+    { // Current entry block
+        _current_block->emplace_back<Alloca>(result, node.span());
+        _current_block->emplace_back<Store>(result, false, node.span());
+
+        // This will set _current_operand
+        node.left()->accept(*this);
+        auto left = _current_operand;
+
+        _current_block->emplace_back<If>(left, merge_label, right_label, node.span());
+        _current_block->set_branch(right_block);
+        _current_block->set_next(merge_block);
+    }
+
+    { // Right eval block if the condition is true.
+        _current_block = right_block;
+
+        // This will set _current_operand
+        node.right()->accept(*this);
+        auto right = _current_operand;
+
+        _current_block->emplace_back<If>(right, merge_label, true_label, node.span());
+        _current_block->set_branch(true_block);
+        _current_block->set_next(merge_block);
+    }
+
+    { // This block will set the result to true.
+        _current_block = true_block;
+        _current_block->emplace_back<Store>(result, true, node.span());
+        _current_block->emplace_back<Goto>(merge_label, node.span());
+        _current_block->set_next(merge_block);
+    }
+
+    { // Block where the control flow merges
+        _current_block = merge_block;
+        _current_operand = result;
+    }
+}
+
+void Generator::visit_or(ast::Binary& node) {
+    auto result = _make_memory(sem::Boolean{});
+
+    auto true_label = _make_label_symbol();
+    auto* true_block = _current_function->emplace_back(true_label);
+
+    auto right_label = _make_label_symbol();
+    auto* right_block = _current_function->emplace_back(right_label);
+
+    auto merge_label = _make_label_symbol();
+    auto* merge_block = _current_function->emplace_back(merge_label);
+
+    { // Current entry block
+        _current_block->emplace_back<Alloca>(result, node.span());
+        _current_block->emplace_back<Store>(result, false, node.span());
+
+        // This will set _current_operand
+        node.left()->accept(*this);
+        auto left = _current_operand;
+
+        _current_block->emplace_back<If>(left, right_label, true_label, node.span());
+        _current_block->set_branch(true_block);
+        _current_block->set_next(right_block);
+    }
+
+    { // Right eval block if the condition is true.
+        _current_block = right_block;
+
+        // This will set _current_operand
+        node.right()->accept(*this);
+        auto right = _current_operand;
+
+        _current_block->emplace_back<If>(right, merge_label, true_label, node.span());
+        _current_block->set_branch(true_block);
+        _current_block->set_next(merge_block);
+    }
+
+    { // This block will set the result to true.
+        _current_block = true_block;
+        _current_block->emplace_back<Store>(result, true, node.span());
+        _current_block->emplace_back<Goto>(merge_label, node.span());
+        _current_block->set_next(merge_block);
+    }
+
+    { // Block where the control flow merges
+        _current_block = merge_block;
+        _current_operand = result;
+    }
 }
 
 void Generator::visit(ast::Cast& node) {

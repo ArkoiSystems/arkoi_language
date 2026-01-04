@@ -175,6 +175,20 @@ private:
     [[nodiscard]] std::unique_ptr<ast::Node> _parse_expression();
 
     /**
+     * @brief Parses a 'logical or' expression ('||').
+     *
+     * @return A unique_ptr to the parsed 'logical or' node.
+     */
+    [[nodiscard]] std::unique_ptr<ast::Node> _parse_logical_or();
+
+    /**
+     * @brief Parses a 'logical and' expression ('&&').
+     *
+     * @return A unique_ptr to the parsed 'logical and' node.
+     */
+    [[nodiscard]] std::unique_ptr<ast::Node> _parse_logical_and();
+
+    /**
      * @brief Parses equality expressions (e.g., '==', '!=').
      *
      * @return A unique_ptr to the parsed equality node.

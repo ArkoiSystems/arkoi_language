@@ -1,5 +1,6 @@
 #include "arkoi_language/front/parser.hpp"
 
+#include "arkoi_language/il/instruction.hpp"
 #include "arkoi_language/sem/symbol_table.hpp"
 
 using namespace arkoi::front;
@@ -365,7 +366,35 @@ std::unique_ptr<ast::Call> Parser::_parse_call(const Token& name) {
 }
 
 std::unique_ptr<ast::Node> Parser::_parse_expression() {
-    return _parse_equality();
+    return _parse_logical_or();
+}
+
+std::unique_ptr<ast::Node> Parser::_parse_logical_or() {
+    auto expression = _parse_logical_and();
+
+    while (auto op = _try_consume(Token::Type::Or)) {
+        auto rhs = _parse_logical_and();
+
+        const auto span = expression->span().join(rhs->span());
+
+        expression = std::make_unique<ast::Binary>(std::move(expression), ast::Binary::Operator::Or, std::move(rhs), span);
+    }
+
+    return expression;
+}
+
+std::unique_ptr<ast::Node> Parser::_parse_logical_and() {
+    auto expression = _parse_equality();
+
+    while (auto op = _try_consume(Token::Type::And)) {
+        auto rhs = _parse_equality();
+
+        const auto span = expression->span().join(rhs->span());
+
+        expression = std::make_unique<ast::Binary>(std::move(expression), ast::Binary::Operator::And, std::move(rhs), span);
+    }
+
+    return expression;
 }
 
 std::unique_ptr<ast::Node> Parser::_parse_equality() {

@@ -65,6 +65,8 @@ public:
         LessEqual,    ///< '<='
         Equal,        ///< '=='
         NotEqual,     ///< '!='
+        And,          ///< '&&'
+        Or,           ///< '||'
         Colon,        ///< ':'
 
         EndOfFile, ///< End of source input
