@@ -15,9 +15,9 @@ main:
 	enter 16, 0
 	push rbx
 	# %01 @u32 = alloca
-	# arg @u32 1
-	# arg @u32 2
-	# arg @u32 3
+	# arg @f32 0
+	# arg @f32 2
+	# arg @f32 3
 	# arg @u32 4
 	# arg @u32 5
 	# arg @u32 6
@@ -25,20 +25,19 @@ main:
 	# arg @u32 8
 	# $27 @u64 = call calling_convention, 8
 	.loc 1 3 0
-	mov edi, 1
-	mov esi, 2
-	mov edx, 3
-	mov ecx, 4
-	mov r8d, 5
-	mov r9d, 6
-	push 8
-	push 7
+	mov edi, 4
+	mov esi, 5
+	mov edx, 6
+	mov ecx, 7
+	mov r8d, 8
+	movss xmm0, DWORD PTR [float0]
+	movss xmm1, DWORD PTR [float1]
+	movss xmm2, DWORD PTR [float2]
 	call calling_convention
-	add rsp, 16
 	mov rbx, rax
 	# $28 @u32 = cast @u64 $27
 	.loc 1 3 0
-	# store @u32 $28, %01
+	# %01 @u32 = store $28
 	mov DWORD PTR [rbp - 4], ebx
 	# $29 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
@@ -51,14 +50,101 @@ main:
 .global calling_convention
 .type calling_convention, @function
 calling_convention:
+	push rbx
 	# %01 @u64 = alloca
-	# store @u64 1, %01
+	# %02 @f32 = alloca
+	# %03 @f32 = alloca
+	# %04 @f32 = alloca
+	# %02 @f32 = store a
+	movss DWORD PTR [rsp - 12], xmm0
+	# %03 @f32 = store b
+	movss DWORD PTR [rsp - 16], xmm1
+	# %04 @f32 = store c
+	movss DWORD PTR [rsp - 20], xmm2
+	# %10 @bool = alloca
+	# %10 @bool = store 0
 	.loc 1 6 0
-	mov QWORD PTR [rsp - 8], 1
-	# $12 @u64 = load %01
+	mov BYTE PTR [rsp - 21], 0
+	# %11 @bool = alloca
+	# %11 @bool = store 0
+	mov BYTE PTR [rsp - 22], 0
+	# $12 @f32 = load %02
+	movss xmm8, DWORD PTR [rsp - 12]
+	# $13 @bool = cast @f32 $12
+	xorps xmm11, xmm11
+	ucomiss xmm11, xmm8
+	setne r10b
+	setp r11b
+	or r10b, r11b
+	mov bl, r10b
+	# if $13 then L8 else L9
+	test bl, bl
+	jnz L8
+	jmp L9
+L8:
+	# $14 @f32 = load %03
+	.loc 1 6 0
+	movss xmm8, DWORD PTR [rsp - 16]
+	# $15 @bool = cast @f32 $14
+	xorps xmm11, xmm11
+	ucomiss xmm11, xmm8
+	setne r10b
+	setp r11b
+	or r10b, r11b
+	mov bl, r10b
+	# if $15 then L7 else L9
+	test bl, bl
+	jnz L7
+	jmp L9
+L7:
+	# %11 @bool = store 1
+	.loc 1 6 0
+	mov BYTE PTR [rsp - 22], 1
+	# goto L9
+	jmp L9
+L9:
+	# if %11 then L4 else L5
+	.loc 1 6 0
+	mov r10b, BYTE PTR [rsp - 22]
+	test r10b, r10b
+	jnz L4
+	jmp L5
+L4:
+	# %10 @bool = store 1
+	.loc 1 6 0
+	mov BYTE PTR [rsp - 21], 1
+	# goto L6
+	jmp L6
+L5:
+	# $16 @f32 = load %04
+	.loc 1 6 0
+	movss xmm8, DWORD PTR [rsp - 20]
+	# $17 @bool = cast @f32 $16
+	xorps xmm11, xmm11
+	ucomiss xmm11, xmm8
+	setne r10b
+	setp r11b
+	or r10b, r11b
+	mov bl, r10b
+	# if $17 then L4 else L6
+	test bl, bl
+	jnz L4
+	jmp L6
+L6:
+	# $18 @u64 = cast @bool %10
+	.loc 1 6 0
+	movzx r10, BYTE PTR [rsp - 21]
+	mov rbx, r10
+	# %01 @u64 = store $18
+	mov QWORD PTR [rsp - 8], rbx
+	# $19 @u64 = load %01
 	mov rax, QWORD PTR [rsp - 8]
-	# ret $12
+	# ret $19
+	pop rbx
 	ret
 .size calling_convention, .-calling_convention
 
 .section .data
+	float0: .float	0.000000
+	float1: .float	2.000000
+	float2: .float	3.000000

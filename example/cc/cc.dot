@@ -5,6 +5,22 @@ digraph CFG {
 	bgcolor = "#f7f7f7";
 	splines = false;
 
-	L0 [label="fun main(a @u32) @u32:\l %01 @u32 = alloca\l arg @u32 1\l arg @u32 2\l arg @u32 3\l arg @u32 4\l arg @u32 5\l arg @u32 6\l arg @u32 7\l arg @u32 8\l $27 @u64 = call calling_convention, 8\l $28 @u32 = cast @u64 $27\l store @u32 $28, %01\l $29 @u32 = load %01\l ret $29\l\lIN:  { }\lOUT: { }\l"];
-	L2 [label="fun calling_convention(a @u32, b @u32, c @u32, d @u32, e @u32, f @u32, g @u32, h @u32) @u64:\l %01 @u64 = alloca\l store @u64 1, %01\l $12 @u64 = load %01\l ret $12\l\lIN:  { }\lOUT: { }\l"];
+	L0 [label="fun main(a @u32) @u32:\l %01 @u32 = alloca\l arg @f32 0\l arg @f32 2\l arg @f32 3\l arg @u32 4\l arg @u32 5\l arg @u32 6\l arg @u32 7\l arg @u32 8\l $27 @u64 = call calling_convention, 8\l $28 @u32 = cast @u64 $27\l %01 @u32 = store $28\l $29 @u32 = load %01\l ret $29\l\lIN:  { }\lOUT: { }\l"];
+	L2 [label="fun calling_convention(a @f32, b @f32, c @f32, d @u32, e @u32, f @u32, g @u32, h @u32) @u64:\l %01 @u64 = alloca\l %02 @f32 = alloca\l %03 @f32 = alloca\l %04 @f32 = alloca\l %02 @f32 = store a\l %03 @f32 = store b\l %04 @f32 = store c\l %10 @bool = alloca\l %10 @bool = store 0\l %11 @bool = alloca\l %11 @bool = store 0\l $12 @f32 = load %02\l $13 @bool = cast @f32 $12\l if $13 then L8 else L9\l\lIN:  { b c a }\lOUT: { %03 %04 %01 %10 %11 }\l"];
+	L2 -> L9 [label="Next"];
+	L2 -> L8 [label="Branch"];
+	L8 [label="L8:\l $14 @f32 = load %03\l $15 @bool = cast @f32 $14\l if $15 then L7 else L9\l\lIN:  { %03 %04 %01 %10 %11 }\lOUT: { %04 %01 %10 %11 }\l"];
+	L8 -> L9 [label="Next"];
+	L8 -> L7 [label="Branch"];
+	L7 [label="L7:\l %11 @bool = store 1\l goto L9\l\lIN:  { %04 %01 %10 %11 }\lOUT: { %04 %01 %10 %11 }\l"];
+	L7 -> L9 [label="Next"];
+	L9 [label="L9:\l if %11 then L4 else L5\l\lIN:  { %11 %10 %01 %04 }\lOUT: { %10 %01 %04 }\l"];
+	L9 -> L5 [label="Next"];
+	L9 -> L4 [label="Branch"];
+	L4 [label="L4:\l %10 @bool = store 1\l goto L6\l\lIN:  { %01 %10 }\lOUT: { %01 %10 }\l"];
+	L4 -> L6 [label="Next"];
+	L5 [label="L5:\l $16 @f32 = load %04\l $17 @bool = cast @f32 $16\l if $17 then L4 else L6\l\lIN:  { %04 %01 %10 }\lOUT: { %01 %10 }\l"];
+	L5 -> L6 [label="Next"];
+	L5 -> L4 [label="Branch"];
+	L6 [label="L6:\l $18 @u64 = cast @bool %10\l %01 @u64 = store $18\l $19 @u64 = load %01\l ret $19\l\lIN:  { %10 %01 }\lOUT: { }\l"];
 }

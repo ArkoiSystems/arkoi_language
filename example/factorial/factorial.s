@@ -32,7 +32,7 @@ main:
 	.loc 1 2 0
 	sub r12d, ebx
 	mov ebx, r12d
-	# store @u32 $10, %01
+	# %01 @u32 = store $10
 	mov DWORD PTR [rbp - 4], ebx
 	# $11 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
@@ -51,7 +51,7 @@ factorial_recursive:
 	push r12
 	# %01 @u32 = alloca
 	# %02 @u32 = alloca
-	# store @u32 n, %02
+	# %02 @u32 = store n
 	mov DWORD PTR [rbp - 8], edi
 	# $03 @u32 = load %02
 	.loc 1 5 0
@@ -63,6 +63,12 @@ factorial_recursive:
 	test bl, bl
 	jnz L4
 	jmp L5
+L4:
+	# %01 @u32 = store 1
+	.loc 1 6 0
+	mov DWORD PTR [rbp - 4], 1
+	# goto L3
+	jmp L3
 L5:
 	# $09 @u32 = load %02
 	.loc 1 8 0
@@ -80,14 +86,8 @@ L5:
 	.loc 1 8 0
 	imul r12d, ebx
 	mov ebx, r12d
-	# store @u32 $16, %01
+	# %01 @u32 = store $16
 	mov DWORD PTR [rbp - 4], ebx
-	# goto L3
-	jmp L3
-L4:
-	# store @u32 1, %01
-	.loc 1 6 0
-	mov DWORD PTR [rbp - 4], 1
 	# goto L3
 	jmp L3
 L3:
@@ -107,10 +107,10 @@ factorial_while:
 	push r12
 	# %01 @u32 = alloca
 	# %02 @u32 = alloca
-	# store @u32 n, %02
+	# %02 @u32 = store n
 	mov DWORD PTR [rsp - 8], edi
 	# %03 @u32 = alloca
-	# store @u32 1, %03
+	# %03 @u32 = store 1
 	.loc 1 11 0
 	mov DWORD PTR [rsp - 12], 1
 L9:
@@ -132,14 +132,14 @@ L10:
 	mov r12d, DWORD PTR [rsp - 8]
 	# $12 @u32 = mul @u32 $10, $11
 	imul ebx, r12d
-	# store @u32 $12, %03
+	# %03 @u32 = store $12
 	mov DWORD PTR [rsp - 12], ebx
 	# $13 @u32 = load %02
 	.loc 1 14 0
 	mov ebx, DWORD PTR [rsp - 8]
 	# $16 @u32 = sub @u32 $13, 1
 	sub ebx, 1
-	# store @u32 $16, %02
+	# %02 @u32 = store $16
 	mov DWORD PTR [rsp - 8], ebx
 	# goto L9
 	jmp L9
@@ -147,7 +147,7 @@ L11:
 	# $17 @u32 = load %03
 	.loc 1 15 0
 	mov ebx, DWORD PTR [rsp - 12]
-	# store @u32 $17, %01
+	# %01 @u32 = store $17
 	mov DWORD PTR [rsp - 4], ebx
 	# $18 @u32 = load %01
 	mov eax, DWORD PTR [rsp - 4]

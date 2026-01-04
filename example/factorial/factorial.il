@@ -6,7 +6,7 @@ L0:
   arg @u32 7
   $09 @u32 = call factorial_while, 1
   $10 @u32 = sub @u32 $05, $09
-  store @u32 $10, %01
+  %01 @u32 = store $10
   $11 @u32 = load %01
   ret $11
 
@@ -14,10 +14,13 @@ fun factorial_recursive(n @u32) @u32:
 L2:
   %01 @u32 = alloca
   %02 @u32 = alloca
-  store @u32 n, %02
+  %02 @u32 = store n
   $03 @u32 = load %02
   $06 @bool = equ @u32 $03, 1
   if $06 then L4 else L5
+L4:
+  %01 @u32 = store 1
+  goto L3
 L5:
   $09 @u32 = load %02
   $10 @u32 = load %02
@@ -25,10 +28,7 @@ L5:
   arg @u32 $13
   $15 @u32 = call factorial_recursive, 1
   $16 @u32 = mul @u32 $09, $15
-  store @u32 $16, %01
-  goto L3
-L4:
-  store @u32 1, %01
+  %01 @u32 = store $16
   goto L3
 L3:
   $17 @u32 = load %01
@@ -38,9 +38,9 @@ fun factorial_while(n @u32) @u32:
 L7:
   %01 @u32 = alloca
   %02 @u32 = alloca
-  store @u32 n, %02
+  %02 @u32 = store n
   %03 @u32 = alloca
-  store @u32 1, %03
+  %03 @u32 = store 1
 L9:
   $06 @u32 = load %02
   $09 @bool = neq @u32 $06, 0
@@ -49,14 +49,14 @@ L10:
   $10 @u32 = load %03
   $11 @u32 = load %02
   $12 @u32 = mul @u32 $10, $11
-  store @u32 $12, %03
+  %03 @u32 = store $12
   $13 @u32 = load %02
   $16 @u32 = sub @u32 $13, 1
-  store @u32 $16, %02
+  %02 @u32 = store $16
   goto L9
 L11:
   $17 @u32 = load %03
-  store @u32 $17, %01
+  %01 @u32 = store $17
   $18 @u32 = load %01
   ret $18
 
