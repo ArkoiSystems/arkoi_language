@@ -1,6 +1,8 @@
 #pragma once
 
 #include <concepts>
+#include <vector>
+#include <stack>
 
 #include "arkoi_language/il/cfg.hpp"
 #include "arkoi_language/il/instruction.hpp"

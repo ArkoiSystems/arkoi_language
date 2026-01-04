@@ -2,10 +2,10 @@
 
 #include <functional>
 #include <memory>
-#include <stack>
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include <set>
 
 #include "arkoi_language/il/instruction.hpp"
 
@@ -179,7 +179,7 @@ public:
 
 private:
     std::unordered_set<BasicBlock*> _visited{ };
-    std::stack<BasicBlock*> _queue{ };
+    std::set<BasicBlock*> _queue{ };
     Function* _function;
     pointer _current;
 };

@@ -23,7 +23,7 @@ BlockIterator::BlockIterator(Function* function) :
     auto* start = function->entry();
 
     _visited.insert(function->exit());
-    _queue.push(start);
+    _queue.insert(start);
 
     ++(*this);
 }
@@ -39,16 +39,16 @@ BlockIterator& BlockIterator::operator++() {
         return *this;
     }
 
-    _current = _queue.top();
-    _queue.pop();
+    _current = *_queue.begin();
+    _queue.erase(_queue.begin());
     _visited.insert(_current);
 
     if (_current->branch() && !_visited.contains(_current->branch())) {
-        _queue.push(_current->branch());
+        _queue.insert(_current->branch());
     }
 
     if (_current->next() && !_visited.contains(_current->next())) {
-        _queue.push(_current->next());
+        _queue.insert(_current->next());
     }
 
     return *this;
