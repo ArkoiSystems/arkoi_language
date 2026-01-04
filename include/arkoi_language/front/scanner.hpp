@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "arkoi_language/front/token.hpp"
+#include "arkoi_language/utils/diagnostics.hpp"
 
 namespace arkoi::front {
 /**
@@ -22,9 +23,10 @@ public:
      * @brief Constructs a `Scanner` for the given source input.
      *
      * @param source A shared pointer to the `pretty_diagnostics::Source` containing the code.
+     * @param diagnostics The diagnostic handler for reporting errors.
      */
-    explicit Scanner(const std::shared_ptr<pretty_diagnostics::Source>& source) :
-        _source(source) { }
+    Scanner(const std::shared_ptr<pretty_diagnostics::Source>& source, utils::Diagnostics& diagnostics) :
+        _source(source), _diagnostics(diagnostics) { }
 
     /**
      * @brief Performs lexical analysis and returns the full list of tokens.
@@ -35,13 +37,6 @@ public:
      * @return A `std::vector` of `Token` objects.
      */
     [[nodiscard]] std::vector<Token> tokenize();
-
-    /**
-     * @brief Indicates whether a lexical error occurred during tokenization.
-     *
-     * @return True if one or more errors were encountered, false otherwise.
-     */
-    [[nodiscard]] auto has_failed() const { return _failed; }
 
 private:
     /**
@@ -114,9 +109,9 @@ private:
      * without advancing the scanner. The view will not go past the end of the line.
      *
      * @param count Number of characters to peek.
-     * @return std::string_view of the next characters, or empty if at line end.
+     * @return std::string_view of the next characters, or std::nullopt if at the line end.
      */
-    [[nodiscard]] std::string_view _peek(size_t count) const;
+    [[nodiscard]] std::optional<std::string_view> _peek(size_t count) const;
 
     /**
      * @brief Advances the internal pointer to the next character in the source.
@@ -254,69 +249,109 @@ private:
 private:
     std::shared_ptr<pretty_diagnostics::Source> _source;
     size_t _row{ }, _column{ }, _indentation{ };
+    utils::Diagnostics& _diagnostics;
     std::string _current_line;
-    bool _failed{ };
 };
 
 /**
- * @brief Base class for all lexical analysis exceptions.
+ * @brief Base class for all recoverable scanner (lexical) errors.
+ *
+ * Stores a diagnostic report describing the lexical error.
+ * Thrown to unwind scanning and handled at synchronization points.
  */
-class ScannerError : public std::runtime_error {
+class ScannerError : public std::exception {
 public:
-    explicit ScannerError(const std::string& error) :
-        std::runtime_error(error) { }
+    /**
+     * @brief Constructs a `ScannerError` error.
+     *
+     * @param report Diagnostic report describing the error.
+     */
+    explicit ScannerError(pretty_diagnostics::Report report)
+        : _report(std::move(report)) { }
+
+    /**
+     * @brief Get the diagnostic report associated with this error.
+     *
+     * @return Reference to the stored diagnostic report.
+     */
+    [[nodiscard]] auto& report() const { return _report; }
+
+private:
+    pretty_diagnostics::Report _report;
 };
 
 /**
- * @brief Exception thrown when an end-of-line is encountered unexpectedly.
+ * @brief Scanner error indicating invalid indentation spacing.
+ *
+ * Thrown when the number of leading spaces in a line does not
+ * conform to the expected multiple of `SPACE_INDENTATION`.
+ */
+class InvalidSpacingFormat final : public ScannerError {
+public:
+    /**
+     * @brief Constructs an `InvalidSpacingFormat` error.
+     *
+     * @param span Source span of the line with incorrect spacing.
+     */
+    explicit InvalidSpacingFormat(const pretty_diagnostics::Span& span);
+};
+
+/**
+ * @brief Scanner error indicating an unexpected end of line.
+ *
+ * Typically fatal in certain lexical contexts.
  */
 class UnexpectedEndOfLine final : public ScannerError {
 public:
-    UnexpectedEndOfLine() :
-        ScannerError("Unexpectedly reached the End Of Line") { }
+    /**
+     * @brief Constructs an `UnexpectedEndOfLine` error.
+     *
+     * @param span Source span where the end of line occurred unexpectedly.
+     */
+    explicit UnexpectedEndOfLine(const pretty_diagnostics::Span& span);
 };
 
 /**
- * @brief Exception thrown when a character does not match the expected input.
+ * @brief Scanner error indicating an unexpected character.
+ *
+ * Thrown when a character does not match the expected pattern.
  */
 class UnexpectedChar final : public ScannerError {
 public:
     /**
-     * @brief Constructs an `UnexpectedChar` exception.
+     * @brief Constructs an `UnexpectedChar` error.
      *
      * @param expected Description of what was expected.
-     * @param got The character actually encountered.
+     * @param span Source span of the unexpected character.
      */
-    UnexpectedChar(const std::string& expected, const char got) :
-        ScannerError("Expected " + expected + " but got " + std::string(1, got)) { }
+    UnexpectedChar(const std::string& expected, const pretty_diagnostics::Span& span);
 };
 
 /**
- * @brief Exception thrown when an unrecognized character is found in the source.
+ * @brief Scanner error indicating an unrecognized character.
  */
 class UnknownChar final : public ScannerError {
 public:
     /**
-     * @brief Constructs an `UnknownChar` exception.
+     * @brief Constructs an `UnknownChar` error.
      *
      * @param got The unrecognized character.
+     * @param span Source span where the character occurred.
      */
-    explicit UnknownChar(const char got) :
-        ScannerError("Didn't expect " + std::string(1, got)) { }
+    UnknownChar(char got, const pretty_diagnostics::Span& span);
 };
 
 /**
- * @brief Exception thrown when a numeric literal is too large for representation.
+ * @brief Scanner error indicating a numeric literal out of range.
  */
 class NumberOutOfRange final : public ScannerError {
 public:
     /**
-     * @brief Constructs a `NumberOutOfRange` exception.
+     * @brief Constructs a `NumberOutOfRange` error.
      *
-     * @param number The string representation of the problematic number.
+     * @param span Source span of the number literal.
      */
-    explicit NumberOutOfRange(const std::string& number) :
-        ScannerError("The number " + number + " exceeds the 64bit limitations.") { }
+    explicit NumberOutOfRange(const pretty_diagnostics::Span& span);
 };
 } // namespace arkoi::front
 

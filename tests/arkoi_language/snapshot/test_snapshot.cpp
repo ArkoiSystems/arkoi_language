@@ -22,12 +22,15 @@ TEST(Snapshot, Scanner) {
         const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path);
         source->set_working_path(TEST_PATH);
 
-        auto scanner = arkoi::front::Scanner(source);
+        auto diagnostics = arkoi::utils::Diagnostics();
+        auto scanner = arkoi::front::Scanner(source, diagnostics);
 
         std::stringstream output;
         for (const auto& token : scanner.tokenize()) {
             output << token << "\n";
         }
+
+        EXPECT_FALSE(diagnostics.has_errors());
 
         const auto snapshot_path = entry.path().parent_path() / (file_name + ".snapshot");
         EXPECT_SNAPSHOT_EQ(file_name, snapshot_path.string(), output.str());
@@ -47,9 +50,12 @@ TEST(Snapshot, Parser) {
         const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path);
         source->set_working_path(TEST_PATH);
 
-        auto scanner = arkoi::front::Scanner(source);
-        auto parser = arkoi::front::Parser(source, scanner.tokenize());
+        auto diagnostics = arkoi::utils::Diagnostics();
+        auto scanner = arkoi::front::Scanner(source, diagnostics);
+        auto parser = arkoi::front::Parser(source, scanner.tokenize(), diagnostics);
         auto program = parser.parse_program();
+
+        EXPECT_FALSE(diagnostics.has_errors());
 
         auto ast_printer = arkoi::ast::ASTPrinter::print(program);
 

@@ -3,6 +3,9 @@
 #include <iostream>
 #include <sstream>
 
+#include "pretty_diagnostics/report.hpp"
+
+using namespace pretty_diagnostics;
 using namespace arkoi::front;
 using namespace arkoi;
 
@@ -14,15 +17,15 @@ std::vector<Token> Scanner::tokenize() {
 
     std::istringstream stream(_source->contents());
     while (std::getline(stream, _current_line)) {
-        const auto leading_spaces = _leading_spaces(_current_line);
+        auto leading_spaces = _leading_spaces(_current_line);
         if (leading_spaces % SPACE_INDENTATION != 0) {
-            std::cerr << "Leading spaces are not of a multiple of 4" << std::endl;
-            _failed = true;
-            continue;
+            const auto error = InvalidSpacingFormat({ _source, _source->from_coords(_row, 0), _source->from_coords(_row, leading_spaces) });
+            _diagnostics.add(error.report());
+            leading_spaces -= leading_spaces % SPACE_INDENTATION;
         }
 
         while (leading_spaces > _indentation) {
-            const auto span = pretty_diagnostics::Span(
+            const auto span = Span(
                 _source,
                 _source->from_coords(_row, _indentation),
                 _source->from_coords(_row, _indentation + SPACE_INDENTATION)
@@ -34,7 +37,7 @@ std::vector<Token> Scanner::tokenize() {
         }
 
         while (leading_spaces < _indentation) {
-            tokens.emplace_back(Token::Type::Dedentation, pretty_diagnostics::Span(_source, 0, 0));
+            tokens.emplace_back(Token::Type::Dedentation, Span(_source, 0, 0));
 
             _indentation -= SPACE_INDENTATION;
             _column -= SPACE_INDENTATION;
@@ -45,35 +48,29 @@ std::vector<Token> Scanner::tokenize() {
                 auto token = _next_token();
                 tokens.push_back(token);
             } catch (const UnexpectedEndOfLine& error) {
-                std::cerr << error.what() << std::endl;
-                _failed = true;
+                _diagnostics.add(error.report());
                 break;
-            } catch (const UnexpectedChar& error) {
-                std::cerr << error.what() << std::endl;
-                _failed = true;
-                _next(1);
-            } catch (const UnknownChar& error) {
-                std::cerr << error.what() << std::endl;
-                _failed = true;
+            } catch (const ScannerError& error) {
+                _diagnostics.add(error.report());
                 _next(1);
             }
         }
 
         const auto start_location = _source->from_coords(_row, _column);
         const auto end_location = _source->from_coords(_row, _column + 1);
-        tokens.emplace_back(Token::Type::Newline, pretty_diagnostics::Span(_source, start_location, end_location));
+        tokens.emplace_back(Token::Type::Newline, Span(_source, start_location, end_location));
 
         _column = _indentation;
         _row++;
     }
 
     while (_indentation) {
-        tokens.emplace_back(Token::Type::Dedentation, pretty_diagnostics::Span(_source, 0, 0));
+        tokens.emplace_back(Token::Type::Dedentation, Span(_source, 0, 0));
 
         _indentation -= SPACE_INDENTATION;
     }
 
-    tokens.emplace_back(Token::Type::EndOfFile, pretty_diagnostics::Span(_source, 0, 0));
+    tokens.emplace_back(Token::Type::EndOfFile, Span(_source, 0, 0));
 
     return tokens;
 }
@@ -116,10 +113,8 @@ Token Scanner::_lex_identifier() {
     _consume(_is_ident_start, "_, a-z or A-Z");
     while (_try_consume(_is_ident_inner)) { }
 
-    const auto span = pretty_diagnostics::Span(_source, start_location, _current_location());
-    const auto value = span.substr();
-
-    if (auto keyword = Token::lookup_keyword(value)) {
+    const auto span = Span(_source, start_location, _current_location());
+    if (auto keyword = Token::lookup_keyword(span.substr())) {
         return { *keyword, span };
     }
 
@@ -166,7 +161,7 @@ Token Scanner::_lex_number() {
         }
     }
 
-    const auto span = pretty_diagnostics::Span(_source, start_location, _current_location());
+    const auto span = Span(_source, start_location, _current_location());
     const auto kind = (floating ? Token::Type::Floating : Token::Type::Integer);
     const auto number = span.substr();
 
@@ -179,7 +174,7 @@ Token Scanner::_lex_number() {
             std::stoull(number);
         }
     } catch (const std::out_of_range&) {
-        throw NumberOutOfRange(number);
+        throw NumberOutOfRange(span);
     }
 
     return { kind, span };
@@ -200,8 +195,9 @@ Token Scanner::_lex_special() {
 
     for (size_t length = 2; length > 0; length--) {
         const auto view = _peek(length);
+        if (!view.has_value()) continue;
 
-        auto matched = Token::lookup_special(view);
+        auto matched = Token::lookup_special(*view);
         if (!matched.has_value()) continue;
 
         _next(length);
@@ -209,11 +205,14 @@ Token Scanner::_lex_special() {
         return { *matched, { _source, start_location, _current_location() } };
     }
 
-    throw UnknownChar(_current_char());
+    throw UnknownChar(_current_char(), { _source, _source->from_coords(_row, _column), _source->from_coords(_row, _column + 1) });
 }
 
 char Scanner::_current_char() const {
-    if (_is_eol()) return 0;
+    if (_is_eol()) {
+        throw UnexpectedEndOfLine({ _source, _source->from_coords(_row, 0), _source->from_coords(_row, _current_line.size()) });
+    }
+
     return _current_line[_column];
 }
 
@@ -221,14 +220,14 @@ bool Scanner::_is_eol() const {
     return _column >= _current_line.size();
 }
 
-pretty_diagnostics::Location Scanner::_current_location() const {
+Location Scanner::_current_location() const {
     return _source->from_coords(_row, _column);
 }
 
-std::string_view Scanner::_peek(const size_t count) const {
-    if (_column + count > _current_line.size()) return {};
+std::optional<std::string_view> Scanner::_peek(const size_t count) const {
+    if (_column + count > _current_line.size()) return std::nullopt;
 
-    return { _current_line.data() + _column, count };
+    return std::string_view{ _current_line.data() + _column, count };
 }
 
 void Scanner::_next(const size_t count) {
@@ -242,11 +241,11 @@ void Scanner::_consume(const char expected) {
 char Scanner::_consume(const std::function<bool(char)>& predicate, const std::string& expected) {
     const auto current = _current_char();
     if (_is_eol()) {
-        throw UnexpectedEndOfLine();
+        throw UnexpectedEndOfLine({ _source, _source->from_coords(_row, 0), _source->from_coords(_row, _current_line.size()) });
     }
 
     if (!predicate(current)) {
-        throw UnexpectedChar(expected, current);
+        throw UnexpectedChar(expected, { _source, _source->from_coords(_row, _column), _source->from_coords(_row, _column + 1) });
     }
 
     _next(1);
@@ -320,6 +319,56 @@ bool Scanner::_is_expo(const char input) {
 bool Scanner::_is_decimal_sign(const char input) {
     return input == '+' || input == '-';
 }
+
+InvalidSpacingFormat::InvalidSpacingFormat(const Span& span) :
+    ScannerError(
+        Report::Builder()
+       .severity(Severity::Error)
+       .message("Leading spaces are not a multiple of the expected indentation")
+       .code("E1000")
+       .label("Invalid indentation spacing", span)
+       .build()
+    ) { }
+
+UnexpectedEndOfLine::UnexpectedEndOfLine(const Span& span) :
+    ScannerError(
+        Report::Builder()
+       .severity(Severity::Error)
+       .message("Unexpectedly reached the end of the line")
+       .code("E1001")
+       .label("Reached end of the line unexpectedly", span)
+       .build()
+    ) { }
+
+UnexpectedChar::UnexpectedChar(const std::string& expected, const Span& span) :
+    ScannerError(
+        Report::Builder()
+       .severity(Severity::Error)
+       .message("Unexpected character encountered")
+       .code("E1002")
+       .label("Expected '" + expected + "' but got this instead", span)
+       .build()
+    ) { }
+
+UnknownChar::UnknownChar(const char got, const Span& span) :
+    ScannerError(
+        Report::Builder()
+       .severity(Severity::Error)
+       .message("Unrecognized character '" + std::string(1, got) +"' found in source")
+       .code("E1003")
+       .label("This character was not expected", span)
+       .build()
+    ) { }
+
+NumberOutOfRange::NumberOutOfRange(const Span& span) :
+    ScannerError(
+        Report::Builder()
+       .severity(Severity::Error)
+       .message("Numeric literal exceeds the 64-bit range")
+       .code("E1004")
+       .label("This number is out of range", span)
+       .build()
+    ) { }
 
 //==============================================================================
 // BSD 3-Clause License

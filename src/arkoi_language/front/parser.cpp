@@ -3,6 +3,9 @@
 #include "arkoi_language/il/instruction.hpp"
 #include "arkoi_language/sem/symbol_table.hpp"
 
+#include "pretty_diagnostics/report.hpp"
+
+using namespace pretty_diagnostics;
 using namespace arkoi::front;
 using namespace arkoi;
 
@@ -23,14 +26,11 @@ ast::Program Parser::parse_program() {
 
         try {
             statements.push_back(_parse_program_statement());
-        } catch (const UnexpectedToken& error) {
-            std::cout << error.what() << std::endl;
-            _recover_program();
-            _failed = true;
-        } catch (const UnexpectedEndOfTokens& error) {
-            std::cout << error.what() << std::endl;
-            _failed = true;
+        } catch (const UnexpectedEndOfTokens&) {
             break;
+        } catch (const ParserError& error) {
+            _diagnostics.add(error.report());
+            _recover_program();
         }
     }
 
@@ -38,7 +38,7 @@ ast::Program Parser::parse_program() {
 
     // Catch the case where the statement list is empty and thus can't return a valid span.
     if (statements.empty()) {
-        return { std::move(statements), pretty_diagnostics::Span(_source, 0, 0), own_scope };
+        return { std::move(statements), Span(_source, 0, 0), own_scope };
     }
 
     const auto span = statements.front()->span().join(statements.back()->span());
@@ -52,7 +52,7 @@ std::unique_ptr<ast::Node> Parser::_parse_program_statement() {
         return _parse_function(current);
     }
 
-    throw UnexpectedToken("fun", current);
+    throw UnexpectedToken("fun", to_string(current.type()), current.span());
 }
 
 void Parser::_recover_program() {
@@ -103,8 +103,12 @@ std::vector<ast::Parameter> Parser::_parse_parameters() {
 
     while (true) {
         const auto& current = _current();
-        if (current.type() == Token::Type::EndOfFile) throw UnexpectedEndOfTokens();
-        if (current.type() == Token::Type::RParent) break;
+        if (current.type() == Token::Type::EndOfFile) {
+            throw UnexpectedEndOfTokens(_tokens.back().span());
+        }
+        if (current.type() == Token::Type::RParent) {
+            break;
+        }
 
         if (!parameters.empty()) {
             _consume(Token::Type::Comma);
@@ -112,14 +116,12 @@ std::vector<ast::Parameter> Parser::_parse_parameters() {
 
         try {
             parameters.push_back(_parse_parameter());
-        } catch (const UnexpectedToken& error) {
-            std::cout << error.what() << std::endl;
+        } catch (const UnexpectedEndOfTokens&) {
+            // Propagate this error and don't try to recover here.
+            throw;
+        } catch (const ParserError& error) {
+            _diagnostics.add(error.report());
             _recover_parameters();
-            _failed = true;
-        } catch (const UnexpectedEndOfTokens& error) {
-            std::cout << error.what() << std::endl;
-            _failed = true;
-            break;
         }
     }
 
@@ -151,7 +153,7 @@ ast::Parameter Parser::_parse_parameter() {
     return { identifier, type, span };
 }
 
-std::pair<sem::Type, pretty_diagnostics::Span> Parser::_parse_type() {
+std::pair<sem::Type, Span> Parser::_parse_type() {
     const auto& start_token = _consume(Token::Type::At);
 
     const auto token = _consume_any();
@@ -172,7 +174,7 @@ std::pair<sem::Type, pretty_diagnostics::Span> Parser::_parse_type() {
         case Token::Type::F32: return { sem::Floating(Size::DWORD), span };
         case Token::Type::F64: return { sem::Floating(Size::QWORD), span };
         case Token::Type::Bool: return { sem::Boolean(), span };
-        default: throw UnexpectedToken("u8, s8, u16, s16, u32, s32, u64, s64, usize, ssize, bool", token);
+        default: throw UnexpectedToken("u8, s8, u16, s16, u32, s32, u64, s64, usize, ssize, bool", to_string(token.type()), token.span());
     }
 }
 
@@ -184,17 +186,21 @@ std::unique_ptr<ast::Block> Parser::_parse_block() {
 
     while (true) {
         const auto& current = _current();
-        if (current.type() == Token::Type::EndOfFile) throw UnexpectedEndOfTokens();
-        if (current.type() == Token::Type::Dedentation) break;
+        if (current.type() == Token::Type::EndOfFile) {
+            throw UnexpectedEndOfTokens(_tokens.back().span());
+        }
+        if (current.type() == Token::Type::Dedentation) {
+            break;
+        }
 
         try {
             statements.push_back(_parse_block_statement());
-        } catch (const UnexpectedToken& error) {
-            std::cout << error.what() << std::endl;
-            _recover_block();
-            _failed = true;
         } catch (const UnexpectedEndOfTokens&) {
+            // Propagate this error and don't try to recover here.
             throw;
+        } catch (const ParserError& error) {
+            _diagnostics.add(error.report());
+            _recover_block();
         }
     }
 
@@ -203,7 +209,7 @@ std::unique_ptr<ast::Block> Parser::_parse_block() {
 
     // Catch the case where the statement list is empty and thus can't return a valid span.
     if (statements.empty()) {
-        return std::make_unique<ast::Block>(std::move(statements), pretty_diagnostics::Span(_source, 0, 0), own_scope);
+        return std::make_unique<ast::Block>(std::move(statements), Span(_source, 0, 0), own_scope);
     }
 
     const auto span = statements.front()->span().join(statements.back()->span());
@@ -235,7 +241,7 @@ std::unique_ptr<ast::Node> Parser::_parse_block_statement() {
         result = _parse_while(consumed);
         // Don't need to consume a newline, as the then node already parsed it
     } else {
-        throw UnexpectedToken("return, if, while, assign or call", consumed);
+        throw UnexpectedToken("return, if, while, assign or call", to_string(consumed.type()), consumed.span());
     }
 
     return result;
@@ -348,8 +354,12 @@ std::unique_ptr<ast::Call> Parser::_parse_call(const Token& name) {
     std::vector<std::unique_ptr<ast::Node>> arguments;
     while (true) {
         const auto& current = _current();
-        if (current.type() == Token::Type::EndOfFile) throw UnexpectedEndOfTokens();
-        if (current.type() == Token::Type::RParent) break;
+        if (current.type() == Token::Type::EndOfFile) {
+            throw UnexpectedEndOfTokens(_tokens.back().span());
+        }
+        if (current.type() == Token::Type::RParent) {
+            break;
+        }
 
         if (!arguments.empty()) {
             _consume(Token::Type::Comma);
@@ -501,7 +511,7 @@ std::unique_ptr<ast::Node> Parser::_parse_primary() {
         return expression;
     }
 
-    throw UnexpectedToken("integer, float, identifier, function call, grouping, true or false", consumed);
+    throw UnexpectedToken("integer, float, identifier, function call, grouping, true or false", to_string(consumed.type()), consumed.span());
 }
 
 std::shared_ptr<sem::SymbolTable> Parser::_current_scope() {
@@ -513,20 +523,30 @@ std::shared_ptr<sem::SymbolTable> Parser::_enter_scope() {
         return _scopes.emplace(std::make_shared<sem::SymbolTable>());
     }
 
-    auto parent = _current_scope();
-    return _scopes.emplace(std::make_shared<sem::SymbolTable>(parent));
+    return _scopes.emplace(std::make_shared<sem::SymbolTable>(_current_scope()));
 }
 
 void Parser::_exit_scope() {
+    if (_scopes.empty()) {
+        throw std::logic_error("Cannot exit root scope");
+    }
+
     _scopes.pop();
 }
 
 const Token& Parser::_current() {
+    if (_position >= _tokens.size()) {
+        throw UnexpectedEndOfTokens(_tokens.back().span());
+    }
+
     return _tokens[_position];
 }
 
 void Parser::_next() {
-    if (_position >= _tokens.size()) throw UnexpectedEndOfTokens();
+    if (_position >= _tokens.size()) {
+        throw UnexpectedEndOfTokens(_tokens.back().span());
+    }
+
     _position++;
 }
 
@@ -540,7 +560,9 @@ const Token& Parser::_consume(const Token::Type type) {
     const auto& current = _current();
     _next();
 
-    if (current.type() != type) throw UnexpectedToken(to_string(type), current);
+    if (current.type() != type) {
+        throw UnexpectedToken(to_string(type), to_string(current.type()), current.span());
+    }
 
     return current;
 }
@@ -597,6 +619,26 @@ bool Parser::_is_relational_operator(const Token& token) {
 bool Parser::_is_term_operator(const Token& token) {
     return token.type() == Token::Type::Plus || token.type() == Token::Type::Minus;
 }
+
+UnexpectedEndOfTokens::UnexpectedEndOfTokens(const Span& span) :
+    ParserError(
+        Report::Builder()
+       .severity(Severity::Error)
+       .message("Unexpected end of tokens")
+       .code("E2000")
+       .label("Reached end of file unexpectedly", span)
+       .build()
+    ) { }
+
+UnexpectedToken::UnexpectedToken(const std::string& expected, const std::string& got, const Span& span) :
+    ParserError(
+        Report::Builder()
+       .severity(Severity::Error)
+       .message("Unexpected token reached")
+       .code("E2001")
+       .label("Expected " + expected + " but got " + got, span)
+       .build()
+    ) { }
 
 //==============================================================================
 // BSD 3-Clause License

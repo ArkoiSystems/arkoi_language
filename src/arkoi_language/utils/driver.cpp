@@ -48,19 +48,30 @@ int32_t driver::compile(
     std::ofstream* cfg_ostream,
     std::ofstream* asm_ostream
 ) {
-    front::Scanner scanner(source);
-    auto tokens = scanner.tokenize();
-    if (scanner.has_failed()) return 1;
+    utils::Diagnostics diagnostics;
 
-    front::Parser parser(source, std::move(tokens));
+    front::Scanner scanner(source, diagnostics);
+    auto tokens = scanner.tokenize();
+
+    front::Parser parser(source, std::move(tokens), diagnostics);
     auto program = parser.parse_program();
-    if (parser.has_failed()) return 1;
+
+    if (diagnostics.has_errors()) {
+        diagnostics.render(std::cerr);
+        return 1;
+    }
 
     auto name_resolver = sem::NameResolver::resolve(program);
-    if (name_resolver.has_failed()) return 1;
+    if (diagnostics.has_errors()) {
+        diagnostics.render(std::cerr);
+        return 1;
+    }
 
     auto type_resolver = sem::TypeResolver::resolve(program);
-    if (type_resolver.has_failed()) return 1;
+    if (diagnostics.has_errors()) {
+        diagnostics.render(std::cerr);
+        return 1;
+    }
 
     auto module = il::Generator::generate(program);
 

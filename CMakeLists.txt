@@ -64,6 +64,7 @@ add_library(${PROJECT_NAME}
         src/arkoi_language/x86_64/generator.cpp
         src/arkoi_language/utils/interference_graph.tpp
         src/arkoi_language/utils/ordered_set.tpp
+        src/arkoi_language/utils/diagnostics.cpp
         src/arkoi_language/utils/driver.cpp
         src/arkoi_language/utils/utils.cpp
         src/arkoi_language/utils/size.cpp
@@ -109,6 +110,7 @@ set(PUBLIC_HEADERS
         include/arkoi_language/sem/type_resolver.hpp
         include/arkoi_language/utils/driver.hpp
         include/arkoi_language/utils/interference_graph.hpp
+        include/arkoi_language/utils/diagnostics.hpp
         include/arkoi_language/utils/ordered_set.hpp
         include/arkoi_language/utils/size.hpp
         include/arkoi_language/utils/utils.hpp
