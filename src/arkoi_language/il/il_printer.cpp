@@ -92,9 +92,8 @@ void ILPrinter::visit(Alloca& instruction) {
 }
 
 void ILPrinter::visit(Store& instruction) {
-    _output << "store @" << instruction.result().type();
-    _output << " " << instruction.source();
-    _output << ", " << instruction.result();
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = store " << instruction.source();
 }
 
 void ILPrinter::visit(Load& instruction) {
