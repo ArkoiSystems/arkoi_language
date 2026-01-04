@@ -460,12 +460,11 @@ void Generator::_int_to_int(
         // There is no zero extension of such operand types, as all 32bit operations implicitly zero-extend 32bit to
         // 64bit.
 
-        // Thus adjust the source operand to a register of from-size (32bit). This will automatically also zero-extend
-        // the upper 32bit.
-        source = _adjust_to_reg(source, from);
+        auto temp_1_32 = _temp_1_register(from);
+        _store(source, temp_1_32, from);
 
-        // Store the adjusted source in the result (can be either of type mem or reg).
-        _store(source, result, to);
+        auto temp_1_64 = _temp_1_register(to);
+        _store(temp_1_64, result, to);
     } else if (from.sign() == to.sign() && from.sign() && from.size() == Size::DWORD && to.size() == Size::QWORD) {
         // This is another case where a 32bit signed integer is converted to a 64bit signed integer. The standard movsx
         // is not applicable to this case, thus there is the movsxd instruction that covers this case.
