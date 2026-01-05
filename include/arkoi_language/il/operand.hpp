@@ -7,33 +7,12 @@
 
 namespace arkoi::il {
 /**
- * @brief Abstract base class for all IL operands.
- *
- * An operand is something that can be used or defined by an instruction.
- * Examples include variables, immediate constants, and memory locations.
- * Every operand has an associated semantic type.
- *
- * @see Variable, Immediate, Memory, sem::Type
- */
-class OperandBase {
-public:
-    virtual ~OperandBase() = default;
-
-    /**
-     * @brief Returns the semantic type of the operand.
-     *
-     * @return The `sem::Type` of this operand.
-     */
-    [[nodiscard]] virtual sem::Type type() const = 0;
-};
-
-/**
  * @brief Represents a memory location on the stack.
  *
  * `Memory` operands are used by `Alloca`, `Load`, and `Store` instructions.
  * They are identified by an index/version.
  */
-class Memory final : public OperandBase {
+class Memory final {
 public:
     /**
      * @brief Constructs a `Memory` operand.
@@ -76,7 +55,7 @@ public:
      *
      * @return The `sem::Type` of this memory operand.
      */
-    [[nodiscard]] sem::Type type() const override { return _type; }
+    [[nodiscard]] sem::Type type() const { return _type; }
 
     /**
      * @brief Returns the unique index of this memory location.
@@ -97,7 +76,7 @@ private:
  * though the `version` field explicitly tracks different assignments to the
  * same original source-level variable.
  */
-class Variable final : public OperandBase {
+class Variable final {
 public:
     /**
      * @brief Constructs a `Variable` operand.
@@ -141,7 +120,7 @@ public:
      *
      * @return The `sem::Type` of this variable.
      */
-    [[nodiscard]] sem::Type type() const override { return _type; }
+    [[nodiscard]] sem::Type type() const { return _type; }
 
     /**
      * @brief Returns the SSA version of the variable.
@@ -169,7 +148,7 @@ private:
  * `Immediate` is a variant that can hold various primitive C++ types
  * that map to Arkoi source types.
  */
-struct Immediate final : OperandBase, std::variant<uint64_t, int64_t, uint32_t, int32_t, double, float, bool> {
+struct Immediate final : std::variant<uint64_t, int64_t, uint32_t, int32_t, double, float, bool> {
     using variant::variant;
 
     /**
@@ -177,7 +156,7 @@ struct Immediate final : OperandBase, std::variant<uint64_t, int64_t, uint32_t, 
      *
      * @return The corresponding `sem::Type`.
      */
-    [[nodiscard]] sem::Type type() const override;
+    [[nodiscard]] sem::Type type() const;
 };
 
 /**
@@ -186,7 +165,7 @@ struct Immediate final : OperandBase, std::variant<uint64_t, int64_t, uint32_t, 
  * `Operand` is a `std::variant` of `Immediate`, `Variable`, and `Memory`.
  * This type is used by `InstructionBase` to represent inputs and outputs.
  */
-struct Operand final : OperandBase, std::variant<Immediate, Variable, Memory> {
+struct Operand final : std::variant<Immediate, Variable, Memory> {
     using variant::variant;
 
     /**
@@ -194,7 +173,7 @@ struct Operand final : OperandBase, std::variant<Immediate, Variable, Memory> {
      *
      * @return The `sem::Type` of the active operand kind.
      */
-    [[nodiscard]] sem::Type type() const override;
+    [[nodiscard]] sem::Type type() const;
 };
 } // namespace arkoi::il
 

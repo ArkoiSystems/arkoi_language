@@ -7,27 +7,9 @@
 
 namespace arkoi::sem {
 /**
- * @brief Abstract base class for all semantic types in the language.
- *
- * A `Type` determines the size and layout of data, as well as the
- * operations that can be performed on it.
- */
-class TypeBase {
-public:
-    virtual ~TypeBase() = default;
-
-    /**
-     * @brief Returns the storage size required for this type.
-     *
-     * @return The `Size` enumeration value (BYTE, WORD, etc).
-     */
-    [[nodiscard]] virtual Size size() const = 0;
-};
-
-/**
  * @brief Represents an integral semantic type.
  */
-class Integral final : public TypeBase {
+class Integral final {
 public:
     /**
      * @brief Constructs an `Integral` type.
@@ -43,7 +25,7 @@ public:
      *
      * @return The `Size` enumeration value.
      */
-    [[nodiscard]] Size size() const override { return _size; }
+    [[nodiscard]] Size size() const { return _size; }
 
     /**
      * @brief Checks if two integral types have the same size and signess.
@@ -83,7 +65,7 @@ private:
 /**
  * @brief Represents a floating-point semantic type.
  */
-class Floating final : public TypeBase {
+class Floating final {
 public:
     /**
      * @brief Constructs a `Floating` type.
@@ -98,7 +80,7 @@ public:
      *
      * @return The `Size` enumeration value.
      */
-    [[nodiscard]] Size size() const override { return _size; }
+    [[nodiscard]] Size size() const { return _size; }
 
     /**
      * @brief Equality compares only the size.
@@ -125,14 +107,15 @@ private:
  *
  * Booleans are always represented as a single byte in memory.
  */
-class Boolean final : public TypeBase {
+class Boolean final {
 public:
     /**
      * @brief Returns the storage size of a boolean.
      *
      * @return Always returns `Size::BYTE`.
      */
-    [[nodiscard]] Size size() const override { return Size::BYTE; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] Size size() const { return Size::BYTE; }
 
     /**
      * @brief Equality will always be true.
@@ -158,7 +141,7 @@ public:
  * It provides a uniform interface for type operations while preserving
  * concrete type information.
  */
-struct Type final : TypeBase, std::variant<Integral, Floating, Boolean> {
+struct Type final : std::variant<Integral, Floating, Boolean> {
     using variant::variant;
 
     /**
@@ -166,7 +149,7 @@ struct Type final : TypeBase, std::variant<Integral, Floating, Boolean> {
      *
      * @return The `Size` of the active type variant.
      */
-    [[nodiscard]] Size size() const override;
+    [[nodiscard]] Size size() const;
 };
 } // namespace arkoi::sem
 

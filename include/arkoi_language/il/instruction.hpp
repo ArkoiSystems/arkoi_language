@@ -8,71 +8,9 @@
 
 namespace arkoi::il {
 /**
- * @brief Abstract base class for all Intermediate Language (IL) instructions.
- *
- * Each IL instruction represents a single operation in the Three-Address-ish Code (TAC-ish)
- * style representation. Instructions provide information about which operands
- * they define (write to) and which they use (read from), which is essential
- * for dataflow analysis.
- *
- * @see Visitor, Operand
- */
-class InstructionBase {
-public:
-    virtual ~InstructionBase() = default;
-
-    /**
-     * @brief Dispatches the visitor to the concrete instruction implementation.
-     *
-     * @param visitor The visitor to accept.
-     */
-    virtual void accept(Visitor& visitor) = 0;
-
-    /**
-     * @brief Returns the list of operands that are defined (written) by this instruction.
-     *
-     * For example, in `x = y + z`, `x` is a defined operand.
-     *
-     * @return A vector of defined `Operand` objects.
-     * @see uses
-     */
-    [[nodiscard]] virtual std::vector<Operand> defs() const { return { }; }
-
-    /**
-     * @brief Returns the list of operands that are used (read) by this instruction.
-     *
-     * For example, in `x = y + z`, `y` and `z` are used operands.
-     *
-     * @return A vector of used `Operand` objects.
-     * @see defs
-     */
-    [[nodiscard]] virtual std::vector<Operand> uses() const { return { }; }
-
-    /**
-     * @brief Checks if the instruction result is a constant or has constant operands.
-     *
-     * Useful for optimizations like constant folding.
-     *
-     * @return True if the instruction is constant-evaluable, false otherwise.
-     */
-    [[nodiscard]] virtual bool is_constant() const = 0;
-
-    /**
-     * @brief Returns the optional source code span associated with this instruction.
-     *
-     * The span includes the starting and ending positions in the source file.
-     * There may be no span attached to this instruction, so this could also be
-     * std::nullopt.
-     *
-     * @return The optional `pretty_diagnostics::Span` of the node.
-     */
-    [[nodiscard]] virtual std::optional<pretty_diagnostics::Span> span() const = 0;
-};
-
-/**
  * @brief Represents an unconditional jump to a target label.
  */
-class Goto final : public InstructionBase {
+class Goto final {
 public:
     /**
      * @brief Constructs a `Goto` instruction.
@@ -88,14 +26,31 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
+
+    /**
+     * @brief Returns the result variable defined by the call.
+     *
+     * @return A vector containing the `_result` variable.
+     */
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] std::vector<Operand> defs() const { return { }; }
+
+    /**
+     * @brief Returns the argument operands used by the call.
+     *
+     * @return A vector of `_arguments`.
+     */
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] std::vector<Operand> uses() const { return { }; }
 
     /**
      * @brief Returns whether this instruction is constant.
      *
      * @return Always false for `Goto`.
      */
-    [[nodiscard]] bool is_constant() const override { return false; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return false; }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -106,7 +61,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the target label of the jump.
@@ -126,7 +81,7 @@ private:
  * If the condition evaluates to true, control transfers to `branch`.
  * Otherwise, it transfers to `next`.
  */
-class If final : public InstructionBase {
+class If final {
 public:
     /**
      * @brief Constructs an `If` instruction.
@@ -145,21 +100,29 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
+
+    /**
+     * @brief Returns the result variable defined by this instruction.
+     *
+     * @return A vector containing the `_result` variable.
+     */
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] std::vector<Operand> defs() const { return { }; }
 
     /**
      * @brief Returns the operands used by this conditional jump.
      *
      * @return A vector containing the `_condition` operand.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return { _condition }; }
+    [[nodiscard]] std::vector<Operand> uses() const { return { _condition }; }
 
     /**
      * @brief Checks if the condition is an immediate constant.
      *
      * @return True if `_condition` is an `Immediate`.
      */
-    [[nodiscard]] bool is_constant() const override { return std::holds_alternative<Immediate>(_condition); }
+    [[nodiscard]] bool is_constant() const { return std::holds_alternative<Immediate>(_condition); }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -170,7 +133,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the condition operand.
@@ -204,7 +167,7 @@ private:
  *
  * A `Call` defines a result variable and uses a list of argument operands.
  */
-class Call final : public InstructionBase {
+class Call final {
 public:
     /**
      * @brief Constructs a `Call` instruction.
@@ -226,28 +189,29 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
      * @brief Returns the result variable defined by the call.
      *
      * @return A vector containing the `_result` variable.
      */
-    [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
 
     /**
      * @brief Returns the argument operands used by the call.
      *
      * @return A vector of `_arguments`.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return _arguments; }
+    [[nodiscard]] std::vector<Operand> uses() const { return _arguments; }
 
     /**
      * @brief Checks if the call is constant.
      *
      * @return Always false for `Call`.
      */
-    [[nodiscard]] bool is_constant() const override { return false; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return false; }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -258,7 +222,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the list of argument operands.
@@ -293,7 +257,7 @@ private:
  *
  * Transfers control back to the caller and optionally returns a value.
  */
-class Return final : public InstructionBase {
+class Return final {
 public:
     /**
      * @brief Constructs a `Return` instruction.
@@ -309,21 +273,30 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
+
+    /**
+     * @brief Returns the result variable defined by the call.
+     *
+     * @return A vector containing the `_result` variable.
+     */
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] std::vector<Operand> defs() const { return { }; }
 
     /**
      * @brief Returns the operand used for the return value.
      *
      * @return A vector containing the `_value` operand.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return { _value }; }
+    [[nodiscard]] std::vector<Operand> uses() const { return { _value }; }
 
     /**
      * @brief Checks if the return is constant.
      *
      * @return Always false for `Return`.
      */
-    [[nodiscard]] bool is_constant() const override { return false; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return false; }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -334,7 +307,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the operand being returned.
@@ -351,7 +324,7 @@ private:
 /**
  * @brief Represents a binary operation between two operands.
  */
-class Binary final : public InstructionBase {
+class Binary final {
 public:
     /**
      * @brief Supported binary operators in the IL.
@@ -392,28 +365,28 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
      * @brief Returns the result variable defined by this operation.
      *
      * @return A vector containing the `_result` variable.
      */
-    [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
 
     /**
      * @brief Returns the operands used by this operation.
      *
      * @return A vector containing the `_left` and `_right` operands.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return { _left, _right }; }
+    [[nodiscard]] std::vector<Operand> uses() const { return { _left, _right }; }
 
     /**
      * @brief Checks if both operands are immediate constants.
      *
      * @return True if both `_left` and `_right` are `Immediate`.
      */
-    [[nodiscard]] bool is_constant() const override {
+    [[nodiscard]] bool is_constant() const {
         return std::holds_alternative<Immediate>(_left) && std::holds_alternative<Immediate>(_right);
     }
 
@@ -426,7 +399,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the result variable.
@@ -482,7 +455,7 @@ private:
 /**
  * @brief Represents a type conversion (cast) instruction.
  */
-class Cast final : public InstructionBase {
+class Cast final {
 public:
     /**
      * @brief Constructs a `Cast` instruction.
@@ -501,28 +474,28 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
      * @brief Returns the result variable defined by the cast.
      *
      * @return A vector containing the `_result` variable.
      */
-    [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
 
     /**
      * @brief Returns the source operand used for the cast.
      *
      * @return A vector containing the `_source` operand.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return { _source }; }
+    [[nodiscard]] std::vector<Operand> uses() const { return { _source }; }
 
     /**
      * @brief Checks if the source operand is an immediate constant.
      *
      * @return True if `_source` is an `Immediate`.
      */
-    [[nodiscard]] bool is_constant() const override { return std::holds_alternative<Immediate>(_source); }
+    [[nodiscard]] bool is_constant() const { return std::holds_alternative<Immediate>(_source); }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -533,7 +506,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the source operand.
@@ -568,7 +541,7 @@ private:
  *
  * Allocates space on the stack for a local variable or structure.
  */
-class Alloca final : public InstructionBase {
+class Alloca final {
 public:
     /**
      * @brief Constructs an `Alloca` instruction.
@@ -584,21 +557,30 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
      * @brief Returns the memory location defined by the allocation.
      *
      * @return A vector containing the `_result` memory operand.
      */
-    [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
+
+    /**
+     * @brief Returns the argument operands used by the call.
+     *
+     * @return A vector of `_arguments`.
+     */
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] std::vector<Operand> uses() const { return { }; }
 
     /**
      * @brief Checks if the allocation is constant.
      *
      * @return Always false for `Alloca`.
      */
-    [[nodiscard]] bool is_constant() const override { return false; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return false; }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -609,7 +591,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the allocated memory location.
@@ -628,7 +610,7 @@ private:
  *
  * Reads a value from a memory location into a variable.
  */
-class Load final : public InstructionBase {
+class Load final {
 public:
     /**
      * @brief Constructs a `Load` instruction.
@@ -645,28 +627,29 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
      * @brief Returns the result variable defined by the load.
      *
      * @return A vector containing the `_result` variable.
      */
-    [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
 
     /**
      * @brief Returns the memory location used by the load.
      *
      * @return A vector containing the `_source` memory operand.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return { _source }; }
+    [[nodiscard]] std::vector<Operand> uses() const { return { _source }; }
 
     /**
      * @brief Checks if the load is constant.
      *
      * @return Always false for `Load`.
      */
-    [[nodiscard]] bool is_constant() const override { return false; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return false; }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -677,7 +660,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the target variable.
@@ -704,7 +687,7 @@ private:
  *
  * Writes an operand's value into a target memory location.
  */
-class Store final : public InstructionBase {
+class Store final {
 public:
     /**
      * @brief Constructs a `Store` instruction.
@@ -721,7 +704,14 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
+
+    /**
+     * @brief Returns the result variable defined by the call.
+     *
+     * @return A vector containing the `_result` variable.
+     */
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
 
     /**
      * @brief Returns the operands used for the store.
@@ -730,14 +720,15 @@ public:
      *
      * @return A vector containing the `_source` operand.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return { _source }; }
+    [[nodiscard]] std::vector<Operand> uses() const { return { _source }; }
 
     /**
      * @brief Checks if the store is constant.
      *
      * @return Always false for `Store`.
      */
-    [[nodiscard]] bool is_constant() const override { return false; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return false; }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -748,7 +739,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the target memory location.
@@ -773,7 +764,7 @@ private:
 /**
  * @brief Represents a constant assignment to a variable.
  */
-class Constant final : public InstructionBase {
+class Constant final {
 public:
     /**
      * @brief Constructs a `Constant` instruction.
@@ -790,28 +781,29 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
      * @brief Returns the result variable defined by this instruction.
      *
      * @return A vector containing the `_result` variable.
      */
-    [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
 
     /**
      * @brief Returns the immediate value used by this instruction.
      *
      * @return A vector containing the `_immediate` operand.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return { _immediate }; }
+    [[nodiscard]] std::vector<Operand> uses() const { return { _immediate }; }
 
     /**
      * @brief Checks if the instruction is constant.
      *
      * @return Always true for `Constant`.
      */
-    [[nodiscard]] bool is_constant() const override { return true; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return true; }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -822,7 +814,7 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the target result variable.
@@ -844,7 +836,7 @@ private:
     Variable _result;
 };
 
-class Argument final : public InstructionBase {
+class Argument final {
 public:
     Argument(Variable result, Operand source, std::optional<pretty_diagnostics::Span> span) :
         _span(std::move(span)), _result(std::move(result)), _source(std::move(source)) { }
@@ -854,14 +846,15 @@ public:
      *
      * @param visitor The visitor to accept.
      */
-    void accept(Visitor& visitor) override { visitor.visit(*this); }
+    void accept(Visitor& visitor) { visitor.visit(*this); }
 
     /**
      * @brief Checks if the instruction is constant.
      *
      * @return Always false for `Parameter`.
      */
-    [[nodiscard]] bool is_constant() const override { return false; }
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return false; }
 
     /**
      * @brief Returns the optional source code span associated with this instruction.
@@ -872,21 +865,21 @@ public:
      *
      * @return The optional `pretty_diagnostics::Span` of the node.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override { return _span; }
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
 
     /**
      * @brief Returns the result variable defined by this instruction.
      *
      * @return A vector containing the `_result` variable.
      */
-    [[nodiscard]] std::vector<Operand> defs() const override { return { _result }; }
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
 
     /**
      * @brief Returns the source operand used by this instruction.
      *
      * @return A vector containing the `_source` operand.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override { return { _source }; }
+    [[nodiscard]] std::vector<Operand> uses() const { return { _source }; }
 
     /**
      * @brief Returns the result operand.
@@ -915,7 +908,7 @@ private:
  * the overhead of virtual calls for every operation, while still supporting
  * the `Visitor` pattern.
  */
-struct Instruction final : InstructionBase, std::variant<
+struct Instruction final : std::variant<
                                Goto, If, Cast, Call, Return,
                                Binary, Alloca, Store, Load, Constant,
                                Argument
@@ -925,27 +918,27 @@ struct Instruction final : InstructionBase, std::variant<
     /**
      * @brief Dispatches the visitor to the underlying instruction type.
      */
-    void accept(Visitor& visitor) override;
+    void accept(Visitor& visitor);
 
     /**
      * @brief Forwards the `defs` call to the underlying instruction.
      */
-    [[nodiscard]] std::vector<Operand> defs() const override;
+    [[nodiscard]] std::vector<Operand> defs() const;
 
     /**
      * @brief Forwards the `uses` call to the underlying instruction.
      */
-    [[nodiscard]] std::vector<Operand> uses() const override;
+    [[nodiscard]] std::vector<Operand> uses() const;
 
     /**
      * @brief Forwards the `is_constant` call to the underlying instruction.
      */
-    [[nodiscard]] bool is_constant() const override;
+    [[nodiscard]] bool is_constant() const;
 
     /**
      * @brief Forwards the `span` call to the underlying instruction.
      */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const override;
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const;
 };
 } // namespace arkoi::il
 
