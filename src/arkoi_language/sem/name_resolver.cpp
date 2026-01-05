@@ -4,14 +4,6 @@
 
 using namespace arkoi::sem;
 
-NameResolver NameResolver::resolve(ast::Program& node) {
-    NameResolver resolver;
-
-    node.accept(resolver);
-
-    return resolver;
-}
-
 void NameResolver::visit(ast::Program& node) {
     _scopes.push(node.table());
 

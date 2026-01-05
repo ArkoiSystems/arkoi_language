@@ -4,6 +4,9 @@
 #include <unordered_map>
 #include <utility>
 
+#include "pretty_diagnostics/report.hpp"
+
+#include "arkoi_language/front/token.hpp"
 #include "arkoi_language/sem/symbol.hpp"
 
 namespace arkoi::sem {
@@ -31,13 +34,13 @@ public:
      *
      * @tparam Type The concrete symbol type (e.g., `Variable`, `Function`).
      * @tparam Args Argument types for the symbol's constructor.
-     * @param name The name identifier for the symbol.
+     * @param identifier The identifier token for the symbol.
      * @param args Arguments to pass to the symbol constructor.
      * @return A shared pointer to the newly created `Symbol`.
      * @throws IdentifierAlreadyTaken if the @p name already exists in the current scope.
      */
     template <typename Type, typename... Args>
-    std::shared_ptr<Symbol>& insert(const std::string& name, Args&&... args);
+    std::shared_ptr<Symbol>& insert(const front::Token& identifier, Args&&... args);
 
     /**
      * @brief Resolves a symbol by name, searching current and parent scopes.
@@ -45,12 +48,12 @@ public:
      * This method implements lexical scoping rules.
      *
      * @tparam Types Optional filter for allowed symbol types.
-     * @param name The name identifier to search for.
+     * @param identifier The identifier token to search for.
      * @return A reference to the shared pointer of the found `Symbol`.
      * @throws IdentifierNotFound if the symbol is not found in any accessible scope.
      */
     template <typename... Types>
-    [[nodiscard]] std::shared_ptr<Symbol>& lookup(const std::string& name);
+    [[nodiscard]] std::shared_ptr<Symbol>& lookup(const front::Token& identifier);
 
 private:
     std::unordered_map<std::string, std::shared_ptr<Symbol>> _symbols{ };
@@ -58,31 +61,58 @@ private:
 };
 
 /**
- * @brief Exception thrown when attempting to redefine an identifier in the same scope.
+ * @brief Base class for all recoverable semantic analysis errors.
+ *
+ * Stores a diagnostic report describing the semantic error.
+ * Thrown to unwind semantic analysis and handled at recovery points.
  */
-class IdentifierAlreadyTaken final : public std::runtime_error {
+class SemanticError : public std::exception {
 public:
     /**
-     * @brief Constructs an `IdentifierAlreadyTaken` exception.
-     *
-     * @param name The name of the conflicting identifier.
+     * @brief Constructs a `SemanticError`.
+     * @param report Diagnostic report describing the error.
      */
-    explicit IdentifierAlreadyTaken(const std::string& name) :
-        std::runtime_error("The identifier " + name + " is already taken.") { }
+    explicit SemanticError(pretty_diagnostics::Report report)
+        : _report(std::move(report)) {}
+
+    /**
+     * @brief Returns the diagnostic report associated with this error.
+     * @return Reference to the stored diagnostic report.
+     */
+    [[nodiscard]] auto& report() const {
+        return _report;
+    }
+
+private:
+    pretty_diagnostics::Report _report;
 };
 
 /**
- * @brief Exception thrown when an identifier cannot be resolved.
+ * @brief Semantic error indicating an identifier redefinition
+ *        within the same scope.
  */
-class IdentifierNotFound final : public std::runtime_error {
+class IdentifierAlreadyTaken final : public SemanticError {
 public:
     /**
-     * @brief Constructs an `IdentifierNotFound` exception.
+     * @brief Constructs an `IdentifierAlreadyTaken` error.
      *
-     * @param name The name of the missing identifier.
+     * @param first The first instance of this identifier.
+     * @param second The redefinition of this identifier.
      */
-    explicit IdentifierNotFound(const std::string& name) :
-        std::runtime_error("The identifier " + name + " was not found.") { }
+    IdentifierAlreadyTaken(const front::Token& first, const front::Token& second);
+};
+
+/**
+ * @brief Semantic error indicating an unresolved identifier.
+ */
+class IdentifierNotFound final : public SemanticError {
+public:
+    /**
+     * @brief Constructs an `IdentifierNotFound` error.
+     *
+     * @param name Name of the unresolved identifier token.
+     */
+    explicit IdentifierNotFound(const front::Token& name);
 };
 
 #include "../../../src/arkoi_language/sem/symbol_table.tpp"

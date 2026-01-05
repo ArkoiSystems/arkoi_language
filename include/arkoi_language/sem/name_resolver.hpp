@@ -5,6 +5,7 @@
 #include "arkoi_language/ast/visitor.hpp"
 #include "arkoi_language/front/token.hpp"
 #include "arkoi_language/sem/symbol_table.hpp"
+#include "arkoi_language/utils/diagnostics.hpp"
 
 namespace arkoi::sem {
 /**
@@ -18,31 +19,13 @@ namespace arkoi::sem {
  * @see ast::Visitor, SymbolTable, Symbol, TypeResolver
  */
 class NameResolver final : ast::Visitor {
-private:
-    /**
-     * @brief Constructs a `NameResolver`.
-
-     * Private to enforce usage through the static @ref resolve entry point.
-     */
-    NameResolver() = default;
-
 public:
     /**
-     * @brief Performs name resolution on an entire AST program.
-
-     * @param node The root `ast::Program` node to resolve.
-     * @return A `NameResolver` instance containing the result state.
+     * @brief Constructs a `NameResolver`.
      */
-    [[nodiscard]] static NameResolver resolve(ast::Program& node);
+    explicit NameResolver(utils::Diagnostics &diagnostics) :
+        _diagnostics(diagnostics) { }
 
-    /**
-     * @brief Indicates whether any name resolution errors were encountered.
-
-     * @return True if one or more resolution errors occurred, false otherwise.
-     */
-    [[nodiscard]] auto has_failed() const { return _failed; }
-
-private:
     /**
     * @brief Resolves names in the global program scope.
      *
@@ -50,6 +33,7 @@ private:
      */
     void visit(ast::Program& node) override;
 
+private:
     /**
      * @brief First-pass visitor for function prototypes to allow forward references.
 
@@ -172,7 +156,7 @@ private:
 
 private:
     std::stack<std::shared_ptr<SymbolTable>> _scopes{ };
-    bool _failed{ };
+    utils::Diagnostics &_diagnostics;
 };
 
 #include "../../../src/arkoi_language/sem/name_resolver.tpp"

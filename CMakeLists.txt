@@ -40,6 +40,7 @@ add_library(${PROJECT_NAME}
         src/arkoi_language/sem/name_resolver.tpp
         src/arkoi_language/sem/name_resolver.cpp
         src/arkoi_language/sem/symbol_table.tpp
+        src/arkoi_language/sem/symbol_table.cpp
         src/arkoi_language/sem/symbol.cpp
         src/arkoi_language/sem/type_resolver.cpp
         src/arkoi_language/sem/type.cpp

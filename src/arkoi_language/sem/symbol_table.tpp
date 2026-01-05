@@ -1,25 +1,32 @@
 #pragma once
 
 template <typename Type, typename... Args>
-std::shared_ptr<Symbol>& SymbolTable::insert(const std::string& name, Args&&... args) {
-    if (_symbols.contains(name)) throw IdentifierAlreadyTaken(name);
+std::shared_ptr<Symbol>& SymbolTable::insert(const front::Token& identifier, Args&&... args) {
+    const auto name = identifier.span().substr();
 
-    auto symbol = std::make_shared<Symbol>(Type(name, std::forward<Args>(args)...));
+    const auto found = _symbols.find(name);
+    if (found != _symbols.end()) {
+        throw IdentifierAlreadyTaken(found->second->name(), identifier);
+    }
+
+    auto symbol = std::make_shared<Symbol>(Type(identifier, std::forward<Args>(args)...));
     auto result = _symbols.emplace(name, symbol);
 
     return result.first->second;
 }
 
 template <typename... Types>
-[[nodiscard]] std::shared_ptr<Symbol>& SymbolTable::lookup(const std::string& name) {
+[[nodiscard]] std::shared_ptr<Symbol>& SymbolTable::lookup(const front::Token& identifier) {
+    const auto name = identifier.span().substr();
+
     const auto found = _symbols.find(name);
     if (found != _symbols.end() && (std::holds_alternative<Types>(*found->second) || ...)) {
         return found->second;
     }
 
-    if (_parent == nullptr) throw IdentifierNotFound(name);
+    if (_parent == nullptr) throw IdentifierNotFound(identifier);
 
-    return _parent->lookup<Types...>(name);
+    return _parent->lookup<Types...>(identifier);
 }
 
 //==============================================================================

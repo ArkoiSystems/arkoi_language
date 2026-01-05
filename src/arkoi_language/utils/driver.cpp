@@ -61,19 +61,23 @@ int32_t driver::compile(
         return 1;
     }
 
-    auto name_resolver = sem::NameResolver::resolve(program);
+    auto name_resolver = sem::NameResolver(diagnostics);
+    name_resolver.visit(program);
     if (diagnostics.has_errors()) {
         diagnostics.render(std::cerr);
         return 1;
     }
 
-    auto type_resolver = sem::TypeResolver::resolve(program);
+    auto type_resolver = sem::TypeResolver(diagnostics);
+    type_resolver.visit(program);
     if (diagnostics.has_errors()) {
         diagnostics.render(std::cerr);
         return 1;
     }
 
-    auto module = il::Generator::generate(program);
+    auto il_generator = il::Generator();
+    il_generator.visit(program);
+    auto module = il_generator.module();
 
     opt::PassManager manager;
     manager.add<opt::ConstantFolding>();
@@ -83,18 +87,18 @@ int32_t driver::compile(
     manager.run(module);
 
     if (il_ostream) {
-        auto il_output = il::ILPrinter::print(module);
-        *il_ostream << il_output.str();
+        auto il_printer = il::ILPrinter(*il_ostream);
+        il_printer.visit(module);
     }
 
     if (cfg_ostream) {
-        auto cfg_output = il::CFGPrinter::print(module);
-        *cfg_ostream << cfg_output.str();
+        auto cfg_printer = il::CFGPrinter(*cfg_ostream);
+        cfg_printer.visit(module);
     }
 
-    auto assembly_generator = x86_64::Generator(source, module);
     if (asm_ostream) {
-        *asm_ostream << assembly_generator.output().str();
+        auto asm_generator = x86_64::Generator(source, module);
+        *asm_ostream << asm_generator.output().str();
     }
 
     return 0;

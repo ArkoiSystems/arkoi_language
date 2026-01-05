@@ -9,12 +9,6 @@
 using namespace arkoi::il;
 using namespace arkoi;
 
-Module Generator::generate(ast::Program& node) {
-    Generator generator;
-    node.accept(generator);
-    return generator.module();
-}
-
 void Generator::visit(ast::Program& node) {
     for (const auto& item : node.statements()) {
         item->accept(*this);
@@ -30,14 +24,14 @@ void Generator::visit(ast::Function& node) {
 
     std::vector<Variable> parameters;
     for (auto& parameter : function_symbol.parameters()) {
-        parameters.emplace_back(parameter->name(), parameter->type());
+        parameters.emplace_back(parameter->name().span().substr(), parameter->type());
     }
 
     auto entry_label = _make_label_symbol();
     auto exit_label = _make_label_symbol();
 
     auto& function = _module.emplace_back(
-        function_symbol.name(),
+        function_symbol.name().span().substr(),
         parameters,
         function_symbol.return_type(),
         entry_label,
@@ -355,7 +349,12 @@ void Generator::visit(ast::Call& node) {
     auto result = _make_temporary(function.return_type());
     _current_operand = result;
 
-    _current_block->emplace_back<Call>(result, function.name(), std::move(arguments), node.span());
+    _current_block->emplace_back<Call>(
+        result,
+        function.name().span().substr(),
+        std::move(arguments),
+        node.span()
+    );
 }
 
 void Generator::visit(ast::If& node) {

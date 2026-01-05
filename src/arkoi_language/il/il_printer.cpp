@@ -8,13 +8,6 @@
 
 using namespace arkoi::il;
 
-std::stringstream ILPrinter::print(Module& module) {
-    std::stringstream output;
-    ILPrinter printer(output);
-    printer.visit(module);
-    return output;
-}
-
 void ILPrinter::visit(Module& module) {
     for (auto& function : module) {
         function.accept(*this);

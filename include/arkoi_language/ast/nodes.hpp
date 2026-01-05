@@ -212,7 +212,7 @@ public:
      *
      * @param symbol The `Symbol` to associate with this identifier.
      */
-    void set_symbol(std::shared_ptr<Symbol> symbol) { _symbol = std::move(symbol); }
+    void set_symbol(std::shared_ptr<sem::Symbol> symbol) { _symbol = std::move(symbol); }
 
     /**
      * @brief Returns the token representing the identifier's name.
@@ -244,7 +244,7 @@ public:
     }
 
 private:
-    std::optional<std::shared_ptr<Symbol>> _symbol{ };
+    std::optional<std::shared_ptr<sem::Symbol>> _symbol{ };
     pretty_diagnostics::Span _span;
     front::Token _value;
     Kind _kind;

@@ -2,13 +2,6 @@
 
 using namespace arkoi::il;
 
-std::stringstream CFGPrinter::print(Module& module) {
-    std::stringstream output;
-    CFGPrinter printer(output);
-    printer.visit(module);
-    return output;
-}
-
 void CFGPrinter::visit(Module& module) {
     _output << "digraph CFG {\n";
 

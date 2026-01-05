@@ -11,14 +11,6 @@ using namespace arkoi;
 static constinit Integral BOOL_PROMOTED_INT_TYPE = { Size::DWORD, false };
 static constinit Boolean BOOL_TYPE = { };
 
-TypeResolver TypeResolver::resolve(ast::Program& node) {
-    TypeResolver resolver;
-
-    node.accept(resolver);
-
-    return resolver;
-}
-
 void TypeResolver::visit(ast::Program& node) {
     for (const auto& statement : node.statements()) {
         auto* function = dynamic_cast<ast::Function*>(statement.get());

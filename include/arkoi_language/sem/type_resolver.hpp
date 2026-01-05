@@ -2,6 +2,7 @@
 
 #include "arkoi_language/ast/nodes.hpp"
 #include "arkoi_language/sem/type.hpp"
+#include "arkoi_language/utils/diagnostics.hpp"
 
 namespace arkoi::sem {
 /**
@@ -15,37 +16,21 @@ namespace arkoi::sem {
  * @see ast::Visitor, Type, NameResolver
  */
 class TypeResolver final : ast::Visitor {
-private:
-    /**
-     * @brief Constructs a `TypeResolver`.
-
-     * Private to enforce usage through the static @ref resolve entry point.
-     */
-    TypeResolver() = default;
-
 public:
     /**
-     * @brief Performs type resolution on an entire AST program.
-
-     * @param node The root `ast::Program` node to resolve.
-     * @return A `TypeResolver` instance containing the result state.
+     * @brief Constructs a `TypeResolver`.
      */
-    [[nodiscard]] static TypeResolver resolve(ast::Program& node);
+    explicit TypeResolver(utils::Diagnostics &diagnostics) :
+        _diagnostics(diagnostics) { }
 
-    /**
-     * @brief Indicates whether any type resolution errors were encountered.
-
-     * @return True if one or more typing errors occurred, false otherwise.
-     */
-    [[nodiscard]] auto has_failed() const { return _failed; }
-
-private:
     /**
      * @brief Resolves types in the global program scope.
      *
      * @param node The `Program` node to visit.
      */
     void visit(ast::Program& node) override;
+
+private:
 
     /**
      * @brief First-pass visitor for function prototypes.
@@ -196,7 +181,7 @@ private:
 
 private:
     std::optional<Type> _current_type{ }, _return_type{ };
-    bool _failed{ };
+    utils::Diagnostics &_diagnostics;
 };
 } // namespace arkoi::sem
 

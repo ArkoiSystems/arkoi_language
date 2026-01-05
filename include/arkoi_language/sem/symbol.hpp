@@ -5,12 +5,62 @@
 #include <utility>
 #include <vector>
 
+#include "arkoi_language/front/token.hpp"
 #include "arkoi_language/sem/type.hpp"
 
-struct Symbol;
-
 namespace arkoi::sem {
-class Variable;
+/**
+ * @brief Represents a variable declaration in the semantic model.
+ *
+ * A `Variable` symbol stores the variable's name and its resolved semantic type.
+ */
+class Variable {
+public:
+    /**
+     * @brief Constructs a `Variable` symbol with an explicit name and type.
+     *
+     * @param name The name token of the variable.
+     * @param type The semantic type of the variable.
+     */
+    Variable(front::Token name, Type type) :
+        _type(type), _name(std::move(name)) { }
+
+    /**
+     * @brief Constructs a `Variable` symbol with only a name.
+     *
+     * The type is expected to be assigned later during analysis.
+     *
+     * @param name The name of the variable.
+     */
+    explicit Variable(front::Token name) :
+        _name(std::move(name)) { }
+
+    /**
+     * @brief Returns the semantic type of the variable.
+     *
+     * @return A constant reference to the `Type`.
+     * @throws std::bad_optional_access if the type has not been set.
+     */
+    [[nodiscard]] auto& type() const { return _type.value(); }
+
+    /**
+     * @brief Sets the semantic type of the variable.
+     *
+     * @param type The `Type` to associate with this variable.
+     */
+    void set_type(Type type) { _type = std::move(type); }
+
+    /**
+     * @brief Returns the name of the variable.
+     *
+     * @return A constant reference to the name token.
+     */
+    [[nodiscard]] auto& name() const { return _name; }
+
+private:
+    std::optional<Type> _type{ };
+    front::Token _name;
+};
 
 /**
  * @brief Represents a function definition in the semantic model.
@@ -23,9 +73,9 @@ public:
     /**
      * @brief Constructs a `Function` symbol.
      *
-     * @param name The name of the function.
+     * @param name The name token of the function.
      */
-    explicit Function(std::string name) :
+    explicit Function(front::Token name) :
         _name(std::move(name)) { }
 
     /**
@@ -45,7 +95,7 @@ public:
     /**
      * @brief Returns the name of the function.
      *
-     * @return A constant reference to the name string.
+     * @return A constant reference to the name token.
      */
     [[nodiscard]] auto& name() const { return _name; }
 
@@ -67,62 +117,8 @@ public:
 private:
     std::vector<std::shared_ptr<Variable>> _parameters{ };
     std::optional<Type> _return_type{ };
-    std::string _name;
+    front::Token _name;
 };
-
-/**
- * @brief Represents a variable declaration in the semantic model.
- *
- * A `Variable` symbol stores the variable's name and its resolved semantic type.
- */
-class Variable {
-public:
-    /**
-     * @brief Constructs a `Variable` symbol with an explicit name and type.
-     *
-     * @param name The name of the variable.
-     * @param type The semantic type of the variable.
-     */
-    Variable(std::string name, Type type) :
-        _type(type), _name(std::move(name)) { }
-
-    /**
-     * @brief Constructs a `Variable` symbol with only a name.
-     *
-     * The type is expected to be assigned later during analysis.
-     *
-     * @param name The name of the variable.
-     */
-    explicit Variable(std::string name) :
-        _name(std::move(name)) { }
-
-    /**
-     * @brief Returns the semantic type of the variable.
-     *
-     * @return A constant reference to the `Type`.
-     * @throws std::bad_optional_access if the type has not been set.
-     */
-    [[nodiscard]] auto& type() const { return _type.value(); }
-
-    /**
-     * @brief Sets the semantic type of the variable.
-     *
-     * @param type The `Type` to associate with this variable.
-     */
-    void set_type(Type type) { _type = std::move(type); }
-
-    /**
-     * @brief Returns the name of the variable.
-     *
-     * @return A constant reference to the name string.
-     */
-    [[nodiscard]] auto& name() const { return _name; }
-
-private:
-    std::optional<Type> _type{ };
-    std::string _name;
-};
-} // namespace arkoi::sem
 
 /**
  * @brief A type-safe container for any symbol (Function or Variable).
@@ -130,9 +126,17 @@ private:
  * `Symbol` is a `std::variant` that allows uniform handling of different
  * symbol kinds while maintaining type safety.
  */
-struct Symbol : std::variant<arkoi::sem::Function, arkoi::sem::Variable> {
+struct Symbol : std::variant<Function, Variable> {
     using variant::variant;
+
+    /**
+     * @brief Returns the name of the symbol.
+     *
+     * @return A constant reference to the name token.
+     */
+    [[nodiscard]] const front::Token& name() const;
 };
+} // namespace arkoi::sem
 
 /**
  * @brief Streams a detailed description of a `Symbol`.
@@ -141,7 +145,7 @@ struct Symbol : std::variant<arkoi::sem::Function, arkoi::sem::Variable> {
  * @param symbol The symbol to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Symbol>& symbol);
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<arkoi::sem::Symbol>& symbol);
 
 //==============================================================================
 // BSD 3-Clause License

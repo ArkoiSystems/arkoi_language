@@ -20,24 +20,8 @@ public:
      *
      * @param output The string stream where the IL text will be accumulated.
      */
-    explicit ILPrinter(std::stringstream& output) :
+    explicit ILPrinter(std::ostream& output) :
         _output(output) { }
-
-public:
-    /**
-     * @brief Entry point for printing all functions in a module.
-     *
-     * @param module The `Module` to be printed.
-     * @return A `std::stringstream` containing the full IL text.
-     */
-    [[nodiscard]] static std::stringstream print(Module& module);
-
-    /**
-     * @brief Returns the output stream containing the IL text.
-     *
-     * @return A constant reference to the internal `std::stringstream`.
-     */
-    [[nodiscard]] auto& output() const { return _output; }
 
     /**
      * @brief Prints a representation of the entire module.
@@ -110,7 +94,7 @@ public:
     void visit(Constant& instruction) override;
 
 private:
-    std::stringstream& _output;
+    std::ostream& _output;
 };
 } // namespace arkoi::il
 

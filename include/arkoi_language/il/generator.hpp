@@ -15,19 +15,11 @@ namespace arkoi::il {
  * @see ast::Visitor, Module, Function, BasicBlock
  */
 class Generator final : ast::Visitor {
-private:
-    Generator() = default;
-
 public:
     /**
-     * @brief Transforms an AST program into its equivalent IL representation.
-     *
-     * This is the main entry point for IL generation.
-     *
-     * @param node The root `ast::Program` node to convert.
-     * @return A `Module` containing the generated functions and code.
+     * @brief Processes the global program structure.
      */
-    [[nodiscard]] static Module generate(ast::Program& node);
+    void visit(ast::Program& node) override;
 
     /**
      * @brief Returns the compilation module being populated.
@@ -37,11 +29,6 @@ public:
     [[nodiscard]] auto& module() { return _module; }
 
 private:
-    /**
-     * @brief Processes the global program structure.
-     */
-    void visit(ast::Program& node) override;
-
     /**
      * @brief Processes a function definition and its body.
      */
@@ -156,7 +143,7 @@ private:
     [[nodiscard]] Memory _make_memory(const sem::Type& type);
 
 private:
-    std::unordered_map<std::shared_ptr<Symbol>, Memory> _allocas{ };
+    std::unordered_map<std::shared_ptr<sem::Symbol>, Memory> _allocas{ };
     std::optional<Memory> _return_temp{ };
     size_t _temp_index{ }, _label_index{ };
     Function* _current_function{ };

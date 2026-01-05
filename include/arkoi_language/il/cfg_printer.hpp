@@ -23,31 +23,15 @@ public:
      *
      * @param output The string stream where the DOT representation will be accumulated.
      */
-    explicit CFGPrinter(std::stringstream& output) :
+    explicit CFGPrinter(std::ostream& output) :
         _current_function(nullptr), _output(output), _printer(output) { }
 
-public:
-    /**
-     * @brief Entry point for generating the DOT graph for an entire module.
-     *
-     * @param module The `Module` to visualize.
-     * @return A `std::stringstream` containing the complete Graphviz DOT source.
-     */
-    [[nodiscard]] static std::stringstream print(Module& module);
-
-    /**
-     * @brief Returns the output stream containing the Graphviz DOT data.
-     *
-     * @return A constant reference to the internal `std::stringstream`.
-     */
-    [[nodiscard]] auto& output() const { return _output; }
-
-private:
     /**
      * @brief Starts the DOT graph and visits all functions.
      */
     void visit(Module& module) override;
 
+private:
     /**
      * @brief Generates a subgraph for a single function.
      */
@@ -116,7 +100,7 @@ private:
 private:
     DataflowAnalysis<BlockLivenessAnalysis> _liveness{ };
     Function* _current_function;
-    std::stringstream& _output;
+    std::ostream& _output;
     ILPrinter _printer;
 };
 } // namespace arkoi::il
