@@ -120,6 +120,50 @@ TEST(ControlFlowGraph, IteratorReversePostOrder) {
     EXPECT_THAT(labels, ElementsAre("main_entry", "branch_1", "next_1", "branch_2", "next_2", "main_exit"));
 }
 
+TEST(DominatorTree, ImmediateDominators) {
+    auto function = create_example_cfg();
+
+    const auto immediates = il::DominatorTree::compute_immediates(function);
+
+    auto get_immediate = [&](const std::string &label) -> const std::string& {
+        const auto target = function.block_pool()[label];
+        return immediates.at(target.get())->label();
+    };
+
+    EXPECT_EQ(get_immediate("main_entry"), "main_entry");
+    EXPECT_EQ(get_immediate("branch_1"), "main_entry");
+    EXPECT_EQ(get_immediate("next_1"), "main_entry");
+    EXPECT_EQ(get_immediate("branch_2"), "next_1");
+    EXPECT_EQ(get_immediate("next_2"), "next_1");
+    EXPECT_EQ(get_immediate("main_exit"), "main_entry");
+}
+
+TEST(DominatorTree, FrontierDominators) {
+    auto function = create_example_cfg();
+
+    const auto frontiers = il::DominatorTree::compute_frontiers(function);
+
+    auto get_frontier = [&](const std::string &label) -> std::vector<std::string> {
+        const auto target = function.block_pool()[label];
+        const auto result = frontiers.at(target.get());
+        std::vector<std::string> labels;
+        std::ranges::transform(
+            result, std::back_inserter(labels),
+            [](const il::BasicBlock* block) {
+                return block->label();
+            }
+        );
+        return labels;
+    };
+
+    EXPECT_THAT(get_frontier("main_entry"), ElementsAre());
+    EXPECT_THAT(get_frontier("next_1"), ElementsAre("main_exit"));
+    EXPECT_THAT(get_frontier("branch_1"), ElementsAre("main_exit"));
+    EXPECT_THAT(get_frontier("next_2"), ElementsAre("main_exit"));
+    EXPECT_THAT(get_frontier("branch_2"), ElementsAre("main_exit"));
+    EXPECT_THAT(get_frontier("main_exit"), ElementsAre());
+}
+
 //==============================================================================
 // BSD 3-Clause License
 //

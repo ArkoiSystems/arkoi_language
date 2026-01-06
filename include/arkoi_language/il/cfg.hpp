@@ -10,8 +10,6 @@
 #include "arkoi_language/il/instruction.hpp"
 
 namespace arkoi::il {
-class Function;
-
 /**
  * @brief Represents a Basic Block in the Control Flow Graph (CFG).
  *
@@ -31,7 +29,7 @@ public:
      * @param label The symbolic name of the block (e.g., "L1", "entry").
      */
     explicit BasicBlock(std::string label) :
-        _branch(), _next(), _label(std::move(label)) { }
+        _label(std::move(label)) { }
 
     /**
      * @brief Dispatches the visitor to this basic block.
@@ -116,9 +114,9 @@ public:
 
 private:
     Instructions _instructions{ };
-    Predecessors _predecessors;
-    BasicBlock* _branch;
-    BasicBlock* _next;
+    Predecessors _predecessors{ };
+    BasicBlock* _branch{ nullptr };
+    BasicBlock* _next{ nullptr };
     std::string _label;
 };
 
@@ -149,8 +147,11 @@ public:
      * block pointer to its index in that vector for O(1) access.
      */
     struct BlockOrder {
-        std::unordered_map<BasicBlock*, std::size_t> indices{ };
-        std::vector<BasicBlock*> blocks{ };
+        using Indices = std::unordered_map<BasicBlock*, std::size_t>;
+        Indices indices{ };
+
+        using Blocks = std::vector<BasicBlock*>;
+        Blocks blocks{ };
     };
 
 public:
@@ -180,6 +181,66 @@ private:
         DFSOrder order,
         std::unordered_set<BasicBlock*>& visited,
         std::vector<BasicBlock*>& blocks
+    );
+};
+
+/**
+ * @brief Utility class for computing dominator information in a control flow graph (CFG).
+ *
+ * This class provides static methods to compute the immediate dominators
+ * and dominance frontiers for all basic blocks in a function. It uses
+ * standard algorithms based on the Cooper–Harvey–Kennedy iterative approach.
+ */
+class DominatorTree {
+public:
+    /// Maps each basic block to the set of basic blocks in its dominance frontier.
+    using Frontiers = std::unordered_map<BasicBlock*, std::unordered_set<BasicBlock*>>;
+
+    /// Maps each basic block to its immediate dominator.
+    using Immediates = std::unordered_map<BasicBlock*, BasicBlock*>;
+
+public:
+    /**
+     * @brief Computes the immediate dominator of each block in the function.
+     *
+     * The immediate dominator of a block B is the unique block that strictly dominates B
+     * and is closest to B in the dominator tree.
+     *
+     * @param function The function whose CFG will be analyzed.
+     * @return A map from each basic block to its immediate dominator.
+     */
+    static Immediates compute_immediates(const Function& function);
+
+    /**
+     * @brief Computes the dominance frontier for each block in the function.
+     *
+     * The dominance frontier of a block B is the set of all blocks where B's dominance
+     * stops, i.e., blocks that are not strictly dominated by B but have a predecessor
+     * dominated by B.
+     *
+     * @param function The function whose CFG will be analyzed.
+     * @return A map from each basic block to the set of blocks in its dominance frontier.
+     */
+    static Frontiers compute_frontiers(const Function& function);
+
+private:
+    /**
+     * @brief Helper function to compute the intersection of two dominator paths.
+     *
+     * This is used internally by the immediate dominator computation. It walks
+     * up the dominator tree of two blocks until a common ancestor is found.
+     *
+     * @param u The first basic block.
+     * @param v The second basic block.
+     * @param immediates Map of already computed immediate dominators.
+     * @param rpo_indices Reverse postorder indices for the blocks, used to guide traversal.
+     * @return The nearest common dominator of u and v.
+     */
+    static BasicBlock* _intersect(
+        BasicBlock* u,
+        BasicBlock* v,
+        const Immediates& immediates,
+        const BlockTraversal::BlockOrder::Indices& rpo_indices
     );
 };
 
@@ -346,12 +407,10 @@ public:
     /**
      * @brief Creates and appends a new basic block to the function.
      *
-     * @tparam Args The constructor argument types for `BasicBlock`.
-     * @param args The arguments to pass to the `BasicBlock` constructor.
+     * @param label The label for the constructed `BasicBlock`.
      * @return A pointer to the newly created `BasicBlock`.
      */
-    template <typename... Args>
-    BasicBlock* emplace_back(Args&&... args);
+    BasicBlock* emplace_back(const std::string &label);
 
     /**
      * @brief Determines if this function contains any `Call` instructions.
@@ -404,6 +463,13 @@ public:
     void set_exit(BasicBlock* exit) { _exit = exit; }
 
     /**
+     * @brief Returns all the blocks of this function mapped by their label.
+     *
+     * @return A reference to the unordered map of blocks used by this function.
+     */
+    [[nodiscard]] auto& block_pool() { return _block_pool; }
+
+    /**
      * @brief Returns the formal parameters of the function.
      *
      * @return A reference to the vector of parameter `Variable` objects.
@@ -422,10 +488,11 @@ public:
      *
      * @return A `BlockIterator` representing the end state.
      */
+    // ReSharper disable once CppMemberFunctionMayBeStatic
     [[nodiscard]] BlockIterator end() { return BlockIterator(nullptr); }
 
 private:
-    std::vector<std::shared_ptr<BasicBlock>> _block_pool{ };
+    std::unordered_map<std::string, std::shared_ptr<BasicBlock>> _block_pool{ };
     std::vector<Variable> _parameters;
     BasicBlock* _entry;
     BasicBlock* _exit;

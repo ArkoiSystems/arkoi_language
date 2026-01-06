@@ -1,6 +1,7 @@
 #include "arkoi_language/il/cfg.hpp"
 
 #include <cassert>
+#include <ranges>
 #include <utility>
 
 using namespace arkoi::il;
@@ -58,6 +59,93 @@ void BlockTraversal::_dfs(
     if (order == DFSOrder::PostOrder || order == DFSOrder::ReversePostOrder) {
         blocks.push_back(current);
     }
+}
+
+DominatorTree::Immediates DominatorTree::compute_immediates(const Function& function) {
+    Immediates immediates{ };
+    if (function.entry() == nullptr) return immediates;
+
+    auto [indices, blocks] = BlockTraversal::build(function.entry(), BlockTraversal::DFSOrder::ReversePostOrder);
+
+    for (auto* block : blocks) {
+        immediates[block] = nullptr;
+    }
+    immediates[function.entry()] = function.entry();
+
+    bool changed = true;
+    while (changed) {
+        changed = false;
+
+        for (size_t index = 1; index < blocks.size(); index++) {
+            auto* current = blocks[index];
+
+            BasicBlock* dominator = nullptr;
+            for (auto* predecessor : current->predecessors()) {
+                if (immediates.contains(predecessor)) {
+                    dominator = predecessor;
+                    break;
+                }
+            }
+
+            if (!dominator) continue;
+
+            for (auto* predecessor : current->predecessors()) {
+                if (predecessor != dominator && immediates.contains(predecessor)) {
+                    dominator = _intersect(predecessor, dominator, immediates, indices);
+                }
+            }
+
+            if (!immediates.contains(current) || immediates[current] != dominator) {
+                immediates[current] = dominator;
+                changed = true;
+            }
+        }
+    }
+
+    return immediates;
+}
+
+DominatorTree::Frontiers DominatorTree::compute_frontiers(const Function& function) {
+    Frontiers frontiers{ };
+    if (function.entry() == nullptr) return frontiers;
+
+    auto immediates = compute_immediates(function);
+    for (auto *block : immediates | std::views::keys) {
+        frontiers[block] = { };
+    }
+
+    for (auto* block : immediates | std::views::keys) {
+        if (block->predecessors().size() >= 2) {
+            for (auto* predecessor : block->predecessors()) {
+                auto* runner = predecessor;
+                while (runner && runner != immediates.at(block)) {
+                    frontiers[runner].insert(block);
+                    runner = immediates.at(runner);
+                }
+            }
+        }
+    }
+
+    return frontiers;
+}
+
+BasicBlock* DominatorTree::_intersect(
+    BasicBlock* u,
+    BasicBlock* v,
+    const Immediates& immediates,
+    const BlockTraversal::BlockOrder::Indices& rpo_indices
+) {
+    while (u != v) {
+        while (rpo_indices.at(u) > rpo_indices.at(v)) {
+            u = immediates.at(u);
+        }
+
+        while (rpo_indices.at(v) > rpo_indices.at(u)) {
+            v = immediates.at(v);
+        }
+    }
+
+    return u;
 }
 
 BlockIterator::BlockIterator(Function* function) :
@@ -124,6 +212,12 @@ Function::Function(
     _exit = emplace_back(std::move(exit_label));
 }
 
+BasicBlock* Function::emplace_back(const std::string& label) {
+    auto block = std::make_shared<BasicBlock>(label);
+    _block_pool.emplace(label, block);
+    return block.get();
+}
+
 bool Function::is_leaf() {
     for (auto& block : *this) {
         for (const auto& instruction : block) {
@@ -140,12 +234,7 @@ bool Function::remove(BasicBlock* target) {
     if (target->next()) target->next()->predecessors().erase(target);
     if (target->branch()) target->branch()->predecessors().erase(target);
 
-    return std::erase_if(
-        _block_pool,
-        [&](const auto& block) {
-            return block.get() == target;
-        }
-    );
+    return _block_pool.erase(target->label());
 }
 
 //==============================================================================
