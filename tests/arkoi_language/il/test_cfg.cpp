@@ -56,6 +56,70 @@ TEST(ControlFlowGraph, IteratorRightOrder) {
     EXPECT_THAT(labels, ElementsAre("main_entry", "next_1", "next_2", "main_exit", "branch_2", "branch_1"));
 }
 
+TEST(ControlFlowGraph, IteratorPreOrder) {
+    const auto function = create_example_cfg();
+
+    auto [_, blocks] = il::BlockTraversal::build(function.entry(), il::BlockTraversal::DFSOrder::PreOrder);
+    std::vector<std::string> labels;
+    std::ranges::transform(
+        blocks, std::back_inserter(labels),
+        [](const il::BasicBlock* block) {
+            return block->label();
+        }
+    );
+
+    ASSERT_EQ(labels.size(), 6);
+    EXPECT_THAT(labels, ElementsAre("main_entry", "next_1", "next_2", "main_exit", "branch_2", "branch_1"));
+}
+
+TEST(ControlFlowGraph, IteratorReversePreOrder) {
+    const auto function = create_example_cfg();
+
+    auto [_, blocks] = il::BlockTraversal::build(function.entry(), il::BlockTraversal::DFSOrder::ReversePreOrder);
+    std::vector<std::string> labels;
+    std::ranges::transform(
+        blocks, std::back_inserter(labels),
+        [](const il::BasicBlock* block) {
+            return block->label();
+        }
+    );
+
+    ASSERT_EQ(labels.size(), 6);
+    EXPECT_THAT(labels, ElementsAre("branch_1", "branch_2", "main_exit", "next_2", "next_1", "main_entry"));
+}
+
+TEST(ControlFlowGraph, IteratorPostOrder) {
+    const auto function = create_example_cfg();
+
+    auto [_, blocks] = il::BlockTraversal::build(function.entry(), il::BlockTraversal::DFSOrder::PostOrder);
+    std::vector<std::string> labels;
+    std::ranges::transform(
+        blocks, std::back_inserter(labels),
+        [](const il::BasicBlock* block) {
+            return block->label();
+        }
+    );
+
+    ASSERT_EQ(labels.size(), 6);
+    EXPECT_THAT(labels, ElementsAre("main_exit", "next_2", "branch_2", "next_1", "branch_1", "main_entry"));
+}
+
+TEST(ControlFlowGraph, IteratorReversePostOrder) {
+    const auto function = create_example_cfg();
+
+    auto [_, blocks] = il::BlockTraversal::build(function.entry(), il::BlockTraversal::DFSOrder::ReversePostOrder);
+    std::vector<std::string> labels;
+    std::ranges::transform(
+        blocks, std::back_inserter(labels),
+        [](const il::BasicBlock* block) {
+            return block->label();
+        }
+    );
+
+    ASSERT_EQ(labels.size(), 6);
+    EXPECT_THAT(labels, ElementsAre("main_entry", "branch_1", "next_1", "branch_2", "next_2", "main_exit"));
+}
+
 //==============================================================================
 // BSD 3-Clause License
 //
