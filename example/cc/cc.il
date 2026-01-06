@@ -31,18 +31,8 @@ L2:
   $12 @f32 = load %02
   $13 @bool = cast @f32 $12
   if $13 then L8 else L9
-L8:
-  $14 @f32 = load %03
-  $15 @bool = cast @f32 $14
-  if $15 then L7 else L9
-L7:
-  %11 @bool = store 1
-  goto L9
 L9:
   if %11 then L4 else L5
-L4:
-  %10 @bool = store 1
-  goto L6
 L5:
   $16 @f32 = load %04
   $17 @bool = cast @f32 $16
@@ -52,4 +42,14 @@ L6:
   %01 @u64 = store $18
   $19 @u64 = load %01
   ret $19
+L4:
+  %10 @bool = store 1
+  goto L6
+L8:
+  $14 @f32 = load %03
+  $15 @bool = cast @f32 $14
+  if $15 then L7 else L9
+L7:
+  %11 @bool = store 1
+  goto L9
 

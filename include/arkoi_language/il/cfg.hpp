@@ -1,11 +1,11 @@
 #pragma once
 
+#include <cassert>
 #include <functional>
 #include <memory>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-#include <set>
 
 #include "arkoi_language/il/instruction.hpp"
 
@@ -123,6 +123,67 @@ private:
 };
 
 /**
+ * @brief Provides depth-first traversal utilities for a control flow graph (CFG).
+ *
+ * `BlockTraversal` can precompute DFS orders of basic blocks starting from
+ * a given entry block. It supports PreOrder, PostOrder, and their reverse
+ * variants. The resulting traversal order is stored in a `BlockOrder` structure
+ * with both vector and index-based access for fast lookups.
+ */
+class BlockTraversal {
+public:
+    /**
+     * @brief Enum specifying the desired DFS traversal order.
+     */
+    enum class DFSOrder {
+        PreOrder,         ///< Visit each block before its successors.
+        ReversePreOrder,  ///< PreOrder traversal, but result vector reversed.
+        PostOrder,        ///< Visit each block after its successors.
+        ReversePostOrder, ///< PostOrder traversal, but result vector reversed.
+    };
+
+    /**
+     * @brief Stores the result of a block traversal.
+     *
+     * Contains a vector of blocks in the computed order, and a map from
+     * block pointer to its index in that vector for O(1) access.
+     */
+    struct BlockOrder {
+        std::unordered_map<BasicBlock*, std::size_t> indices{ };
+        std::vector<BasicBlock*> blocks{ };
+    };
+
+public:
+    /**
+     * @brief Computes a DFS traversal starting at a given block.
+     *
+     * @param start Pointer to the starting basic block of the traversal.
+     * @param order The DFS traversal order to use (default: PreOrder).
+     * @return A BlockOrder containing the blocks in the requested order and their indices.
+     */
+    static BlockOrder build(BasicBlock* start, DFSOrder order = DFSOrder::PreOrder);
+
+private:
+    /**
+     * @brief Recursive DFS helper function.
+     *
+     * Traverses the CFG starting from `current` and appends blocks to the output vector
+     * according to the specified DFS order.
+     *
+     * @param current The block currently being visited.
+     * @param order The traversal order (PreOrder / PostOrder / Reverse variants).
+     * @param visited Set of blocks that have already been visited (prevents cycles).
+     * @param blocks Vector to append blocks to, in the order dictated by `order`.
+     */
+    static void _dfs(
+        BasicBlock* current,
+        DFSOrder order,
+        std::unordered_set<BasicBlock*>& visited,
+        std::vector<BasicBlock*>& blocks
+    );
+};
+
+/**
  * @brief An iterator for traversing basic blocks in a `Function`.
  *
  * This iterator performs a traversal (typically DFS or BFS depending on the internal queue)
@@ -130,7 +191,7 @@ private:
  */
 class BlockIterator {
 public:
-    using iterator_category = std::input_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
     using value_type = BasicBlock;
     using reference = value_type&;
     using pointer = value_type*;
@@ -144,24 +205,84 @@ public:
     explicit BlockIterator(Function* function);
 
     /**
-     * @brief Dereferences the iterator to the current block.
+     * @brief Dereferences the iterator to access the current BasicBlock.
+     *
+     * @return Reference to the BasicBlock the iterator currently points to.
+     *
+     * @note Calling this on an end iterator (where _current == nullptr) is undefined
+     *       behavior. Use `operator!=` to check against the end iterator first.
      */
     [[nodiscard]] reference operator*() const { return *_current; }
 
     /**
-     * @brief Accesses members of the current basic block.
+     * @brief Provides pointer-like access to the current BasicBlock.
+     *
+     * Allows access to members of the BasicBlock via `it->member`.
+     *
+     * @return Pointer to the current BasicBlock.
+     *
+     * @note Calling this on an end iterator (_current == nullptr) is undefined behavior.
      */
     [[nodiscard]] pointer operator->() const { return _current; }
 
     /**
-     * @brief Advances to the next block in the CFG traversal.
+     * @brief Advances the iterator to the next block in the traversal.
+     *
+     * @return Reference to the incremented iterator (*this).
+     *
+     * @note If the iterator is already at the end, calling this has no effect.
+     * @note Supports range-based for loops and STL-style algorithms.
      */
     BlockIterator& operator++();
 
     /**
-     * @brief Post-increment operator.
+     * @brief Post-increment: advances the iterator but returns its previous value.
+     *
+     * @return A copy of the iterator before it was incremented.
+     *
+     * @note Uses the pre-increment operator internally.
      */
     BlockIterator operator++(int);
+
+    /**
+     * @brief Moves the iterator to the previous block in the traversal.
+     *
+     * @return Reference to the decremented iterator (*this).
+     *
+     * @note Only valid if the iterator supports bidirectional traversal and
+     *       is not at the beginning of the range.
+     */
+    BlockIterator& operator--();
+
+    /**
+     * @brief Post-decrement: moves the iterator backward but returns its previous value.
+     *
+     * @return A copy of the iterator before it was decremented.
+     *
+     * @note Uses the pre-decrement operator internally.
+     */
+    BlockIterator operator--(int);
+
+    /**
+     * @brief Random-access: returns a reference to the block at an offset from the current iterator.
+     *
+     * @param index The number of positions forward from the current iterator.
+     * @return Reference to the BasicBlock at the specified offset.
+     *
+     * @note The caller must ensure that `_index + index < _order.blocks.size()`.
+     * @note This makes the iterator compatible with STL random-access algorithms.
+     */
+    reference operator[](size_t index) const;
+
+    /**
+     * @brief Computes the distance between two iterators over the same traversal.
+     *
+     * @param other Another BlockIterator pointing into the same block order.
+     * @return The signed difference in positions between this iterator and `other`.
+     *
+     * @note Both iterators must refer to the same traversal (same `_order`).
+     */
+    ptrdiff_t operator-(const BlockIterator& other) const;
 
     /**
      * @brief Equality comparison for iterators.
@@ -178,10 +299,10 @@ public:
     }
 
 private:
-    std::unordered_set<BasicBlock*> _visited{ };
-    std::set<BasicBlock*> _queue{ };
+    BlockTraversal::BlockOrder _order;
     Function* _function;
     pointer _current;
+    size_t _index;
 };
 
 /**
@@ -199,7 +320,7 @@ public:
      * @param parameters The list of input variables.
      * @param type The semantic return type.
      */
-    Function(const std::string& name, std::vector<Variable> parameters, sem::Type type);
+    Function(const std::string& name, std::vector<Variable> parameters, const sem::Type& type);
 
     /**
      * @brief Constructs a `Function` with custom entry and exit labels.
@@ -211,7 +332,7 @@ public:
      * @param exit_label The label for the return point.
      */
     Function(
-        std::string name, std::vector<Variable> parameters, sem::Type type,
+        std::string name, std::vector<Variable> parameters, const sem::Type& type,
         std::string entry_label, std::string exit_label
     );
 

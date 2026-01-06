@@ -53,7 +53,7 @@ TEST(ControlFlowGraph, IteratorRightOrder) {
     );
 
     ASSERT_EQ(labels.size(), 6);
-    EXPECT_THAT(labels, ElementsAre("main_entry", "next_1", "next_2", "branch_2", "branch_1", "main_exit"));
+    EXPECT_THAT(labels, ElementsAre("main_entry", "next_1", "next_2", "main_exit", "branch_2", "branch_1"));
 }
 
 //==============================================================================

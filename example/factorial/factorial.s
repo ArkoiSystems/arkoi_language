@@ -62,12 +62,6 @@ factorial_recursive:
 	test bl, bl
 	jnz L4
 	jmp L5
-L4:
-	# %01 @u32 = store 1
-	.loc 1 6 0
-	mov DWORD PTR [rbp - 4], 1
-	# goto L3
-	jmp L3
 L5:
 	# $09 @u32 = load %02
 	.loc 1 8 0
@@ -97,6 +91,12 @@ L3:
 	pop rbx
 	leave
 	ret
+L4:
+	# %01 @u32 = store 1
+	.loc 1 6 0
+	mov DWORD PTR [rbp - 4], 1
+	# goto L3
+	jmp L3
 .size factorial_recursive, .-factorial_recursive
 
 .global factorial_while
@@ -123,6 +123,18 @@ L9:
 	test bl, bl
 	jnz L10
 	jmp L11
+L11:
+	# $17 @u32 = load %03
+	.loc 1 15 0
+	mov ebx, DWORD PTR [rsp - 12]
+	# %01 @u32 = store $17
+	mov DWORD PTR [rsp - 4], ebx
+	# $18 @u32 = load %01
+	mov eax, DWORD PTR [rsp - 4]
+	# ret $18
+	pop r12
+	pop rbx
+	ret
 L10:
 	# $10 @u32 = load %03
 	.loc 1 13 0
@@ -143,18 +155,6 @@ L10:
 	mov DWORD PTR [rsp - 8], ebx
 	# goto L9
 	jmp L9
-L11:
-	# $17 @u32 = load %03
-	.loc 1 15 0
-	mov ebx, DWORD PTR [rsp - 12]
-	# %01 @u32 = store $17
-	mov DWORD PTR [rsp - 4], ebx
-	# $18 @u32 = load %01
-	mov eax, DWORD PTR [rsp - 4]
-	# ret $18
-	pop r12
-	pop rbx
-	ret
 .size factorial_while, .-factorial_while
 
 .section .data

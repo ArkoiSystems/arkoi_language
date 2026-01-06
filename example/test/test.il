@@ -25,23 +25,14 @@ L2:
   $03 @f64 = load %02
   $06 @bool = gth @f64 $03, 5
   if $06 then L4 else L5
-L4:
-  %02 @f64 = store 0
-  goto L6
 L5:
   $09 @f64 = load %02
   $12 @bool = goe @f64 $09, 10
   if $12 then L7 else L8
-L7:
-  %02 @f64 = store 20
-  goto L6
 L8:
   $15 @f64 = load %02
   $18 @bool = neq @f64 $15, 0
   if $18 then L10 else L11
-L10:
-  %02 @f64 = store 10
-  goto L6
 L11:
   %02 @f64 = store 21
   goto L6
@@ -55,6 +46,15 @@ L6:
   %01 @bool = store $30
   $31 @bool = load %01
   ret $31
+L10:
+  %02 @f64 = store 10
+  goto L6
+L7:
+  %02 @f64 = store 20
+  goto L6
+L4:
+  %02 @f64 = store 0
+  goto L6
 
 fun test1(foo2 @s32, bar @f64) @f32:
 L13:
@@ -70,30 +70,12 @@ L13:
   $08 @f64 = load %03
   $09 @bool = loe @f64 $07, $08
   if $09 then L15 else L16
-L15:
-  $10 @f64 = load %03
-  $11 @s32 = load %02
-  $12 @f64 = cast @s32 $11
-  $13 @f64 = mul @f64 $10, $12
-  $14 @s32 = load %02
-  $15 @s32 = load %02
-  $16 @bool = lth @s32 $14, $15
-  $17 @f64 = cast @bool $16
-  $18 @f64 = add @f64 $13, $17
-  $19 @f32 = cast @f64 $18
-  %04 @f32 = store $19
-  goto L17
 L16:
   $20 @s32 = load %02
   $21 @f64 = cast @s32 $20
   $22 @f64 = load %03
   $23 @bool = equ @f64 $21, $22
   if $23 then L18 else L19
-L18:
-  $24 @s32 = load %02
-  $25 @f32 = cast @s32 $24
-  %04 @f32 = store $25
-  goto L17
 L19:
   $26 @s32 = load %02
   $27 @f64 = cast @s32 $26
@@ -107,6 +89,24 @@ L17:
   %01 @f32 = store $31
   $32 @f32 = load %01
   ret $32
+L18:
+  $24 @s32 = load %02
+  $25 @f32 = cast @s32 $24
+  %04 @f32 = store $25
+  goto L17
+L15:
+  $10 @f64 = load %03
+  $11 @s32 = load %02
+  $12 @f64 = cast @s32 $11
+  $13 @f64 = mul @f64 $10, $12
+  $14 @s32 = load %02
+  $15 @s32 = load %02
+  $16 @bool = lth @s32 $14, $15
+  $17 @f64 = cast @bool $16
+  $18 @f64 = add @f64 $13, $17
+  $19 @f32 = cast @f64 $18
+  %04 @f32 = store $19
+  goto L17
 
 fun test2(foo2 @s32, bar @f64) @f32:
 L21:
@@ -120,14 +120,6 @@ L21:
   $06 @f64 = load %03
   $07 @bool = lth @f64 $05, $06
   if $07 then L23 else L24
-L23:
-  $08 @f64 = load %03
-  $09 @s32 = load %02
-  $10 @f64 = cast @s32 $09
-  $11 @f64 = mul @f64 $08, $10
-  $12 @f32 = cast @f64 $11
-  %01 @f32 = store $12
-  goto L22
 L24:
   $13 @s32 = load %02
   $14 @f64 = cast @s32 $13
@@ -141,4 +133,12 @@ L24:
 L22:
   $19 @f32 = load %01
   ret $19
+L23:
+  $08 @f64 = load %03
+  $09 @s32 = load %02
+  $10 @f64 = cast @s32 $09
+  $11 @f64 = mul @f64 $08, $10
+  $12 @f32 = cast @f64 $11
+  %01 @f32 = store $12
+  goto L22
 

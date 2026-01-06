@@ -1,7 +1,6 @@
 #include "arkoi_language/il/cfg.hpp"
 
 #include <cassert>
-#include <stack>
 #include <utility>
 
 using namespace arkoi::il;
@@ -16,39 +15,69 @@ void BasicBlock::set_next(BasicBlock* next) {
     _next = next;
 }
 
+BlockTraversal::BlockOrder BlockTraversal::build(BasicBlock* start, const DFSOrder order) {
+    BlockOrder block_order{ };
+    if (start == nullptr) {
+        return block_order;
+    }
+
+    std::unordered_set<BasicBlock*> visited;
+    _dfs(start, order, visited, block_order.blocks);
+
+    if (order == DFSOrder::ReversePostOrder || order == DFSOrder::ReversePreOrder) {
+        std::reverse(block_order.blocks.begin(), block_order.blocks.end());
+    }
+
+    for (size_t index = 0; index < block_order.blocks.size(); index++) {
+        auto* block = block_order.blocks[index];
+        block_order.indices[block] = index;
+    }
+
+    return block_order;
+}
+
+void BlockTraversal::_dfs(
+    BasicBlock* current,
+    const DFSOrder order,
+    std::unordered_set<BasicBlock*>& visited,
+    std::vector<BasicBlock*>& blocks
+) {
+    if (!current || visited.contains(current)) {
+        return;
+    }
+
+    visited.insert(current);
+
+    if (order == DFSOrder::PreOrder || order == DFSOrder::ReversePreOrder) {
+        blocks.push_back(current);
+    }
+
+    if (current->next()) _dfs(current->next(), order, visited, blocks);
+    if (current->branch()) _dfs(current->branch(), order, visited, blocks);
+
+    if (order == DFSOrder::PostOrder || order == DFSOrder::ReversePostOrder) {
+        blocks.push_back(current);
+    }
+}
+
 BlockIterator::BlockIterator(Function* function) :
-    _function(function), _current(nullptr) {
-    if (!function) return;
+    _function(function), _current(nullptr), _index(0) {
+    if (!_function || !_function->entry()) return;
 
-    auto* start = function->entry();
-
-    _visited.insert(function->exit());
-    _queue.insert(start);
-
-    ++(*this);
+    _order = BlockTraversal::build(_function->entry(), BlockTraversal::DFSOrder::PreOrder);
+    if (!_order.blocks.empty()) {
+        _current = _order.blocks[_index];
+    }
 }
 
 BlockIterator& BlockIterator::operator++() {
-    if (_current == _function->exit()) {
+    if (!_current) return *this;
+
+    _index++;
+    if (_index < _order.blocks.size()) {
+        _current = _order.blocks[_index];
+    } else {
         _current = nullptr;
-        return *this;
-    }
-
-    if (_queue.empty()) {
-        _current = _function->exit();
-        return *this;
-    }
-
-    _current = *_queue.begin();
-    _queue.erase(_queue.begin());
-    _visited.insert(_current);
-
-    if (_current->branch() && !_visited.contains(_current->branch())) {
-        _queue.insert(_current->branch());
-    }
-
-    if (_current->next() && !_visited.contains(_current->next())) {
-        _queue.insert(_current->next());
     }
 
     return *this;
@@ -60,14 +89,37 @@ BlockIterator BlockIterator::operator++(int) {
     return temp;
 }
 
-Function::Function(const std::string& name, std::vector<Variable> parameters, sem::Type type) :
-    Function(name, std::move(parameters), std::move(type), name + "_entry", name + "_exit") { }
+BlockIterator& BlockIterator::operator--() {
+    if (_index > 0) {
+        --_index;
+        _current = _order.blocks[_index];
+    }
+
+    return *this;
+}
+
+BlockIterator BlockIterator::operator--(int) {
+    BlockIterator temp = *this;
+    std::ignore = --(*this);
+    return temp;
+}
+
+BlockIterator::reference BlockIterator::operator[](const size_t index) const {
+    return *_order.blocks[_index + index];
+}
+
+ptrdiff_t BlockIterator::operator-(const BlockIterator& other) const {
+    return _index - other._index;
+}
+
+Function::Function(const std::string& name, std::vector<Variable> parameters, const sem::Type& type) :
+    Function(name, std::move(parameters), type, name + "_entry", name + "_exit") { }
 
 Function::Function(
-    std::string name, std::vector<Variable> parameters, sem::Type type, std::string entry_label,
+    std::string name, std::vector<Variable> parameters, const sem::Type& type, std::string entry_label,
     std::string exit_label
 ) :
-    _parameters(std::move(parameters)), _name(std::move(name)), _type(std::move(type)) {
+    _parameters(std::move(parameters)), _name(std::move(name)), _type(type) {
     _entry = emplace_back(std::move(entry_label));
     _exit = emplace_back(std::move(exit_label));
 }

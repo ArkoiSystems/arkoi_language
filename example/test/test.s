@@ -76,53 +76,32 @@ ok:
 	test bl, bl
 	jnz L4
 	jmp L5
-L4:
-	# %02 @f64 = store 0
-	.loc 1 6 0
-	movsd xmm10, QWORD PTR [float5]
-	movsd QWORD PTR [rbp - 9], xmm10
-	# goto L6
-	jmp L6
 L5:
 	# $09 @f64 = load %02
 	.loc 1 7 0
 	movsd xmm8, QWORD PTR [rbp - 9]
 	# $12 @bool = goe @f64 $09, 10
-	ucomisd xmm8, QWORD PTR [float6]
+	ucomisd xmm8, QWORD PTR [float5]
 	setae bl
 	# if $12 then L7 else L8
 	test bl, bl
 	jnz L7
 	jmp L8
-L7:
-	# %02 @f64 = store 20
-	.loc 1 7 0
-	movsd xmm10, QWORD PTR [float7]
-	movsd QWORD PTR [rbp - 9], xmm10
-	# goto L6
-	jmp L6
 L8:
 	# $15 @f64 = load %02
 	.loc 1 8 0
 	movsd xmm8, QWORD PTR [rbp - 9]
 	# $18 @bool = neq @f64 $15, 0
-	ucomisd xmm8, QWORD PTR [float8]
+	ucomisd xmm8, QWORD PTR [float6]
 	setne bl
 	# if $18 then L10 else L11
 	test bl, bl
 	jnz L10
 	jmp L11
-L10:
-	# %02 @f64 = store 10
-	.loc 1 8 0
-	movsd xmm10, QWORD PTR [float9]
-	movsd QWORD PTR [rbp - 9], xmm10
-	# goto L6
-	jmp L6
 L11:
 	# %02 @f64 = store 21
 	.loc 1 9 0
-	movsd xmm10, QWORD PTR [float10]
+	movsd xmm10, QWORD PTR [float7]
 	movsd QWORD PTR [rbp - 9], xmm10
 	# goto L6
 	jmp L6
@@ -158,6 +137,27 @@ L6:
 	pop rbx
 	leave
 	ret
+L10:
+	# %02 @f64 = store 10
+	.loc 1 8 0
+	movsd xmm10, QWORD PTR [float8]
+	movsd QWORD PTR [rbp - 9], xmm10
+	# goto L6
+	jmp L6
+L7:
+	# %02 @f64 = store 20
+	.loc 1 7 0
+	movsd xmm10, QWORD PTR [float9]
+	movsd QWORD PTR [rbp - 9], xmm10
+	# goto L6
+	jmp L6
+L4:
+	# %02 @f64 = store 0
+	.loc 1 6 0
+	movsd xmm10, QWORD PTR [float10]
+	movsd QWORD PTR [rbp - 9], xmm10
+	# goto L6
+	jmp L6
 .size ok, .-ok
 
 .global test1
@@ -192,6 +192,63 @@ test1:
 	test bl, bl
 	jnz L15
 	jmp L16
+L16:
+	# $20 @s32 = load %02
+	.loc 1 15 0
+	mov ebx, DWORD PTR [rsp - 8]
+	# $21 @f64 = cast @s32 $20
+	cvtsi2sd xmm10, ebx
+	movsd xmm8, xmm10
+	# $22 @f64 = load %03
+	movsd xmm9, QWORD PTR [rsp - 16]
+	# $23 @bool = equ @f64 $21, $22
+	ucomisd xmm8, xmm9
+	sete bl
+	# if $23 then L18 else L19
+	test bl, bl
+	jnz L18
+	jmp L19
+L19:
+	# $26 @s32 = load %02
+	.loc 1 16 0
+	mov ebx, DWORD PTR [rsp - 8]
+	# $27 @f64 = cast @s32 $26
+	cvtsi2sd xmm10, ebx
+	movsd xmm9, xmm10
+	# $28 @f64 = load %03
+	movsd xmm8, QWORD PTR [rsp - 16]
+	# $29 @f64 = mul @f64 $27, $28
+	mulsd xmm9, xmm8
+	movsd xmm8, xmm9
+	# $30 @f32 = cast @f64 $29
+	cvtsd2ss xmm8, xmm8
+	# %04 @f32 = store $30
+	movss DWORD PTR [rsp - 20], xmm8
+	# goto L17
+	jmp L17
+L17:
+	# $31 @f32 = load %04
+	.loc 1 17 0
+	movss xmm8, DWORD PTR [rsp - 20]
+	# %01 @f32 = store $31
+	movss DWORD PTR [rsp - 4], xmm8
+	# $32 @f32 = load %01
+	movss xmm0, DWORD PTR [rsp - 4]
+	# ret $32
+	pop r12
+	pop rbx
+	ret
+L18:
+	# $24 @s32 = load %02
+	.loc 1 15 0
+	mov ebx, DWORD PTR [rsp - 8]
+	# $25 @f32 = cast @s32 $24
+	cvtsi2ss xmm10, ebx
+	movss xmm8, xmm10
+	# %04 @f32 = store $25
+	movss DWORD PTR [rsp - 20], xmm8
+	# goto L17
+	jmp L17
 L15:
 	# $10 @f64 = load %03
 	.loc 1 14 0
@@ -224,63 +281,6 @@ L15:
 	movss DWORD PTR [rsp - 20], xmm8
 	# goto L17
 	jmp L17
-L16:
-	# $20 @s32 = load %02
-	.loc 1 15 0
-	mov ebx, DWORD PTR [rsp - 8]
-	# $21 @f64 = cast @s32 $20
-	cvtsi2sd xmm10, ebx
-	movsd xmm9, xmm10
-	# $22 @f64 = load %03
-	movsd xmm8, QWORD PTR [rsp - 16]
-	# $23 @bool = equ @f64 $21, $22
-	ucomisd xmm9, xmm8
-	sete bl
-	# if $23 then L18 else L19
-	test bl, bl
-	jnz L18
-	jmp L19
-L18:
-	# $24 @s32 = load %02
-	.loc 1 15 0
-	mov ebx, DWORD PTR [rsp - 8]
-	# $25 @f32 = cast @s32 $24
-	cvtsi2ss xmm10, ebx
-	movss xmm8, xmm10
-	# %04 @f32 = store $25
-	movss DWORD PTR [rsp - 20], xmm8
-	# goto L17
-	jmp L17
-L19:
-	# $26 @s32 = load %02
-	.loc 1 16 0
-	mov ebx, DWORD PTR [rsp - 8]
-	# $27 @f64 = cast @s32 $26
-	cvtsi2sd xmm10, ebx
-	movsd xmm9, xmm10
-	# $28 @f64 = load %03
-	movsd xmm8, QWORD PTR [rsp - 16]
-	# $29 @f64 = mul @f64 $27, $28
-	mulsd xmm9, xmm8
-	movsd xmm8, xmm9
-	# $30 @f32 = cast @f64 $29
-	cvtsd2ss xmm8, xmm8
-	# %04 @f32 = store $30
-	movss DWORD PTR [rsp - 20], xmm8
-	# goto L17
-	jmp L17
-L17:
-	# $31 @f32 = load %04
-	.loc 1 17 0
-	movss xmm8, DWORD PTR [rsp - 20]
-	# %01 @f32 = store $31
-	movss DWORD PTR [rsp - 4], xmm8
-	# $32 @f32 = load %01
-	movss xmm0, DWORD PTR [rsp - 4]
-	# ret $32
-	pop r12
-	pop rbx
-	ret
 .size test1, .-test1
 
 .global test2
@@ -309,23 +309,6 @@ test2:
 	test bl, bl
 	jnz L23
 	jmp L24
-L23:
-	# $08 @f64 = load %03
-	.loc 1 20 0
-	movsd xmm8, QWORD PTR [rsp - 16]
-	# $09 @s32 = load %02
-	mov ebx, DWORD PTR [rsp - 8]
-	# $10 @f64 = cast @s32 $09
-	cvtsi2sd xmm10, ebx
-	movsd xmm9, xmm10
-	# $11 @f64 = mul @f64 $08, $10
-	mulsd xmm8, xmm9
-	# $12 @f32 = cast @f64 $11
-	cvtsd2ss xmm8, xmm8
-	# %01 @f32 = store $12
-	movss DWORD PTR [rsp - 4], xmm8
-	# goto L22
-	jmp L22
 L24:
 	# $13 @s32 = load %02
 	.loc 1 21 0
@@ -354,6 +337,23 @@ L22:
 	# ret $19
 	pop rbx
 	ret
+L23:
+	# $08 @f64 = load %03
+	.loc 1 20 0
+	movsd xmm8, QWORD PTR [rsp - 16]
+	# $09 @s32 = load %02
+	mov ebx, DWORD PTR [rsp - 8]
+	# $10 @f64 = cast @s32 $09
+	cvtsi2sd xmm10, ebx
+	movsd xmm9, xmm10
+	# $11 @f64 = mul @f64 $08, $10
+	mulsd xmm8, xmm9
+	# $12 @f32 = cast @f64 $11
+	cvtsd2ss xmm8, xmm8
+	# %01 @f32 = store $12
+	movss DWORD PTR [rsp - 4], xmm8
+	# goto L22
+	jmp L22
 .size test2, .-test2
 
 .section .data
@@ -362,10 +362,10 @@ L22:
 	float2: .float	2.010000
 	float3: .float	42.000000
 	float4: .double	5.000000
-	float5: .double	0.000000
-	float6: .double	10.000000
-	float7: .double	20.000000
-	float8: .double	0.000000
-	float9: .double	10.000000
-	float10: .double	21.000000
+	float5: .double	10.000000
+	float6: .double	0.000000
+	float7: .double	21.000000
+	float8: .double	10.000000
+	float9: .double	20.000000
+	float10: .double	0.000000
 	float11: .float	0.000000

@@ -81,27 +81,6 @@ calling_convention:
 	test bl, bl
 	jnz L8
 	jmp L9
-L8:
-	# $14 @f32 = load %03
-	.loc 1 6 0
-	movss xmm8, DWORD PTR [rsp - 16]
-	# $15 @bool = cast @f32 $14
-	xorps xmm11, xmm11
-	ucomiss xmm11, xmm8
-	setne r10b
-	setp r11b
-	or r10b, r11b
-	mov bl, r10b
-	# if $15 then L7 else L9
-	test bl, bl
-	jnz L7
-	jmp L9
-L7:
-	# %11 @bool = store 1
-	.loc 1 6 0
-	mov BYTE PTR [rsp - 22], 1
-	# goto L9
-	jmp L9
 L9:
 	# if %11 then L4 else L5
 	.loc 1 6 0
@@ -109,12 +88,6 @@ L9:
 	test r10b, r10b
 	jnz L4
 	jmp L5
-L4:
-	# %10 @bool = store 1
-	.loc 1 6 0
-	mov BYTE PTR [rsp - 21], 1
-	# goto L6
-	jmp L6
 L5:
 	# $16 @f32 = load %04
 	.loc 1 6 0
@@ -142,6 +115,33 @@ L6:
 	# ret $19
 	pop rbx
 	ret
+L4:
+	# %10 @bool = store 1
+	.loc 1 6 0
+	mov BYTE PTR [rsp - 21], 1
+	# goto L6
+	jmp L6
+L8:
+	# $14 @f32 = load %03
+	.loc 1 6 0
+	movss xmm8, DWORD PTR [rsp - 16]
+	# $15 @bool = cast @f32 $14
+	xorps xmm11, xmm11
+	ucomiss xmm11, xmm8
+	setne r10b
+	setp r11b
+	or r10b, r11b
+	mov bl, r10b
+	# if $15 then L7 else L9
+	test bl, bl
+	jnz L7
+	jmp L9
+L7:
+	# %11 @bool = store 1
+	.loc 1 6 0
+	mov BYTE PTR [rsp - 22], 1
+	# goto L9
+	jmp L9
 .size calling_convention, .-calling_convention
 
 .section .data
