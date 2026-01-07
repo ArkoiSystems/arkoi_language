@@ -81,7 +81,7 @@ DominatorTree::Immediates DominatorTree::compute_immediates(const Function& func
 
             BasicBlock* dominator = nullptr;
             for (auto* predecessor : current->predecessors()) {
-                if (immediates.contains(predecessor)) {
+                if (immediates.at(predecessor) != nullptr) {
                     dominator = predecessor;
                     break;
                 }
@@ -90,12 +90,12 @@ DominatorTree::Immediates DominatorTree::compute_immediates(const Function& func
             if (!dominator) continue;
 
             for (auto* predecessor : current->predecessors()) {
-                if (predecessor != dominator && immediates.contains(predecessor)) {
+                if (immediates.at(predecessor) != nullptr) {
                     dominator = _intersect(predecessor, dominator, immediates, indices);
                 }
             }
 
-            if (!immediates.contains(current) || immediates[current] != dominator) {
+            if (immediates[current] != dominator) {
                 immediates[current] = dominator;
                 changed = true;
             }
