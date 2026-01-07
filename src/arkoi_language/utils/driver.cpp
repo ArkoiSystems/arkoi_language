@@ -89,16 +89,19 @@ int32_t driver::compile(
     if (il_ostream) {
         auto il_printer = il::ILPrinter(*il_ostream);
         il_printer.visit(module);
+        il_ostream->flush();
     }
 
     if (cfg_ostream) {
         auto cfg_printer = il::CFGPrinter(*cfg_ostream);
         cfg_printer.visit(module);
+        cfg_ostream->flush();
     }
 
     if (asm_ostream) {
         auto asm_generator = x86_64::Generator(source, module);
         *asm_ostream << asm_generator.output().str();
+        asm_ostream->flush();
     }
 
     return 0;
