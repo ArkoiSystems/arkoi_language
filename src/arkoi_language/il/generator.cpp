@@ -255,7 +255,10 @@ void Generator::visit_and(ast::Binary& node) {
 
     { // Block where the control flow merges
         _current_block = merge_block;
-        _current_operand = result;
+
+        auto temp = _make_temporary(result.type());
+        _current_block->emplace_back<Load>(temp, result, node.span());
+        _current_operand = temp;
     }
 }
 
@@ -305,7 +308,10 @@ void Generator::visit_or(ast::Binary& node) {
 
     { // Block where the control flow merges
         _current_block = merge_block;
-        _current_operand = result;
+
+        auto temp = _make_temporary(result.type());
+        _current_block->emplace_back<Load>(temp, result, node.span());
+        _current_operand = temp;
     }
 }
 
