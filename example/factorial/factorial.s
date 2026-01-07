@@ -21,16 +21,17 @@ main:
 	.loc 1 2 0
 	mov edi, 7
 	call factorial_recursive
-	mov ebx, eax
+	mov r12d, eax
 	# arg @u32 7
 	# $09 @u32 = call factorial_while, 1
 	.loc 1 2 0
 	mov edi, 7
 	call factorial_while
-	mov r12d, eax
+	mov ebx, eax
 	# $10 @u32 = sub @u32 $05, $09
 	.loc 1 2 0
-	sub ebx, r12d
+	sub r12d, ebx
+	mov ebx, r12d
 	# %01 @u32 = store $10
 	mov DWORD PTR [rbp - 4], ebx
 	# $11 @u32 = load %01
@@ -84,6 +85,7 @@ L5:
 	# goto L3
 	jmp L3
 L3:
+	# $01 @u32 = phi [  ]
 	# $17 @u32 = load %01
 	mov eax, DWORD PTR [rbp - 4]
 	# ret $17
@@ -113,6 +115,8 @@ factorial_while:
 	.loc 1 11 0
 	mov DWORD PTR [rsp - 12], 1
 L9:
+	# $03 @u32 = phi [  ]
+	# $02 @u32 = phi [  ]
 	# $06 @u32 = load %02
 	.loc 1 12 0
 	mov ebx, DWORD PTR [rsp - 8]

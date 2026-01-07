@@ -11,12 +11,12 @@ digraph CFG {
 	L2 -> L4 [label="Branch"];
 	L5 [label="L5:\l $09 @u32 = load %02\l $10 @u32 = load %02\l $13 @u32 = sub @u32 $10, 1\l arg @u32 $13\l $15 @u32 = call factorial_recursive, 1\l $16 @u32 = mul @u32 $09, $15\l %01 @u32 = store $16\l goto L3\l\lIN:  { %02 }\lOUT: { %01 }\l"];
 	L5 -> L3 [label="Next"];
-	L3 [label="L3:\l $17 @u32 = load %01\l ret $17\l\lIN:  { %01 }\lOUT: { }\l"];
+	L3 [label="L3:\l $01 @u32 = phi [  ]\l $17 @u32 = load %01\l ret $17\l\lIN:  { %01 }\lOUT: { }\l"];
 	L4 [label="L4:\l %01 @u32 = store 1\l goto L3\l\lIN:  { }\lOUT: { %01 }\l"];
 	L4 -> L3 [label="Next"];
 	L7 [label="fun factorial_while(n @u32) @u32:\l %01 @u32 = alloca\l %02 @u32 = alloca\l %02 @u32 = store n\l %03 @u32 = alloca\l %03 @u32 = store 1\l\lIN:  { n }\lOUT: { %03 %02 }\l"];
 	L7 -> L9 [label="Next"];
-	L9 [label="L9:\l $06 @u32 = load %02\l $09 @bool = neq @u32 $06, 0\l if $09 then L10 else L11\l\lIN:  { %02 %03 }\lOUT: { %02 %03 }\l"];
+	L9 [label="L9:\l $03 @u32 = phi [  ]\l $02 @u32 = phi [  ]\l $06 @u32 = load %02\l $09 @bool = neq @u32 $06, 0\l if $09 then L10 else L11\l\lIN:  { %02 %03 }\lOUT: { %02 %03 }\l"];
 	L9 -> L11 [label="Next"];
 	L9 -> L10 [label="Branch"];
 	L11 [label="L11:\l $17 @u32 = load %03\l %01 @u32 = store $17\l $18 @u32 = load %01\l ret $18\l\lIN:  { %03 }\lOUT: { }\l"];

@@ -82,37 +82,42 @@ calling_convention:
 	jnz L8
 	jmp L9
 L9:
-	# if %11 then L4 else L5
+	# $11 @bool = phi [  ]
+	# $16 @bool = load %11
 	.loc 1 6 0
-	mov r10b, BYTE PTR [rsp - 22]
-	test r10b, r10b
+	mov bl, BYTE PTR [rsp - 22]
+	# if $16 then L4 else L5
+	test bl, bl
 	jnz L4
 	jmp L5
 L5:
-	# $16 @f32 = load %04
+	# $17 @f32 = load %04
 	.loc 1 6 0
 	movss xmm8, DWORD PTR [rsp - 20]
-	# $17 @bool = cast @f32 $16
+	# $18 @bool = cast @f32 $17
 	xorps xmm11, xmm11
 	ucomiss xmm11, xmm8
 	setne r10b
 	setp r11b
 	or r10b, r11b
 	mov bl, r10b
-	# if $17 then L4 else L6
+	# if $18 then L4 else L6
 	test bl, bl
 	jnz L4
 	jmp L6
 L6:
-	# $18 @u64 = cast @bool %10
+	# $10 @bool = phi [  ]
+	# $19 @bool = load %10
 	.loc 1 6 0
-	movzx r10, BYTE PTR [rsp - 21]
+	mov bl, BYTE PTR [rsp - 21]
+	# $20 @u64 = cast @bool $19
+	movzx r10, bl
 	mov rbx, r10
-	# %01 @u64 = store $18
+	# %01 @u64 = store $20
 	mov QWORD PTR [rsp - 8], rbx
-	# $19 @u64 = load %01
+	# $21 @u64 = load %01
 	mov rax, QWORD PTR [rsp - 8]
-	# ret $19
+	# ret $21
 	pop rbx
 	ret
 L4:

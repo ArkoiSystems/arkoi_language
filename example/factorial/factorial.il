@@ -28,6 +28,7 @@ L5:
   %01 @u32 = store $16
   goto L3
 L3:
+  $01 @u32 = phi [  ]
   $17 @u32 = load %01
   ret $17
 L4:
@@ -42,6 +43,8 @@ L7:
   %03 @u32 = alloca
   %03 @u32 = store 1
 L9:
+  $03 @u32 = phi [  ]
+  $02 @u32 = phi [  ]
   $06 @u32 = load %02
   $09 @bool = neq @u32 $06, 0
   if $09 then L10 else L11

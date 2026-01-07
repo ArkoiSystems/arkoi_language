@@ -35,8 +35,15 @@ L8:
   if $18 then L10 else L11
 L11:
   %02 @f64 = store 21
+  goto L12
+L12:
+  $02 @f64 = phi [  ]
+  goto L9
+L9:
+  $02 @f64 = phi [  ]
   goto L6
 L6:
+  $02 @f64 = phi [  ]
   $25 @s32 = div @s32 4, 2
   arg @s32 $25
   $27 @f64 = load %02
@@ -48,10 +55,10 @@ L6:
   ret $31
 L10:
   %02 @f64 = store 10
-  goto L6
+  goto L12
 L7:
   %02 @f64 = store 20
-  goto L6
+  goto L9
 L4:
   %02 @f64 = store 0
   goto L6
@@ -83,8 +90,12 @@ L19:
   $29 @f64 = mul @f64 $27, $28
   $30 @f32 = cast @f64 $29
   %04 @f32 = store $30
+  goto L20
+L20:
+  $04 @f32 = phi [  ]
   goto L17
 L17:
+  $04 @f32 = phi [  ]
   $31 @f32 = load %04
   %01 @f32 = store $31
   $32 @f32 = load %01
@@ -93,7 +104,7 @@ L18:
   $24 @s32 = load %02
   $25 @f32 = cast @s32 $24
   %04 @f32 = store $25
-  goto L17
+  goto L20
 L15:
   $10 @f64 = load %03
   $11 @s32 = load %02
@@ -131,6 +142,8 @@ L24:
   %01 @f32 = store $18
   goto L22
 L22:
+  $03 @f64 = phi [  ]
+  $01 @f32 = phi [  ]
   $19 @f32 = load %01
   ret $19
 L23:

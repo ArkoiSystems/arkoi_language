@@ -32,16 +32,20 @@ L2:
   $13 @bool = cast @f32 $12
   if $13 then L8 else L9
 L9:
-  if %11 then L4 else L5
+  $11 @bool = phi [  ]
+  $16 @bool = load %11
+  if $16 then L4 else L5
 L5:
-  $16 @f32 = load %04
-  $17 @bool = cast @f32 $16
-  if $17 then L4 else L6
+  $17 @f32 = load %04
+  $18 @bool = cast @f32 $17
+  if $18 then L4 else L6
 L6:
-  $18 @u64 = cast @bool %10
-  %01 @u64 = store $18
-  $19 @u64 = load %01
-  ret $19
+  $10 @bool = phi [  ]
+  $19 @bool = load %10
+  $20 @u64 = cast @bool $19
+  %01 @u64 = store $20
+  $21 @u64 = load %01
+  ret $21
 L4:
   %10 @bool = store 1
   goto L6
