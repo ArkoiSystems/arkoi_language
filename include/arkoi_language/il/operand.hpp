@@ -17,11 +17,11 @@ public:
     /**
      * @brief Constructs a `Memory` operand.
      *
-     * @param version The unique index or version of the memory slot.
+     * @param name The unique name of the memory slot.
      * @param type The type of data stored at this memory location.
      */
-    Memory(const size_t version, sem::Type type) :
-        _type(std::move(type)), _index(version) { }
+    Memory(std::string name, sem::Type type) :
+        _name(std::move(name)), _type(std::move(type)) { }
 
     /**
      * @brief Compares two memory locations for ordering.
@@ -58,15 +58,15 @@ public:
     [[nodiscard]] sem::Type type() const { return _type; }
 
     /**
-     * @brief Returns the unique index of this memory location.
+     * @brief Returns the unique name of this memory location.
      *
-     * @return The `size_t` index.
+     * @return A reference to the `std::string` name.
      */
-    [[nodiscard]] auto index() const { return _index; }
+    [[nodiscard]] auto& name() const { return _name; }
 
 private:
+    std::string _name;
     sem::Type _type;
-    size_t _index;
 };
 
 /**

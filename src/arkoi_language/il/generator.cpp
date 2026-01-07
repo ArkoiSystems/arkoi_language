@@ -464,11 +464,15 @@ std::string Generator::_make_label_symbol() {
 }
 
 Variable Generator::_make_temporary(const sem::Type& type) {
-    return { "$", type, ++_temp_index };
+    std::ostringstream oss;
+    oss << '$' << std::setw(2) << std::setfill('0') << ++_temp_index;
+    return { oss.str(), type };
 }
 
 Memory Generator::_make_memory(const sem::Type& type) {
-    return { ++_temp_index, type };
+    std::ostringstream oss;
+    oss << '%' << std::setw(2) << std::setfill('0') << ++_temp_index;
+    return { oss.str(), type };
 }
 
 //==============================================================================

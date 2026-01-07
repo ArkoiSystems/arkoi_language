@@ -12,6 +12,7 @@
 #include "arkoi_language/il/cfg_printer.hpp"
 #include "arkoi_language/il/generator.hpp"
 #include "arkoi_language/il/il_printer.hpp"
+#include "arkoi_language/il/ssa.hpp"
 #include "arkoi_language/opt/constant_folding.hpp"
 #include "arkoi_language/opt/constant_propagation.hpp"
 #include "arkoi_language/opt/dead_code_elimination.hpp"
@@ -77,7 +78,12 @@ int32_t driver::compile(
 
     auto il_generator = il::Generator();
     il_generator.visit(program);
+
     auto module = il_generator.module();
+    for (auto& function : module) {
+        auto ssa_promoter = il::SSAPromoter(function);
+        ssa_promoter.promote();
+    }
 
     opt::PassManager manager;
     manager.add<opt::ConstantFolding>();

@@ -8,11 +8,11 @@ using namespace arkoi::il;
 using namespace arkoi;
 
 bool Memory::operator<(const Memory& rhs) const {
-    return _index < rhs._index;
+    return _name < rhs._name;
 }
 
 bool Memory::operator==(const Memory& rhs) const {
-    return _index == rhs._index;
+    return _name == rhs._name;
 }
 
 bool Memory::operator!=(const Memory& rhs) const {
@@ -66,14 +66,14 @@ std::ostream& operator<<(std::ostream& os, const Variable& operand) {
     os << operand.name();
 
     if (operand.version() != 0) {
-        os << std::setw(2) << std::setfill('0') << operand.version();
+        os << "." << std::setw(2) << std::setfill('0') << operand.version();
     }
 
     return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const Memory& operand) {
-    os << "%" << std::setw(2) << std::setfill('0') << operand.index();
+    os << operand.name();
     return os;
 }
 
@@ -90,7 +90,7 @@ size_t hash<Variable>::operator()(const Variable& variable) const noexcept {
 }
 
 size_t hash<Memory>::operator()(const Memory& memory) const noexcept {
-    return std::hash<size_t>{ }(memory.index());
+    return std::hash<std::string>{ }(memory.name());
 }
 
 size_t hash<Immediate>::operator()(const Immediate& immediate) const noexcept {

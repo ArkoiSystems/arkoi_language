@@ -52,6 +52,7 @@ add_library(${PROJECT_NAME}
         src/arkoi_language/il/analyses.cpp
         src/arkoi_language/il/operand.cpp
         src/arkoi_language/il/cfg.cpp
+        src/arkoi_language/il/ssa.cpp
         src/arkoi_language/opt/pass.cpp
         src/arkoi_language/opt/pass.tpp
         src/arkoi_language/opt/constant_folding.cpp
@@ -91,6 +92,7 @@ set(PUBLIC_HEADERS
         include/arkoi_language/front/scanner.hpp
         include/arkoi_language/front/token.hpp
         include/arkoi_language/il/analyses.hpp
+        include/arkoi_language/il/ssa.hpp
         include/arkoi_language/il/cfg.hpp
         include/arkoi_language/il/cfg_printer.hpp
         include/arkoi_language/il/dataflow.hpp
