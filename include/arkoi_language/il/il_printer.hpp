@@ -93,6 +93,11 @@ public:
      */
     void visit(Constant& instruction) override;
 
+    /**
+     * @brief Prints a `Phi` instruction.
+     */
+    void visit(Phi& instruction) override;
+
 private:
     std::ostream& _output;
 };

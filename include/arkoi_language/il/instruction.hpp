@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ranges>
 #include <utility>
 
 #include "arkoi_language/ast/nodes.hpp"
@@ -902,6 +903,91 @@ private:
 };
 
 /**
+ * @brief Represents a Phi node in Static Single Assignment (SSA) form.
+ *
+ * A Phi instruction selects one of several values depending on the
+ * predecessor block from which control flow reached the current block.
+ *
+ * @see BasicBlock
+ */
+class Phi final {
+public:
+    /**
+     * @brief Maps each predecessor basic block label to its corresponding incoming operand.
+     */
+    using Incoming = std::unordered_map<std::string, Operand>;
+
+public:
+    /**
+     * @brief Constructs a `Phi` instruction.
+     *
+     * @param result The variable where the selected value will be stored.
+     * @param incoming A map from basic block labels to operands.
+     * @param span An optional source span for diagnostic purposes.
+     */
+    Phi(Variable result, Incoming incoming, std::optional<pretty_diagnostics::Span> span) :
+        _span(std::move(span)), _incoming(std::move(incoming)), _result(std::move(result)) { }
+
+    /**
+     * @brief Accepts a visitor to process this `Phi` instruction.
+     *
+     * @param visitor The visitor to accept.
+     */
+    void accept(Visitor& visitor) { visitor.visit(*this); }
+
+    /**
+     * @brief Checks if the instruction is constant.
+     *
+     * @return Always false for `Phi`.
+     */
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    [[nodiscard]] bool is_constant() const { return false; }
+
+    /**
+     * @brief Returns the optional source code span associated with this instruction.
+     *
+     * @return The optional `pretty_diagnostics::Span` of the node.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
+
+    /**
+     * @brief Returns the result variable defined by this instruction.
+     *
+     * @return A vector containing the `_result` variable.
+     */
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
+
+    /**
+     * @brief Returns the set of operands used as incoming values.
+     *
+     * @return A vector containing all operands from the `_incoming` map.
+     */
+    [[nodiscard]] std::vector<Operand> uses() const {
+        auto values = _incoming | std::views::values;
+        return { values.begin(), values.end() };
+    }
+
+    /**
+     * @brief Returns the result variable.
+     *
+     * @return A reference to the `_result` variable.
+     */
+    [[nodiscard]] auto& result() { return _result; }
+
+    /**
+     * @brief Returns the map of incoming values.
+     *
+     * @return A reference to the `_incoming` map.
+     */
+    [[nodiscard]] auto& incoming() { return _incoming; }
+
+private:
+    std::optional<pretty_diagnostics::Span> _span;
+    Incoming _incoming;
+    Variable _result;
+};
+
+/**
  * @brief A container for any IL instruction, implemented as a `std::variant`.
  *
  * This allows for type-safe polymorphic handling of instructions without
@@ -911,7 +997,7 @@ private:
 struct Instruction final : std::variant<
                                Goto, If, Cast, Call, Return,
                                Binary, Alloca, Store, Load, Constant,
-                               Argument
+                               Argument, Phi
                            > {
     using variant::variant;
 

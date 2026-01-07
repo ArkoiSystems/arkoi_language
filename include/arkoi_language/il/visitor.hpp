@@ -14,6 +14,7 @@ class Load;
 class Cast;
 class Call;
 class Goto;
+class Phi;
 class If;
 
 /**
@@ -126,6 +127,13 @@ public:
      * @param instruction The `Constant` instruction to visit.
      */
     virtual void visit(Constant& instruction) = 0;
+
+    /**
+     * @brief Visits a `Phi` instruction.
+     *
+     * @param instruction The `Phi` instruction to visit.
+     */
+    virtual void visit(Phi& instruction) = 0;
 };
 } // namespace arkoi::il
 

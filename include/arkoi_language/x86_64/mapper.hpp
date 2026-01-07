@@ -231,6 +231,13 @@ private:
     void visit(il::Constant& instruction) override;
 
     /**
+     * @brief Maps a Phi instruction.
+     *
+     * @param instruction The `il::Phi` node to visit.
+     */
+    void visit([[maybe_unused]] il::Phi& instruction) override { }
+
+    /**
      * @brief Registers an IL operand as a local that needs storage.
      *
      * @param operand The operand to track.

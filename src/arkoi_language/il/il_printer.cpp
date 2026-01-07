@@ -99,6 +99,22 @@ void ILPrinter::visit(Constant& instruction) {
     _output << " = const " << instruction.immediate();
 }
 
+void ILPrinter::visit(Phi& instruction) {
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = phi [ ";
+
+    for (auto it = instruction.incoming().begin(); it != instruction.incoming().end(); ++it) {
+        const auto& [block, value] = *it;
+        _output << block << ": " << value;
+
+        if (std::next(it) != instruction.incoming().end()) {
+            _output << ", ";
+        }
+    }
+
+    _output << " ]";
+}
+
 //==============================================================================
 // BSD 3-Clause License
 //

@@ -97,6 +97,11 @@ private:
      */
     void visit(Constant& instruction) override { _printer.visit(instruction); }
 
+    /**
+     * @brief Delegates instruction printing to the internal `ILPrinter`.
+     */
+    void visit(Phi& instruction) override { _printer.visit(instruction); }
+
 private:
     DataflowAnalysis<BlockLivenessAnalysis> _liveness{ };
     Function* _current_function;

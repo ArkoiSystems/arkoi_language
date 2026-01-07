@@ -53,6 +53,7 @@ bool ConstantPropagation::_propagate(il::Instruction& target) {
             [&](il::Alloca&) { },
             [&](il::Load&) { },
             [&](il::Goto&) { },
+            [&](il::Phi&) { },
         },
         target
     );

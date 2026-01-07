@@ -332,6 +332,13 @@ private:
     void visit(il::Constant& instruction) override;
 
     /**
+     * @brief Visits a `Phi` instruction.
+     *
+     * @param instruction The `Phi` instruction to visit.
+     */
+    void visit([[maybe_unused]] il::Phi& instruction) override { }
+
+    /**
      * @brief Resolves an IL operand to its machine location via the `Mapper`.
      *
      * @param operand The input IL operand.
