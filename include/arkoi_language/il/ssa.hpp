@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stack>
+
 #include "arkoi_language/il/cfg.hpp"
 
 namespace arkoi::il {
@@ -7,23 +9,32 @@ class SSAPromoter {
 public:
     explicit SSAPromoter(Function &function);
 
-    void promote() const;
+    void promote();
 
 private:
-    [[nodiscard]] std::vector<Alloca*> _collect_candidates() const;
+    [[nodiscard]] std::set<std::string> _collect_candidates() const;
 
-    void _place_phi_nodes(const Alloca *candidate) const;
+    void _place_phi_nodes(const std::string& candidate) const;
 
-    // void _rename_operands()
+    void _rename(BasicBlock *block, std::unordered_set<BasicBlock*>& visited);
 
 private:
+    std::unordered_map<BasicBlock*, std::vector<BasicBlock*>> _children{ };
+    std::unordered_map<std::string, std::stack<size_t>> _stacks{ };
+    std::unordered_map<std::string, size_t> _counters{ };
     DominatorTree::Frontiers _frontiers{ };
-    std::vector<Alloca*> _candidates{ };
+    std::set<std::string> _candidates{ };
     Function& _function;
 };
 
-class PhiLowering {
+class PhiLowerer {
+public:
+    explicit PhiLowerer(Function &function);
 
+    void lower() const;
+
+private:
+    Function& _function;
 };
 }
 

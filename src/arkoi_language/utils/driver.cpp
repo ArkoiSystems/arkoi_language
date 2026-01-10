@@ -92,6 +92,11 @@ int32_t driver::compile(
     manager.add<opt::SimplifyCFG>();
     manager.run(module);
 
+    for (auto& function : module) {
+        auto phi_lowerer = il::PhiLowerer(function);
+        phi_lowerer.lower();
+    }
+
     if (il_ostream) {
         auto il_printer = il::ILPrinter(*il_ostream);
         il_printer.visit(module);
