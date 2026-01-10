@@ -102,6 +102,8 @@ DominatorTree::Immediates DominatorTree::compute_immediates(const Function& func
         }
     }
 
+    immediates[function.entry()] = nullptr;
+
     return immediates;
 }
 
