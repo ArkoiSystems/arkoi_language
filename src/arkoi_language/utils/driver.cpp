@@ -15,6 +15,7 @@
 #include "arkoi_language/il/ssa.hpp"
 #include "arkoi_language/opt/constant_folding.hpp"
 #include "arkoi_language/opt/constant_propagation.hpp"
+#include "arkoi_language/opt/copy_propagation.hpp"
 #include "arkoi_language/opt/dead_code_elimination.hpp"
 #include "arkoi_language/opt/pass.hpp"
 #include "arkoi_language/opt/simplify_cfg.hpp"
@@ -88,6 +89,7 @@ int32_t driver::compile(
     opt::PassManager manager;
     manager.add<opt::ConstantFolding>();
     manager.add<opt::ConstantPropagation>();
+    manager.add<opt::CopyPropagation>();
     manager.add<opt::DeadCodeElimination>();
     manager.add<opt::SimplifyCFG>();
     manager.run(module);

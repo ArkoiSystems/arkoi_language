@@ -966,6 +966,13 @@ public:
     [[nodiscard]] auto& result() const { return _result; }
 
     /**
+     * @brief Sets the given operand as current value.
+     *
+     * @param value The operand to set.
+     */
+    void set_value(Operand value) { _value = std::move(value); }
+
+    /**
      * @brief Returns the assigned value.
      */
     [[nodiscard]] auto& value() { return _value; }

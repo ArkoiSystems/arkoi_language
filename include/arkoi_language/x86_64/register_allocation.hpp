@@ -73,7 +73,7 @@ private:
 private:
     il::DataflowAnalysis<il::InstructionLivenessAnalysis> _analysis{ };
     InterferenceGraph<il::Variable> _graph{ };
-    std::vector<il::Variable> _spilled{ };
+    std::set<il::Variable> _spilled{ };
     il::Function& _function;
     Mapping _assigned{ };
 };

@@ -55,6 +55,7 @@ add_library(${PROJECT_NAME}
         src/arkoi_language/il/ssa.cpp
         src/arkoi_language/opt/pass.cpp
         src/arkoi_language/opt/pass.tpp
+        src/arkoi_language/opt/copy_propagation.cpp
         src/arkoi_language/opt/constant_folding.cpp
         src/arkoi_language/opt/constant_propagation.cpp
         src/arkoi_language/opt/dead_code_elimination.cpp
@@ -101,6 +102,7 @@ set(PUBLIC_HEADERS
         include/arkoi_language/il/instruction.hpp
         include/arkoi_language/il/operand.hpp
         include/arkoi_language/il/visitor.hpp
+        include/arkoi_language/opt/copy_propagation.hpp
         include/arkoi_language/opt/constant_folding.hpp
         include/arkoi_language/opt/constant_propagation.hpp
         include/arkoi_language/opt/dead_code_elimination.hpp

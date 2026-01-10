@@ -71,7 +71,7 @@ void RegisterAllocater::_simplify() {
         if (found) continue;
 
         const auto& first = *work_list.begin();
-        _spilled.push_back(first);
+        _spilled.insert(first);
         work_list.erase(first);
     }
 
@@ -105,7 +105,7 @@ void RegisterAllocater::_simplify() {
 
         if (found) continue;
 
-        _spilled.push_back(node);
+        _spilled.insert(node);
     }
 }
 
