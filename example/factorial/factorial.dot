@@ -5,21 +5,21 @@ digraph CFG {
 	bgcolor = "#f7f7f7";
 	splines = false;
 
-	L0 [label="fun main() @u32:\l arg @u32 7\l $05.0 @u32 = call factorial_recursive, 1\l arg @u32 7\l $09.0 @u32 = call factorial_while, 1\l $10.0 @u32 = sub @u32 $05.0, $09.0\l $01.0 @u32 = $10.0\l $11.0 @u32 = $01.0\l ret $11.0\l\lIN:  { }\lOUT: { }\l"];
-	L2 [label="fun factorial_recursive(n @u32) @u32:\l $02.0 @u32 = $n.0\l $03.0 @u32 = $02.0\l $06.0 @bool = equ @u32 $03.0, 1\l if $06.0 then L4 else L5\l\lIN:  { $n.0 $01.1 $01.2 }\lOUT: { $01.1 $01.2 $02.0 }\l"];
+	L0 [label="fun main() @u32:\l arg @u32 7\l $05.0 @u32 = call factorial_recursive, 1\l arg @u32 7\l $09.0 @u32 = call factorial_while, 1\l $10.0 @u32 = sub @u32 $05.0, $09.0\l ret $10.0\l\lIN:  { }\lOUT: { }\l"];
+	L2 [label="fun factorial_recursive(n @u32) @u32:\l $02.0 @u32 = $n.0\l $06.0 @bool = equ @u32 $n.0, 1\l if $06.0 then L4 else L5\l\lIN:  { $n.0 $01.1 $01.2 }\lOUT: { $01.1 $01.2 $02.0 }\l"];
 	L2 -> L5 [label="Next"];
 	L2 -> L4 [label="Branch"];
-	L5 [label="L5:\l $09.0 @u32 = $02.0\l $10.0 @u32 = $02.0\l $13.0 @u32 = sub @u32 $10.0, 1\l arg @u32 $13.0\l $15.0 @u32 = call factorial_recursive, 1\l $16.0 @u32 = mul @u32 $09.0, $15.0\l $01.1 @u32 = $16.0\l goto L3\l\lIN:  { $02.0 $01.2 }\lOUT: { $01.2 $01.1 }\l"];
+	L5 [label="L5:\l $13.0 @u32 = sub @u32 $02.0, 1\l arg @u32 $13.0\l $15.0 @u32 = call factorial_recursive, 1\l $16.0 @u32 = mul @u32 $02.0, $15.0\l $01.1 @u32 = $16.0\l goto L3\l\lIN:  { $02.0 $01.2 }\lOUT: { $01.2 $01.1 }\l"];
 	L5 -> L3 [label="Next"];
-	L3 [label="L3:\l $01.0 @u32 = phi [ L4: $01.2, L5: $01.1 ]\l $17.0 @u32 = $01.0\l ret $17.0\l\lIN:  { $01.1 $01.2 }\lOUT: { }\l"];
+	L3 [label="L3:\l $01.0 @u32 = phi [ L4: $01.2, L5: $01.1 ]\l ret $01.0\l\lIN:  { $01.1 $01.2 }\lOUT: { }\l"];
 	L4 [label="L4:\l $01.2 @u32 = 1\l goto L3\l\lIN:  { $01.1 }\lOUT: { $01.2 $01.1 }\l"];
 	L4 -> L3 [label="Next"];
 	L7 [label="fun factorial_while(n @u32) @u32:\l $02.0 @u32 = $n.0\l $03.0 @u32 = 1\l\lIN:  { $n.0 $02.2 $03.2 }\lOUT: { $02.0 $02.2 $03.2 $03.0 }\l"];
 	L7 -> L9 [label="Next"];
-	L9 [label="L9:\l $03.1 @u32 = phi [ L10: $03.2, L7: $03.0 ]\l $02.1 @u32 = phi [ L10: $02.2, L7: $02.0 ]\l $06.0 @u32 = $02.1\l $09.0 @bool = neq @u32 $06.0, 0\l if $09.0 then L10 else L11\l\lIN:  { $03.0 $03.2 $02.2 $02.0 }\lOUT: { $03.0 $02.1 $02.0 $03.1 }\l"];
+	L9 [label="L9:\l $03.1 @u32 = phi [ L10: $03.2, L7: $03.0 ]\l $02.1 @u32 = phi [ L10: $02.2, L7: $02.0 ]\l $09.0 @bool = neq @u32 $02.1, 0\l if $09.0 then L10 else L11\l\lIN:  { $03.0 $03.2 $02.2 $02.0 }\lOUT: { $03.0 $02.1 $02.0 $03.1 }\l"];
 	L9 -> L11 [label="Next"];
 	L9 -> L10 [label="Branch"];
-	L11 [label="L11:\l $17.0 @u32 = $03.1\l $01.0 @u32 = $17.0\l $18.0 @u32 = $01.0\l ret $18.0\l\lIN:  { $03.1 }\lOUT: { }\l"];
-	L10 [label="L10:\l $10.0 @u32 = $03.1\l $11.0 @u32 = $02.1\l $12.0 @u32 = mul @u32 $10.0, $11.0\l $03.2 @u32 = $12.0\l $13.0 @u32 = $02.1\l $16.0 @u32 = sub @u32 $13.0, 1\l $02.2 @u32 = $16.0\l goto L9\l\lIN:  { $03.1 $02.0 $02.1 $03.0 }\lOUT: { $02.0 $02.2 $03.2 $03.0 }\l"];
+	L11 [label="L11:\l ret $03.1\l\lIN:  { $03.1 }\lOUT: { }\l"];
+	L10 [label="L10:\l $12.0 @u32 = mul @u32 $03.1, $02.1\l $03.2 @u32 = $12.0\l $16.0 @u32 = sub @u32 $02.1, 1\l $02.2 @u32 = $16.0\l goto L9\l\lIN:  { $03.1 $02.0 $02.1 $03.0 }\lOUT: { $02.0 $02.2 $03.2 $03.0 }\l"];
 	L10 -> L9 [label="Next"];
 }

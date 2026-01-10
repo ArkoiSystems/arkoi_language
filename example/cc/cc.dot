@@ -5,20 +5,20 @@ digraph CFG {
 	bgcolor = "#f7f7f7";
 	splines = false;
 
-	L0 [label="fun main(a @u32) @u32:\l arg @f32 0\l arg @f32 2\l arg @f32 3\l arg @u32 4\l arg @u32 5\l arg @u32 6\l arg @u32 7\l arg @u32 8\l $27.0 @u64 = call calling_convention, 8\l $28.0 @u32 = cast @u64 $27.0\l $01.0 @u32 = $28.0\l $29.0 @u32 = $01.0\l ret $29.0\l\lIN:  { }\lOUT: { }\l"];
-	L2 [label="fun calling_convention(a @f32, b @f32, c @f32, d @u32, e @u32, f @u32, g @u32, h @u32) @u64:\l $02.0 @f32 = $a.0\l $03.0 @f32 = $b.0\l $04.0 @f32 = $c.0\l $10.0 @bool = 0\l $11.0 @bool = 0\l $12.0 @f32 = $02.0\l $13.0 @bool = cast @f32 $12.0\l if $13.0 then L8 else L9\l\lIN:  { $b.0 $c.0 $10.2 $a.0 $11.2 }\lOUT: { $04.0 $10.0 $03.0 $10.2 $11.2 $11.0 }\l"];
+	L0 [label="fun main(a @u32) @u32:\l arg @f32 0\l arg @f32 2\l arg @f32 3\l arg @u32 4\l arg @u32 5\l arg @u32 6\l arg @u32 7\l arg @u32 8\l $27.0 @u64 = call calling_convention, 8\l $28.0 @u32 = cast @u64 $27.0\l ret $28.0\l\lIN:  { }\lOUT: { }\l"];
+	L2 [label="fun calling_convention(a @f32, b @f32, c @f32, d @u32, e @u32, f @u32, g @u32, h @u32) @u64:\l $03.0 @f32 = $b.0\l $04.0 @f32 = $c.0\l $10.0 @bool = 0\l $11.0 @bool = 0\l $13.0 @bool = cast @f32 $a.0\l if $13.0 then L8 else L9\l\lIN:  { $b.0 $c.0 $10.2 $a.0 $11.2 }\lOUT: { $04.0 $10.0 $03.0 $10.2 $11.2 $11.0 }\l"];
 	L2 -> L9 [label="Next"];
 	L2 -> L8 [label="Branch"];
-	L9 [label="L9:\l $11.1 @bool = phi [ L7: $11.2, L8: $11.0, L2: $11.0 ]\l $16.0 @bool = $11.1\l if $16.0 then L4 else L5\l\lIN:  { $11.0 $11.2 $10.2 $10.0 $04.0 }\lOUT: { $10.2 $10.0 $04.0 }\l"];
+	L9 [label="L9:\l $11.1 @bool = phi [ L7: $11.2, L8: $11.0, L2: $11.0 ]\l if $11.1 then L4 else L5\l\lIN:  { $11.0 $11.2 $10.2 $10.0 $04.0 }\lOUT: { $10.2 $10.0 $04.0 }\l"];
 	L9 -> L5 [label="Next"];
 	L9 -> L4 [label="Branch"];
-	L5 [label="L5:\l $17.0 @f32 = $04.0\l $18.0 @bool = cast @f32 $17.0\l if $18.0 then L4 else L6\l\lIN:  { $04.0 $10.0 $10.2 }\lOUT: { $10.0 $10.2 }\l"];
+	L5 [label="L5:\l $18.0 @bool = cast @f32 $04.0\l if $18.0 then L4 else L6\l\lIN:  { $04.0 $10.0 $10.2 }\lOUT: { $10.0 $10.2 }\l"];
 	L5 -> L6 [label="Next"];
 	L5 -> L4 [label="Branch"];
-	L6 [label="L6:\l $10.1 @bool = phi [ L5: $10.0, L4: $10.2 ]\l $19.0 @bool = $10.1\l $20.0 @u64 = cast @bool $19.0\l $01.0 @u64 = $20.0\l $21.0 @u64 = $01.0\l ret $21.0\l\lIN:  { $10.2 $10.0 }\lOUT: { }\l"];
+	L6 [label="L6:\l $10.1 @bool = phi [ L5: $10.0, L4: $10.2 ]\l $20.0 @u64 = cast @bool $10.1\l ret $20.0\l\lIN:  { $10.2 $10.0 }\lOUT: { }\l"];
 	L4 [label="L4:\l $10.2 @bool = 1\l goto L6\l\lIN:  { $10.0 }\lOUT: { $10.0 $10.2 }\l"];
 	L4 -> L6 [label="Next"];
-	L8 [label="L8:\l $14.0 @f32 = $03.0\l $15.0 @bool = cast @f32 $14.0\l if $15.0 then L7 else L9\l\lIN:  { $04.0 $10.0 $03.0 $10.2 $11.2 $11.0 }\lOUT: { $04.0 $10.0 $10.2 $11.2 $11.0 }\l"];
+	L8 [label="L8:\l $15.0 @bool = cast @f32 $03.0\l if $15.0 then L7 else L9\l\lIN:  { $04.0 $10.0 $03.0 $10.2 $11.2 $11.0 }\lOUT: { $04.0 $10.0 $10.2 $11.2 $11.0 }\l"];
 	L8 -> L9 [label="Next"];
 	L8 -> L7 [label="Branch"];
 	L7 [label="L7:\l $11.2 @bool = 1\l goto L9\l\lIN:  { $04.0 $10.0 $10.2 $11.0 }\lOUT: { $04.0 $10.0 $10.2 $11.2 $11.0 }\l"];
