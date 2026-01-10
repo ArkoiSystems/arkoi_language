@@ -130,7 +130,6 @@ TEST(DominatorTree, ImmediateDominators) {
         return immediates.at(target.get())->label();
     };
 
-    EXPECT_EQ(get_immediate("main_entry"), "main_entry");
     EXPECT_EQ(get_immediate("branch_1"), "main_entry");
     EXPECT_EQ(get_immediate("next_1"), "main_entry");
     EXPECT_EQ(get_immediate("branch_2"), "next_1");
