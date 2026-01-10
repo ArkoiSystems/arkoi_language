@@ -123,6 +123,13 @@ public:
     [[nodiscard]] sem::Type type() const { return _type; }
 
     /**
+     * @brief Sets the SSA version of the variable.
+     *
+     * @param version The version to set.
+     */
+    void set_version(const size_t version) { _version = version; }
+
+    /**
      * @brief Returns the SSA version of the variable.
      *
      * @return The `size_t` version.

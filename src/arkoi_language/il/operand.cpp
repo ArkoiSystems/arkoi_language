@@ -63,17 +63,13 @@ std::ostream& operator<<(std::ostream& os, const Immediate& operand) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Variable& operand) {
-    os << operand.name();
-
-    if (operand.version() != 0) {
-        os << "." << std::setw(2) << std::setfill('0') << operand.version();
-    }
-
+    os << "$" << operand.name();
+    os << "." << operand.version();
     return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const Memory& operand) {
-    os << operand.name();
+    os << "%" << operand.name();
     return os;
 }
 
