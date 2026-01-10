@@ -4,11 +4,11 @@ namespace arkoi::il {
 class BasicBlock;
 class Argument;
 class Function;
-class Constant;
 class Module;
 class Binary;
 class Return;
 class Alloca;
+class Assign;
 class Store;
 class Load;
 class Cast;
@@ -122,18 +122,18 @@ public:
     virtual void visit(Load& instruction) = 0;
 
     /**
-     * @brief Visits a `Constant` assignment instruction.
-     *
-     * @param instruction The `Constant` instruction to visit.
-     */
-    virtual void visit(Constant& instruction) = 0;
-
-    /**
      * @brief Visits a `Phi` instruction.
      *
      * @param instruction The `Phi` instruction to visit.
      */
     virtual void visit(Phi& instruction) = 0;
+
+    /**
+     * @brief Visits a `Assign` instruction.
+     *
+     * @param instruction The `Assign` instruction to visit.
+     */
+    virtual void visit(Assign& instruction) = 0;
 };
 } // namespace arkoi::il
 

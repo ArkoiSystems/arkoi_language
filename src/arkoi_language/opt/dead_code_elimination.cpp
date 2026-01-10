@@ -41,8 +41,10 @@ bool DeadCodeElimination::enter_function(il::Function& function) {
                             _used.insert(use);
                         }
                     },
+                    [&](il::Assign& instruction) {
+                        _used.insert(instruction.value());
+                    },
                     [&](il::Call&) { },
-                    [&](il::Constant&) { },
                     [&](il::Alloca&) { },
                     [&](il::Goto&) { },
                 },
@@ -69,7 +71,7 @@ bool DeadCodeElimination::on_block(il::BasicBlock& block) {
                     [&](const il::Cast& instruction) {
                         return !_used.contains(instruction.result());
                     },
-                    [&](const il::Constant& instruction) {
+                    [&](const il::Assign& instruction) {
                         return !_used.contains(instruction.result());
                     },
                     [&](const il::Alloca& instruction) {

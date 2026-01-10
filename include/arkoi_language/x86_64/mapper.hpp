@@ -224,18 +224,18 @@ private:
     void visit(il::Load& instruction) override;
 
     /**
-     * @brief Maps a constant assignment.
-     *
-     * @param instruction The `il::Constant` node to visit.
-     */
-    void visit(il::Constant& instruction) override;
-
-    /**
      * @brief Maps a Phi instruction.
      *
      * @param instruction The `il::Phi` node to visit.
      */
-    void visit([[maybe_unused]] il::Phi& instruction) override { }
+    void visit(il::Phi& instruction) override;
+
+    /**
+     * @brief Maps an Assign instruction.
+     *
+     * @param instruction The `il::Assign` node to visit.
+     */
+    void visit(il::Assign& instruction) override;
 
     /**
      * @brief Registers an IL operand as a local that needs storage.

@@ -219,6 +219,7 @@ void Mapper::visit(il::Load& instruction) {
 }
 
 void Mapper::visit(il::Constant& instruction) {
+void Mapper::visit(il::Assign& instruction) {
     _add_local(instruction.result());
 }
 

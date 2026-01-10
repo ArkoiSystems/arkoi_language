@@ -19,7 +19,7 @@ void ILPrinter::visit(Function& function) {
 
     for (size_t index = 0; index < function.parameters().size(); index++) {
         auto& parameter = function.parameters()[index];
-        _output << parameter.name() << " @" << parameter.type();
+        _output << "$" << parameter.name() << ".0 @" << parameter.type();
 
         if (index != function.parameters().size() - 1) {
             _output << ", ";
@@ -94,11 +94,6 @@ void ILPrinter::visit(Load& instruction) {
     _output << " = load " << instruction.source();
 }
 
-void ILPrinter::visit(Constant& instruction) {
-    _output << instruction.result() << " @" << instruction.result().type();
-    _output << " = const " << instruction.immediate();
-}
-
 void ILPrinter::visit(Phi& instruction) {
     _output << instruction.result() << " @" << instruction.result().type();
     _output << " = phi [ ";
@@ -113,6 +108,11 @@ void ILPrinter::visit(Phi& instruction) {
     }
 
     _output << " ]";
+}
+
+void ILPrinter::visit(Assign& instruction) {
+    _output << instruction.result() << " @" << instruction.result().type();
+    _output << " = " << instruction.value();
 }
 
 //==============================================================================

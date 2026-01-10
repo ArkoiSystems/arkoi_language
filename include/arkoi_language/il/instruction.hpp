@@ -762,81 +762,6 @@ private:
     Memory _result;
 };
 
-/**
- * @brief Represents a constant assignment to a variable.
- */
-class Constant final {
-public:
-    /**
-     * @brief Constructs a `Constant` instruction.
-     *
-     * @param result The variable to store the constant value.
-     * @param immediate The literal value to assign.
-     * @param span The source location of this instruction.
-     */
-    Constant(Variable result, Immediate immediate, std::optional<pretty_diagnostics::Span> span) :
-        _span(std::move(span)), _immediate(std::move(immediate)), _result(std::move(result)) { }
-
-    /**
-     * @brief Accepts a visitor to process this `Constant` instruction.
-     *
-     * @param visitor The visitor to accept.
-     */
-    void accept(Visitor& visitor) { visitor.visit(*this); }
-
-    /**
-     * @brief Returns the result variable defined by this instruction.
-     *
-     * @return A vector containing the `_result` variable.
-     */
-    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
-
-    /**
-     * @brief Returns the immediate value used by this instruction.
-     *
-     * @return A vector containing the `_immediate` operand.
-     */
-    [[nodiscard]] std::vector<Operand> uses() const { return { _immediate }; }
-
-    /**
-     * @brief Checks if the instruction is constant.
-     *
-     * @return Always true for `Constant`.
-     */
-    // ReSharper disable once CppMemberFunctionMayBeStatic
-    [[nodiscard]] bool is_constant() const { return true; }
-
-    /**
-     * @brief Returns the optional source code span associated with this instruction.
-     *
-     * The span includes the starting and ending positions in the source file.
-     * There may be no span attached to this instruction, so this could also be
-     * std::nullopt.
-     *
-     * @return The optional `pretty_diagnostics::Span` of the node.
-     */
-    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
-
-    /**
-     * @brief Returns the target result variable.
-     *
-     * @return A constant reference to the `_result` variable.
-     */
-    [[nodiscard]] auto& result() const { return _result; }
-
-    /**
-     * @brief Returns the literal immediate value.
-     *
-     * @return A reference to the `_immediate` operand.
-     */
-    [[nodiscard]] auto& immediate() { return _immediate; }
-
-private:
-    std::optional<pretty_diagnostics::Span> _span;
-    Immediate _immediate;
-    Variable _result;
-};
-
 class Argument final {
 public:
     Argument(Variable result, Operand source, std::optional<pretty_diagnostics::Span> span) :
@@ -915,7 +840,7 @@ public:
     /**
      * @brief Maps each predecessor basic block label to its corresponding incoming operand.
      */
-    using Incoming = std::unordered_map<std::string, Operand>;
+    using Incoming = std::unordered_map<std::string, Variable>;
 
 public:
     /**
@@ -988,6 +913,70 @@ private:
 };
 
 /**
+ * @brief Represents an SSA assignment instruction.
+ */
+class Assign final {
+public:
+    /**
+     * @brief Constructs an Assign instruction.
+     *
+     * @param result The SSA variable being defined.
+     * @param value The operand assigned to the result.
+     * @param span Optional source span for diagnostics.
+     */
+    Assign(Variable result, Operand value, std::optional<pretty_diagnostics::Span> span)
+        : _span(std::move(span)), _result(std::move(result)), _value(std::move(value)) {}
+
+    /**
+     * @brief Accepts a visitor to process this instruction.
+     *
+     * @param visitor The visitor to accept.
+     */
+    void accept(Visitor& visitor) { visitor.visit(*this); }
+
+    /**
+     * @brief Checks whether the instruction is constant.
+     *
+     * @return True if the assigned value is constant.
+     */
+    [[nodiscard]] bool is_constant() const { return std::holds_alternative<Immediate>(_value); }
+
+    /**
+     * @brief Returns the optional source span.
+     */
+    [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const { return _span; }
+
+    /**
+     * @brief Returns the SSA variable defined by this instruction.
+     *
+     * @return A vector containing the result variable.
+     */
+    [[nodiscard]] std::vector<Operand> defs() const { return { _result }; }
+
+    /**
+     * @brief Returns the operand used by this instruction.
+     *
+     * @return A vector containing the assigned value.
+     */
+    [[nodiscard]] std::vector<Operand> uses() const { return { _value }; }
+
+    /**
+     * @brief Returns the result variable.
+     */
+    [[nodiscard]] auto& result() const { return _result; }
+
+    /**
+     * @brief Returns the assigned value.
+     */
+    [[nodiscard]] auto& value() { return _value; }
+
+private:
+    std::optional<pretty_diagnostics::Span> _span;
+    Variable _result;
+    Operand _value;
+};
+
+/**
  * @brief A container for any IL instruction, implemented as a `std::variant`.
  *
  * This allows for type-safe polymorphic handling of instructions without
@@ -996,8 +985,8 @@ private:
  */
 struct Instruction final : std::variant<
                                Goto, If, Cast, Call, Return,
-                               Binary, Alloca, Store, Load, Constant,
-                               Argument, Phi
+                               Binary, Alloca, Store, Load,
+                               Argument, Phi, Assign
                            > {
     using variant::variant;
 

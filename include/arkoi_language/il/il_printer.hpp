@@ -89,14 +89,14 @@ public:
     void visit(Load& instruction) override;
 
     /**
-     * @brief Prints a `Constant` assignment instruction.
-     */
-    void visit(Constant& instruction) override;
-
-    /**
      * @brief Prints a `Phi` instruction.
      */
     void visit(Phi& instruction) override;
+
+    /**
+     * @brief Prints a `Assign` instruction.
+     */
+    void visit(Assign& instruction) override;
 
 private:
     std::ostream& _output;

@@ -14,8 +14,11 @@ bool ConstantPropagation::on_block(il::BasicBlock& block) {
     _constants.clear();
 
     for (auto& instruction : block.instructions()) {
-        if (auto* constant = std::get_if<il::Constant>(&instruction)) {
-            _constants[constant->result()] = constant->immediate();
+        if (instruction.is_constant()) {
+            if (auto* assign = std::get_if<il::Assign>(&instruction)) {
+                const auto immediate = std::get<il::Immediate>(assign->value());
+                _constants[assign->result()] = immediate;
+            }
         }
 
         changed |= _propagate(instruction);
@@ -48,8 +51,10 @@ bool ConstantPropagation::_propagate(il::Instruction& target) {
             [&](il::Argument& instruction) {
                 propagated |= _propagate(instruction.source());
             },
+            [&](il::Assign& instruction) {
+                propagated |= _propagate(instruction.value());
+            },
             [&](il::Call&) { },
-            [&](il::Constant&) { },
             [&](il::Alloca&) { },
             [&](il::Load&) { },
             [&](il::Goto&) { },

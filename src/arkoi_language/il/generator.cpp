@@ -116,7 +116,7 @@ void Generator::visit_integer(const ast::Immediate& node) {
     }
 
     auto temp = _make_temporary(node.type());
-    _current_block->emplace_back<Constant>(temp, immediate, node.span());
+    _current_block->emplace_back<Assign>(temp, immediate, node.span());
     _current_operand = temp;
 }
 
@@ -133,14 +133,14 @@ void Generator::visit_floating(const ast::Immediate& node) {
     }
 
     auto temp = _make_temporary(node.type());
-    _current_block->emplace_back<Constant>(temp, immediate, node.span());
+    _current_block->emplace_back<Assign>(temp, immediate, node.span());
     _current_operand = temp;
 }
 
 void Generator::visit_boolean(const ast::Immediate& node) {
     auto temp = _make_temporary(node.type());
     auto immediate = (node.value().type() == front::Token::Type::True);
-    _current_block->emplace_back<Constant>(temp, immediate, node.span());
+    _current_block->emplace_back<Assign>(temp, immediate, node.span());
     _current_operand = temp;
 }
 
@@ -465,13 +465,13 @@ std::string Generator::_make_label_symbol() {
 
 Variable Generator::_make_temporary(const sem::Type& type) {
     std::ostringstream oss;
-    oss << '$' << std::setw(2) << std::setfill('0') << ++_temp_index;
+    oss << std::setw(2) << std::setfill('0') << ++_temp_index;
     return { oss.str(), type };
 }
 
 Memory Generator::_make_memory(const sem::Type& type) {
     std::ostringstream oss;
-    oss << '%' << std::setw(2) << std::setfill('0') << ++_temp_index;
+    oss << std::setw(2) << std::setfill('0') << ++_temp_index;
     return { oss.str(), type };
 }
 

@@ -745,9 +745,9 @@ void Generator::visit(il::Load& instruction) {
     _store(source, result, type);
 }
 
-void Generator::visit(il::Constant& instruction) {
+void Generator::visit(il::Assign& instruction) {
     const auto result = _load(instruction.result());
-    const auto immediate = _load(instruction.immediate());
+    const auto immediate = _load(instruction.value());
     const auto type = instruction.result().type();
     _store(immediate, result, type);
 }
