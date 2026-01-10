@@ -12,13 +12,7 @@ _start:
 .global main
 .type main, @function
 main:
-	# %01 @s32 = alloca
-	# %01 @s32 = store 0
-	.loc 1 2 0
-	mov DWORD PTR [rsp - 4], 0
-	# $03 @s32 = load %01
-	mov eax, DWORD PTR [rsp - 4]
-	# ret $03
+	# ret 0
 	ret
 .size main, .-main
 

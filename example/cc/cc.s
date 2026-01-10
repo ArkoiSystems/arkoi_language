@@ -12,9 +12,8 @@ _start:
 .global main
 .type main, @function
 main:
-	enter 16, 0
+	enter 0, 0
 	push rbx
-	# %01 @u32 = alloca
 	# arg @f32 0
 	# arg @f32 2
 	# arg @f32 3
@@ -23,7 +22,7 @@ main:
 	# arg @u32 6
 	# arg @u32 7
 	# arg @u32 8
-	# $27 @u64 = call calling_convention, 8
+	# $27.0 @u64 = call calling_convention, 8
 	.loc 1 3 0
 	mov edi, 4
 	mov esi, 5
@@ -35,13 +34,12 @@ main:
 	movss xmm2, DWORD PTR [float2]
 	call calling_convention
 	mov rbx, rax
-	# $28 @u32 = cast @u64 $27
+	# $28.0 @u32 = cast @u64 $27.0
 	.loc 1 3 0
-	# %01 @u32 = store $28
-	mov DWORD PTR [rbp - 4], ebx
-	# $29 @u32 = load %01
-	mov eax, DWORD PTR [rbp - 4]
-	# ret $29
+	# $01.0 @u32 = $28.0
+	# $29.0 @u32 = $01.0
+	mov eax, ebx
+	# ret $29.0
 	pop rbx
 	leave
 	ret
@@ -51,100 +49,104 @@ main:
 .type calling_convention, @function
 calling_convention:
 	push rbx
-	# %01 @u64 = alloca
-	# %02 @f32 = alloca
-	# %03 @f32 = alloca
-	# %04 @f32 = alloca
-	# %02 @f32 = store a
-	movss DWORD PTR [rsp - 12], xmm0
-	# %03 @f32 = store b
-	movss DWORD PTR [rsp - 16], xmm1
-	# %04 @f32 = store c
-	movss DWORD PTR [rsp - 20], xmm2
-	# %10 @bool = alloca
-	# %10 @bool = store 0
+	push r12
+	# $02.0 @f32 = $a.0
+	movss DWORD PTR [rsp - 4], xmm0
+	# $03.0 @f32 = $b.0
+	movss DWORD PTR [rsp - 8], xmm1
+	# $04.0 @f32 = $c.0
+	movss DWORD PTR [rsp - 12], xmm2
+	# $10.0 @bool = 0
 	.loc 1 6 0
-	mov BYTE PTR [rsp - 21], 0
-	# %11 @bool = alloca
-	# %11 @bool = store 0
-	mov BYTE PTR [rsp - 22], 0
-	# $12 @f32 = load %02
-	movss xmm8, DWORD PTR [rsp - 12]
-	# $13 @bool = cast @f32 $12
+	mov BYTE PTR [rsp - 13], 0
+	# $11.0 @bool = 0
+	mov BYTE PTR [rsp - 14], 0
+	# $12.0 @f32 = $02.0
+	movss xmm8, DWORD PTR [rsp - 4]
+	# $13.0 @bool = cast @f32 $12.0
 	xorps xmm11, xmm11
 	ucomiss xmm11, xmm8
 	setne r10b
 	setp r11b
 	or r10b, r11b
-	mov bl, r10b
-	# if $13 then L8 else L9
-	test bl, bl
+	mov BYTE PTR [rsp - 15], r10b
+	# $11.1 @bool = $11.0
+	mov r10b, BYTE PTR [rsp - 14]
+	mov BYTE PTR [rsp - 16], r10b
+	# if $13.0 then L8 else L9
+	mov r10b, BYTE PTR [rsp - 15]
+	test r10b, r10b
 	jnz L8
 	jmp L9
 L9:
-	# $11 @bool = phi [  ]
-	# $16 @bool = load %11
+	# $16.0 @bool = $11.1
 	.loc 1 6 0
-	mov bl, BYTE PTR [rsp - 22]
-	# if $16 then L4 else L5
+	mov bl, BYTE PTR [rsp - 16]
+	# if $16.0 then L4 else L5
 	test bl, bl
 	jnz L4
 	jmp L5
 L5:
-	# $17 @f32 = load %04
+	# $17.0 @f32 = $04.0
 	.loc 1 6 0
-	movss xmm8, DWORD PTR [rsp - 20]
-	# $18 @bool = cast @f32 $17
+	movss xmm8, DWORD PTR [rsp - 12]
+	# $18.0 @bool = cast @f32 $17.0
 	xorps xmm11, xmm11
 	ucomiss xmm11, xmm8
 	setne r10b
 	setp r11b
 	or r10b, r11b
-	mov bl, r10b
-	# if $18 then L4 else L6
-	test bl, bl
+	mov r12b, r10b
+	# $10.1 @bool = $10.0
+	mov bl, BYTE PTR [rsp - 13]
+	# if $18.0 then L4 else L6
+	test r12b, r12b
 	jnz L4
 	jmp L6
 L6:
-	# $10 @bool = phi [  ]
-	# $19 @bool = load %10
+	# $19.0 @bool = $10.1
 	.loc 1 6 0
-	mov bl, BYTE PTR [rsp - 21]
-	# $20 @u64 = cast @bool $19
+	# $20.0 @u64 = cast @bool $19.0
 	movzx r10, bl
 	mov rbx, r10
-	# %01 @u64 = store $20
-	mov QWORD PTR [rsp - 8], rbx
-	# $21 @u64 = load %01
-	mov rax, QWORD PTR [rsp - 8]
-	# ret $21
+	# $01.0 @u64 = $20.0
+	# $21.0 @u64 = $01.0
+	mov rax, rbx
+	# ret $21.0
+	pop r12
 	pop rbx
 	ret
 L4:
-	# %10 @bool = store 1
+	# $10.2 @bool = 1
 	.loc 1 6 0
-	mov BYTE PTR [rsp - 21], 1
+	mov bl, 1
+	# $10.1 @bool = $10.2
 	# goto L6
 	jmp L6
 L8:
-	# $14 @f32 = load %03
+	# $14.0 @f32 = $03.0
 	.loc 1 6 0
-	movss xmm8, DWORD PTR [rsp - 16]
-	# $15 @bool = cast @f32 $14
+	movss xmm8, DWORD PTR [rsp - 8]
+	# $15.0 @bool = cast @f32 $14.0
 	xorps xmm11, xmm11
 	ucomiss xmm11, xmm8
 	setne r10b
 	setp r11b
 	or r10b, r11b
 	mov bl, r10b
-	# if $15 then L7 else L9
+	# $11.1 @bool = $11.0
+	mov r10b, BYTE PTR [rsp - 14]
+	mov BYTE PTR [rsp - 16], r10b
+	# if $15.0 then L7 else L9
 	test bl, bl
 	jnz L7
 	jmp L9
 L7:
-	# %11 @bool = store 1
+	# $11.2 @bool = 1
 	.loc 1 6 0
-	mov BYTE PTR [rsp - 22], 1
+	mov bl, 1
+	# $11.1 @bool = $11.2
+	mov BYTE PTR [rsp - 16], bl
 	# goto L9
 	jmp L9
 .size calling_convention, .-calling_convention
