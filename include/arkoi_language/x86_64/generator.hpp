@@ -356,15 +356,6 @@ private:
     void _store(Operand source, const Operand& destination, const sem::Type& type);
 
     /**
-     * @brief Ensures a machine operand is in a register, emitting a move if necessary.
-     *
-     * @param target The target that should be in a register.
-     * @param type The type of the register in the case of a temporary store.
-     * @return The resulting register the target is kept in.
-     */
-    [[nodiscard]] Register _adjust_to_reg(const Operand& target, const sem::Type& type);
-
-    /**
      * @brief Moves an operand into the primary scratch register (e.g., RAX/XMM0).
      *
      * @param source The source operand that should be stored in the first temporary register.

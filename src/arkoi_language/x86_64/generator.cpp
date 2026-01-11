@@ -160,7 +160,7 @@ void Generator::_add(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        left = _store_temp_1(left, type);
 
         // Depending on the size of the type, either choose addsd or addss.
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_addsd : &Generator::_addss;
@@ -171,7 +171,7 @@ void Generator::_add(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        left = _store_temp_1(left, type);
 
         _add(left, right);
 
@@ -185,7 +185,7 @@ void Generator::_sub(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        left = _store_temp_1(left, type);
 
         // Depending on the size of the type, either choose subsd or subss.
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_subsd : &Generator::_subss;
@@ -196,7 +196,7 @@ void Generator::_sub(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        left = _store_temp_1(left, type);
 
         _sub(left, right);
 
@@ -210,7 +210,7 @@ void Generator::_mul(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        left = _store_temp_1(left, type);
 
         // Depending on the size of the type, either choose mulsd or mulss.
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_mulsd : &Generator::_mulss;
@@ -221,7 +221,7 @@ void Generator::_mul(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        left = _store_temp_1(left, type);
 
         // When discarding the upper part of the multiplication result, imul and mul are indistinguishable. Thus, just
         // imul is used as it also is easier to handle.
@@ -237,7 +237,7 @@ void Generator::_div(const Operand& result, Operand left, Operand right, const s
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        left = _store_temp_1(left, type);
 
         // Depending on the size of the type, either choose divsd or divss.
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_divsd : &Generator::_divss;
@@ -269,7 +269,9 @@ void Generator::_gth(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         // Depending on the size of the type, either choose ucomisd or ucomiss.
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
@@ -279,7 +281,9 @@ void Generator::_gth(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         _cmp(left, right);
 
@@ -294,7 +298,9 @@ void Generator::_lth(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         // Depending on the size of the type, either choose ucomisd or ucomiss.
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
@@ -304,7 +310,9 @@ void Generator::_lth(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         _cmp(left, right);
 
@@ -319,7 +327,9 @@ void Generator::_goe(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         // Depending on the size of the type, either choose ucomisd or ucomiss.
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
@@ -329,7 +339,9 @@ void Generator::_goe(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         _cmp(left, right);
 
@@ -344,7 +356,9 @@ void Generator::_loe(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         // Depending on the size of the type, either choose ucomisd or ucomiss.
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
@@ -354,7 +368,9 @@ void Generator::_loe(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         _cmp(left, right);
 
@@ -369,7 +385,9 @@ void Generator::_equ(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
         (this->*instruction)(left, right);
@@ -378,7 +396,9 @@ void Generator::_equ(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         _cmp(left, right);
 
@@ -391,7 +411,9 @@ void Generator::_neq(const Operand& result, Operand left, const Operand& right, 
         // As there are no direct floating immediates (they will always be replaced with memory operands, see _load),
         // we just need to adjust the lhs to a register, which we always do.
         // Thus left:right will always be reg:mem or reg:reg, which is a valid operand encoding.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         const auto& instruction = (type.size() == Size::QWORD) ? &Generator::_ucomisd : &Generator::_ucomiss;
         (this->*instruction)(left, right);
@@ -400,7 +422,9 @@ void Generator::_neq(const Operand& result, Operand left, const Operand& right, 
     } else {
         // The only valid combinations of left:right are reg:mem, reg:reg, mem:reg, reg:imm, mem:imm. But as left will
         // always be a register, you only need to care about reg:mem, reg:reg, reg:imm, which covers all other cases.
-        left = _adjust_to_reg(left, type);
+        if (!std::holds_alternative<Register>(left)) {
+            left = _store_temp_1(left, type);
+        }
 
         _cmp(left, right);
 
@@ -437,7 +461,7 @@ void Generator::_float_to_float(
     if (from == to) return _store(source, result, to);
 
     // Always adjust the source to a register.
-    source = _adjust_to_reg(source, from);
+    source = _store_temp_1(source, from);
 
     auto converted_source = std::get<Register>(source);
     converted_source.set_size(to.size());
@@ -471,7 +495,7 @@ void Generator::_int_to_int(
 
         // movsxd only works with reg:mem or reg:reg, thus convert imm to reg.
         if (std::holds_alternative<Immediate>(source)) {
-            source = _adjust_to_reg(source, from);
+            source = _store_temp_1(source, from);
         }
 
         // This will create a register of 64bit that will hold the converted operand.
@@ -485,7 +509,7 @@ void Generator::_int_to_int(
         // but with different signess.
 
         // First, adjust the source to always be a register of the from-type.
-        const auto adjusted_source = _adjust_to_reg(source, from);
+        const auto adjusted_source = _store_temp_1(source, from);
         // Then use the part of the register that is actually needed (the register part of to-size).
         auto sized_source = Register(adjusted_source.base(), to.size());
 
@@ -497,7 +521,7 @@ void Generator::_int_to_int(
 
         // movsx/movzx only works with reg:mem or reg:reg, thus convert imm to reg.
         if (std::holds_alternative<Immediate>(source)) {
-            source = _adjust_to_reg(source, from);
+            source = _store_temp_1(source, from);
         }
 
         // This will create a register of to-size that will hold the converted operand.
@@ -603,7 +627,7 @@ void Generator::_int_to_bool(
 ) {
     // If the source holds an immediate, instead turn it into a register.
     if (std::holds_alternative<Immediate>(source)) {
-        source = _adjust_to_reg(source, from);
+        source = _store_temp_1(source, from);
     }
 
     const auto temp_1_int = _temp_1_register(to);
@@ -656,7 +680,7 @@ void Generator::_bool_to_int(
 
         // If the source holds an immediate, instead turn it into a register.
         if (std::holds_alternative<Immediate>(source)) {
-            source = _adjust_to_reg(source, from);
+            source = _store_temp_1(source, from);
         }
 
         // This will create a register of to-size that will hold the converted operand.
@@ -799,14 +823,6 @@ void Generator::_store(Operand source, const Operand& destination, const sem::Ty
     } else {
         _mov(destination, source);
     }
-}
-
-Register Generator::_adjust_to_reg(const Operand& target, const sem::Type& type) {
-    // Early exit if the target operand already is a register.
-    if (std::holds_alternative<Register>(target)) return std::get<Register>(target);
-
-    // Otherwise if the result is not a register, store the lhs in a temp register.
-    return _store_temp_1(target, type);
 }
 
 Register Generator::_store_temp_1(const Operand& source, const sem::Type& type) {
