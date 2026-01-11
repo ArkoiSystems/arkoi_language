@@ -24,7 +24,7 @@ TEST(EndToEnd, AllPrograms) {
         { // Compile the source to assembly
             std::ofstream asm_ostream(asm_path);
 
-            const int32_t compiler_exit = driver::compile(source, nullptr, nullptr, &asm_ostream);
+            const int32_t compiler_exit = utils::compile(source, nullptr, nullptr, &asm_ostream);
             if (compiler_exit != 0) std::remove(asm_path.c_str());
 
             ASSERT_EQ(0, compiler_exit);
@@ -34,7 +34,7 @@ TEST(EndToEnd, AllPrograms) {
         { // Assemble the compiled source
             std::ofstream obj_ostream(obj_path);
 
-            const auto assemble_exit = driver::assemble(asm_path, obj_ostream);
+            const auto assemble_exit = utils::assemble(asm_path, obj_ostream);
             if (assemble_exit != 0) std::remove(obj_path.c_str());
 
             ASSERT_EQ(0, assemble_exit);
@@ -44,14 +44,14 @@ TEST(EndToEnd, AllPrograms) {
         { // Link the assembled source
             std::ofstream bin_ostream(bin_path);
 
-            const auto link_exit = driver::link({ obj_path }, bin_ostream);
+            const auto link_exit = utils::link({ obj_path }, bin_ostream);
             if (link_exit != 0) std::remove(bin_path.c_str());
 
             ASSERT_EQ(0, link_exit);
         }
 
         // Run the resulting binary
-        EXPECT_EQ(0, driver::run_binary(bin_path));
+        EXPECT_EQ(0, utils::run_binary(bin_path));
 
         // Clean up the temporary file artifacts
         std::remove(asm_path.c_str());

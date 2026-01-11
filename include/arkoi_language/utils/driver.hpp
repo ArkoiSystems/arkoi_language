@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace arkoi::driver {
+namespace arkoi::utils {
 /**
  * @brief Generate a unique temporary filesystem path.
  *
@@ -76,7 +76,7 @@ int32_t link(const std::vector<std::string>& object_files, std::ofstream& output
  * @see compile, link
  */
 int32_t assemble(const std::string& input_file, std::ofstream& output, bool verbose = false);
-} // namespace arkoi::driver
+} // namespace arkoi::utils
 
 // BSD 3-Clause License
 //

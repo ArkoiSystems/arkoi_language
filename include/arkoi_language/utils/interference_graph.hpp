@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <ostream>
 
+namespace arkoi::utils {
 /**
  * @brief A generic interference graph implementation.
  *
@@ -96,14 +97,15 @@ public:
      *
      * @return A reference to the internal adjacency map.
      */
-    [[nodiscard]] auto& adjacents() const { return _adjacents; }
+    [[nodiscard]] auto& adjacent() const { return _adjacent; }
 
 private:
-    std::unordered_map<Node, std::unordered_set<Node>> _adjacents;
+    std::unordered_map<Node, std::unordered_set<Node>> _adjacent;
 };
 
 template <typename Node>
 std::ostream& operator<<(std::ostream& os, const InterferenceGraph<Node>& graph);
+} // namespace arkoi::utils
 
 #include "../../../src/arkoi_language/utils/interference_graph.tpp"
 

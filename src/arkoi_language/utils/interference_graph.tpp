@@ -1,20 +1,21 @@
 #pragma once
 
+namespace arkoi::utils {
 template <typename Node>
 void InterferenceGraph<Node>::add_node(const Node& node) {
-    _adjacents.emplace(node, std::unordered_set<Node>());
+    _adjacent.emplace(node, std::unordered_set<Node>());
 }
 
 template <typename Node>
 void InterferenceGraph<Node>::remove_node(const Node& node) {
-    auto found = _adjacents.find(node);
-    if (found == _adjacents.end()) return;
+    auto found = _adjacent.find(node);
+    if (found == _adjacent.end()) return;
 
     for (const auto& adjacent : found->second) {
-        _adjacents[adjacent].erase(node);
+        _adjacent[adjacent].erase(node);
     }
 
-    _adjacents.erase(found);
+    _adjacent.erase(found);
 }
 
 template <typename Node>
@@ -23,28 +24,28 @@ void InterferenceGraph<Node>::add_edge(const Node& first, const Node& second) {
 
     add_node(first);
     add_node(second);
-    _adjacents[first].insert(second);
-    _adjacents[second].insert(first);
+    _adjacent[first].insert(second);
+    _adjacent[second].insert(first);
 }
 
 template <typename Node>
 bool InterferenceGraph<Node>::is_interfering(const Node& first, const Node& second) const {
-    auto found = _adjacents.find(first);
-    if (found == _adjacents.end()) return false;
+    auto found = _adjacent.find(first);
+    if (found == _adjacent.end()) return false;
     return found->second.count(second) > 0;
 }
 
 template <typename Node>
 std::unordered_set<Node> InterferenceGraph<Node>::interferences(const Node& node) const {
-    auto found = _adjacents.find(node);
-    if (found == _adjacents.end()) return { };
+    auto found = _adjacent.find(node);
+    if (found == _adjacent.end()) return { };
     return found->second;
 }
 
 template <typename Node>
 std::unordered_set<Node> InterferenceGraph<Node>::nodes() const {
     std::unordered_set<Node> nodes;
-    for (const auto& [node, _] : _adjacents) nodes.insert(node);
+    for (const auto& [node, _] : _adjacent) nodes.insert(node);
     return nodes;
 }
 
@@ -52,13 +53,13 @@ template <typename Node>
 std::ostream& operator<<(std::ostream& os, const InterferenceGraph<Node>& graph) {
     os << "graph InterferenceGraph {\n";
 
-    for (const auto& [node, _] : graph.adjacents()) os << "    \"\\" << node << "\"\n";
+    for (const auto& [node, _] : graph.adjacent()) os << "    \"" << node << "\"\n";
 
-    for (const auto& [node, adjacents] : graph.adjacents()) {
-        for (const auto& adjacent : adjacents) {
-            if (node < adjacent) continue;
+    for (const auto& [node, neighbors] : graph.adjacent()) {
+        for (const auto& neighbor : neighbors) {
+            if (node < neighbor) continue;
 
-            os << "    \"\\" << node << "\" -- \"\\" << adjacent << "\"\n";
+            os << "    \"" << node << "\" -- \"" << neighbor << "\"\n";
         }
     }
 
@@ -66,6 +67,7 @@ std::ostream& operator<<(std::ostream& os, const InterferenceGraph<Node>& graph)
 
     return os;
 }
+} // namespace arkoi::utils
 
 // BSD 3-Clause License
 //

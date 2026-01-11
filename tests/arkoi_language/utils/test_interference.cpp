@@ -4,9 +4,10 @@
 #include "arkoi_language/utils/interference_graph.hpp"
 
 using testing::UnorderedElementsAre;
+using namespace arkoi;
 
 TEST(InterferenceGraphTest, AddNodesAndEdges) {
-    InterferenceGraph<std::string> graph;
+    utils::InterferenceGraph<std::string> graph;
 
     graph.add_node("a");
     graph.add_node("b");
@@ -24,7 +25,7 @@ TEST(InterferenceGraphTest, AddNodesAndEdges) {
 }
 
 TEST(InterferenceGraphTest, DuplicateAdditionsDontCrash) {
-    InterferenceGraph<std::string> graph;
+    utils::InterferenceGraph<std::string> graph;
 
     graph.add_node("x");
     graph.add_node("x");
@@ -37,7 +38,7 @@ TEST(InterferenceGraphTest, DuplicateAdditionsDontCrash) {
 }
 
 TEST(InterferenceGraphTest, IsolatedNodeHasNoNeighbors) {
-    InterferenceGraph<std::string> graph;
+    utils::InterferenceGraph<std::string> graph;
 
     graph.add_node("u");
 

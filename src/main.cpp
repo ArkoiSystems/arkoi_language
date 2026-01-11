@@ -114,7 +114,7 @@ int main(const int argc, const char* argv[]) {
             auto cfg_ostream = std::ofstream(cfg_path);
             auto asm_ostream = std::ofstream(asm_path);
 
-            const auto compile_exit = driver::compile(
+            const auto compile_exit = utils::compile(
                 source,
                 print_il ? &il_ostream : nullptr,
                 print_cfg ? &cfg_ostream : nullptr,
@@ -126,7 +126,7 @@ int main(const int argc, const char* argv[]) {
         if (!should_assemble) continue;
 
         auto obj_ostream = std::ofstream(obj_path);
-        auto assemble_exit = driver::assemble(asm_path, obj_ostream, verbose);
+        auto assemble_exit = utils::assemble(asm_path, obj_ostream, verbose);
         if (assemble_exit != 0) return assemble_exit;
 
         object_files.push_back(obj_path);
@@ -136,13 +136,13 @@ int main(const int argc, const char* argv[]) {
 
     { // The same RAII logic applies here.
         auto output_ostream = std::ofstream(output_path);
-        auto link_exit = driver::link(object_files, output_ostream, verbose);
+        auto link_exit = utils::link(object_files, output_ostream, verbose);
         if (link_exit != 0) return link_exit;
     }
 
     if (!should_run || object_files.empty()) return 0;
 
-    const int32_t run_exit = driver::run_binary(output_path);
+    const int32_t run_exit = utils::run_binary(output_path);
     std::remove(output_path.c_str());
 
     return run_exit;

@@ -23,7 +23,7 @@
 #include "arkoi_language/sem/type_resolver.hpp"
 #include "arkoi_language/x86_64/generator.hpp"
 
-using namespace arkoi::driver;
+using namespace arkoi::utils;
 using namespace arkoi;
 
 std::string random_hex(size_t length) {
@@ -38,13 +38,13 @@ std::string random_hex(size_t length) {
     return result;
 }
 
-std::filesystem::path driver::generate_temp_path() {
+std::filesystem::path utils::generate_temp_path() {
     const auto temp_dir = std::filesystem::temp_directory_path();
     const auto unique_name = random_hex(12);
     return temp_dir / ("arkoi_" + unique_name);
 }
 
-int32_t driver::compile(
+int32_t utils::compile(
     const std::shared_ptr<pretty_diagnostics::Source>& source,
     std::ofstream* il_ostream,
     std::ofstream* cfg_ostream,
@@ -120,7 +120,7 @@ int32_t driver::compile(
     return 0;
 }
 
-int32_t driver::run_binary(const std::string& path) {
+int32_t utils::run_binary(const std::string& path) {
     if (!std::filesystem::exists(path)) {
         std::cerr << "Binary does not exist: " << path << std::endl;
         return 1;
@@ -172,7 +172,7 @@ int32_t driver::run_binary(const std::string& path) {
     return 1;
 }
 
-int32_t driver::link(const std::vector<std::string>& object_files, std::ofstream& output, const bool verbose) {
+int32_t utils::link(const std::vector<std::string>& object_files, std::ofstream& output, const bool verbose) {
     const auto temp_path = generate_temp_path().string() + ".o";
 
     std::ostringstream command;
@@ -196,7 +196,7 @@ int32_t driver::link(const std::vector<std::string>& object_files, std::ofstream
     return link_exit;
 }
 
-int32_t driver::assemble(const std::string& input_file, std::ofstream& output, bool verbose) {
+int32_t utils::assemble(const std::string& input_file, std::ofstream& output, bool verbose) {
     const auto temp_path = generate_temp_path().string() + ".o";
 
     std::ostringstream command;
