@@ -36,7 +36,8 @@ main:
 	mov rbx, rax
 	# $28.0 @u32 = cast @u64 $27.0
 	.loc 1 3 0
-	mov eax, ebx
+	mov r10, rbx
+	mov eax, r10d
 	# ret $28.0
 	pop rbx
 	leave
@@ -48,48 +49,46 @@ main:
 calling_convention:
 	push rbx
 	push r12
+	push r13
+	push r14
 	# $03.0 @f32 = $b.0
-	movss DWORD PTR [rsp - 4], xmm1
+	movss xmm9, xmm1
 	# $04.0 @f32 = $c.0
-	movss DWORD PTR [rsp - 8], xmm2
+	movss xmm8, xmm2
 	# $10.0 @bool = 0
 	.loc 1 6 0
-	mov BYTE PTR [rsp - 9], 0
+	mov r12b, 0
 	# $11.0 @bool = 0
-	mov BYTE PTR [rsp - 10], 0
+	mov r13b, 0
 	# $13.0 @bool = cast @f32 $a.0
 	xorps xmm11, xmm11
 	ucomiss xmm11, xmm0
 	setne r10b
 	setp r11b
 	or r10b, r11b
-	mov BYTE PTR [rsp - 11], r10b
+	mov bl, r10b
 	# $11.1 @bool = $11.0
-	mov r10b, BYTE PTR [rsp - 10]
-	mov BYTE PTR [rsp - 12], r10b
+	mov r14b, r13b
 	# if $13.0 then L8 else L9
-	mov r10b, BYTE PTR [rsp - 11]
-	test r10b, r10b
+	test bl, bl
 	jnz L8
 	jmp L9
 L9:
 	# if $11.1 then L4 else L5
 	.loc 1 6 0
-	mov r10b, BYTE PTR [rsp - 12]
-	test r10b, r10b
+	test r14b, r14b
 	jnz L4
 	jmp L5
 L5:
 	# $18.0 @bool = cast @f32 $04.0
 	.loc 1 6 0
 	xorps xmm11, xmm11
-	ucomiss xmm11, DWORD PTR [rsp - 8]
+	ucomiss xmm11, xmm8
 	setne r10b
 	setp r11b
 	or r10b, r11b
 	mov bl, r10b
 	# $10.1 @bool = $10.0
-	mov r12b, BYTE PTR [rsp - 9]
 	# if $18.0 then L4 else L6
 	test bl, bl
 	jnz L4
@@ -100,6 +99,8 @@ L6:
 	movzx r10, r12b
 	mov rax, r10
 	# ret $20.0
+	pop r14
+	pop r13
 	pop r12
 	pop rbx
 	ret
@@ -115,14 +116,13 @@ L8:
 	# $15.0 @bool = cast @f32 $03.0
 	.loc 1 6 0
 	xorps xmm11, xmm11
-	ucomiss xmm11, DWORD PTR [rsp - 4]
+	ucomiss xmm11, xmm9
 	setne r10b
 	setp r11b
 	or r10b, r11b
 	mov bl, r10b
 	# $11.1 @bool = $11.0
-	mov r10b, BYTE PTR [rsp - 10]
-	mov BYTE PTR [rsp - 12], r10b
+	mov r14b, r13b
 	# if $15.0 then L7 else L9
 	test bl, bl
 	jnz L7
@@ -132,7 +132,7 @@ L7:
 	.loc 1 6 0
 	mov bl, 1
 	# $11.1 @bool = $11.2
-	mov BYTE PTR [rsp - 12], bl
+	mov r14b, bl
 	# goto L9
 	jmp L9
 .size calling_convention, .-calling_convention

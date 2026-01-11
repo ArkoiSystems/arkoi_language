@@ -20,17 +20,18 @@ main:
 	.loc 1 2 0
 	mov edi, 7
 	call factorial_recursive
-	mov ebx, eax
+	mov r12d, eax
 	# arg @u32 7
 	# $09.0 @u32 = call factorial_while, 1
 	.loc 1 2 0
 	mov edi, 7
 	call factorial_while
-	mov r12d, eax
+	mov ebx, eax
 	# $10.0 @u32 = sub @u32 $05.0, $09.0
 	.loc 1 2 0
-	sub ebx, r12d
-	mov eax, ebx
+	mov r10d, r12d
+	sub r10d, ebx
+	mov eax, r10d
 	# ret $10.0
 	pop r12
 	pop rbx
@@ -41,10 +42,11 @@ main:
 .global factorial_recursive
 .type factorial_recursive, @function
 factorial_recursive:
-	enter 16, 0
+	enter 0, 0
 	push rbx
+	push r12
 	# $02.0 @u32 = $n.0
-	mov DWORD PTR [rbp - 4], edi
+	mov r12d, edi
 	# $06.0 @bool = equ @u32 $n.0, 1
 	.loc 1 5 0
 	cmp edi, 1
@@ -56,7 +58,7 @@ factorial_recursive:
 L5:
 	# $13.0 @u32 = sub @u32 $02.0, 1
 	.loc 1 8 0
-	mov r10d, DWORD PTR [rbp - 4]
+	mov r10d, r12d
 	sub r10d, 1
 	mov ebx, r10d
 	# arg @u32 $13.0
@@ -66,7 +68,7 @@ L5:
 	mov ebx, eax
 	# $16.0 @u32 = mul @u32 $02.0, $15.0
 	.loc 1 8 0
-	mov r10d, DWORD PTR [rbp - 4]
+	mov r10d, r12d
 	imul r10d, ebx
 	mov ebx, r10d
 	# $01.1 @u32 = $16.0
@@ -76,6 +78,7 @@ L5:
 	jmp L3
 L3:
 	# ret $01.0
+	pop r12
 	pop rbx
 	leave
 	ret
@@ -96,14 +99,14 @@ factorial_while:
 	push r12
 	push r13
 	# $02.0 @u32 = $n.0
-	mov ebx, edi
+	mov r12d, edi
 	# $03.0 @u32 = 1
 	.loc 1 11 0
-	mov r12d, 1
+	mov ebx, 1
 	# $03.1 @u32 = $03.0
-	mov eax, r12d
+	mov eax, ebx
 	# $02.1 @u32 = $02.0
-	mov r13d, ebx
+	mov r13d, r12d
 L9:
 	# $09.0 @bool = neq @u32 $02.1, 0
 	.loc 1 12 0
@@ -122,14 +125,16 @@ L11:
 L10:
 	# $12.0 @u32 = mul @u32 $03.1, $02.1
 	.loc 1 13 0
-	imul eax, r13d
-	mov ebx, eax
+	mov r10d, eax
+	imul r10d, r13d
+	mov ebx, r10d
 	# $03.2 @u32 = $12.0
 	mov r12d, ebx
 	# $16.0 @u32 = sub @u32 $02.1, 1
 	.loc 1 14 0
-	sub r13d, 1
-	mov ebx, r13d
+	mov r10d, r13d
+	sub r10d, 1
+	mov ebx, r10d
 	# $02.2 @u32 = $16.0
 	# $03.1 @u32 = $03.2
 	mov eax, r12d
