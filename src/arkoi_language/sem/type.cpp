@@ -4,6 +4,7 @@
 #include <utility>
 
 using namespace arkoi::sem;
+using namespace arkoi;
 
 bool Integral::operator==(const Integral& other) const {
     return _size == other._size && _sign == other._sign;
@@ -45,19 +46,19 @@ Size Type::size() const {
     return std::visit([](const auto& value) { return value.size(); }, *this);
 }
 
-std::ostream& operator<<(std::ostream& os, const Integral& type) {
+std::ostream& sem::operator<<(std::ostream& os, const Integral& type) {
     return os << (type.sign() ? "s" : "u") << size_to_bits(type.size());
 }
 
-std::ostream& operator<<(std::ostream& os, const Floating& type) {
+std::ostream& sem::operator<<(std::ostream& os, const Floating& type) {
     return os << "f" << size_to_bits(type.size());
 }
 
-std::ostream& operator<<(std::ostream& os, const Boolean&) {
+std::ostream& sem::operator<<(std::ostream& os, const Boolean&) {
     return os << "bool";
 }
 
-std::ostream& operator<<(std::ostream& os, const Type& type) {
+std::ostream& sem::operator<<(std::ostream& os, const Type& type) {
     std::visit([&os](const auto& value) { os << value; }, type);
     return os;
 }

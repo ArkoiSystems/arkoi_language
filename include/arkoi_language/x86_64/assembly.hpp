@@ -111,7 +111,6 @@ private:
 struct AssemblyItem final : std::variant<Label, Directive, Instruction> {
     using variant::variant;
 };
-} // namespace arkoi::x86_64
 
 /**
  * @brief Streams a detailed description of a `Label`.
@@ -120,7 +119,7 @@ struct AssemblyItem final : std::variant<Label, Directive, Instruction> {
  * @param label The label to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Label& label);
+std::ostream& operator<<(std::ostream& os, const Label& label);
 
 /**
  * @brief Streams a detailed description of a `Directive`.
@@ -129,7 +128,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Label& label);
  * @param directive The directive to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Directive& directive);
+std::ostream& operator<<(std::ostream& os, const Directive& directive);
 
 /**
  * @brief Streams a detailed description of a `Instruction::Opcode`.
@@ -138,7 +137,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Directive& direc
  * @param opcode The instruction opcode to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Instruction::Opcode& opcode);
+std::ostream& operator<<(std::ostream& os, const Instruction::Opcode& opcode);
 
 /**
  * @brief Streams a detailed description of a `Instruction`.
@@ -147,7 +146,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Instruction::Opc
  * @param instruction The instruction to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Instruction& instruction);
+std::ostream& operator<<(std::ostream& os, const Instruction& instruction);
 
 /**
  * @brief Streams a detailed description of a `AssemblyItem`.
@@ -156,7 +155,8 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Instruction& ins
  * @param item The assembly item to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::AssemblyItem& item);
+std::ostream& operator<<(std::ostream& os, const AssemblyItem& item);
+} // namespace arkoi::x86_64
 
 // BSD 3-Clause License
 //

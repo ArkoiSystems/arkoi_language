@@ -1,6 +1,7 @@
 #include "arkoi_language/il/instruction.hpp"
 
 using namespace arkoi::il;
+using namespace arkoi;
 
 Binary::Operator Binary::node_to_instruction(const ast::Binary::Operator op) {
     switch (op) {
@@ -42,7 +43,7 @@ std::optional<pretty_diagnostics::Span> Instruction::span() const {
     return std::visit([&](auto& item) { return item.span(); }, *this);
 }
 
-std::ostream& operator<<(std::ostream& os, const Binary::Operator& op) {
+std::ostream& il::operator<<(std::ostream& os, const Binary::Operator& op) {
     switch (op) {
         case Binary::Operator::Add: return os << "add";
         case Binary::Operator::Sub: return os << "sub";

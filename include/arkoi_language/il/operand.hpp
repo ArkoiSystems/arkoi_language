@@ -182,6 +182,42 @@ struct Operand final : std::variant<Immediate, Variable, Memory> {
      */
     [[nodiscard]] sem::Type type() const;
 };
+
+/**
+ * @brief Streams a detailed description of a `Immediate`.
+ *
+ * @param os The output stream.
+ * @param operand The immediate to describe.
+ * @return A reference to the output stream @p os
+ */
+std::ostream& operator<<(std::ostream& os, const Immediate& operand);
+
+/**
+ * @brief Streams a detailed description of a `Variable`.
+ *
+ * @param os The output stream.
+ * @param operand The variable to describe.
+ * @return A reference to the output stream @p os
+ */
+std::ostream& operator<<(std::ostream& os, const Variable& operand);
+
+/**
+ * @brief Streams a detailed description of a `Memory`.
+ *
+ * @param os The output stream.
+ * @param operand The memory to describe.
+ * @return A reference to the output stream @p os
+ */
+std::ostream& operator<<(std::ostream& os, const Memory& operand);
+
+/**
+ * @brief Streams a detailed description of a `Operand`.
+ *
+ * @param os The output stream.
+ * @param operand The operand to describe.
+ * @return A reference to the output stream @p os
+ */
+std::ostream& operator<<(std::ostream& os, const Operand& operand);
 } // namespace arkoi::il
 
 namespace std {
@@ -205,42 +241,6 @@ struct hash<arkoi::il::Operand> {
     size_t operator()(const arkoi::il::Operand& operand) const noexcept;
 };
 } // namespace std
-
-/**
- * @brief Streams a detailed description of a `Immediate`.
- *
- * @param os The output stream.
- * @param operand The immediate to describe.
- * @return A reference to the output stream @p os
- */
-std::ostream& operator<<(std::ostream& os, const arkoi::il::Immediate& operand);
-
-/**
- * @brief Streams a detailed description of a `Variable`.
- *
- * @param os The output stream.
- * @param operand The variable to describe.
- * @return A reference to the output stream @p os
- */
-std::ostream& operator<<(std::ostream& os, const arkoi::il::Variable& operand);
-
-/**
- * @brief Streams a detailed description of a `Memory`.
- *
- * @param os The output stream.
- * @param operand The memory to describe.
- * @return A reference to the output stream @p os
- */
-std::ostream& operator<<(std::ostream& os, const arkoi::il::Memory& operand);
-
-/**
- * @brief Streams a detailed description of a `Operand`.
- *
- * @param os The output stream.
- * @param operand The operand to describe.
- * @return A reference to the output stream @p os
- */
-std::ostream& operator<<(std::ostream& os, const arkoi::il::Operand& operand);
 
 //==============================================================================
 // BSD 3-Clause License

@@ -151,7 +151,6 @@ struct Type final : std::variant<Integral, Floating, Boolean> {
      */
     [[nodiscard]] Size size() const;
 };
-} // namespace arkoi::sem
 
 /**
  * @brief Streams a detailed description of an `Integral`.
@@ -160,7 +159,7 @@ struct Type final : std::variant<Integral, Floating, Boolean> {
  * @param type The integral type to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::sem::Integral& type);
+std::ostream& operator<<(std::ostream& os, const Integral& type);
 
 /**
  * @brief Streams a detailed description of a `Floating`.
@@ -169,7 +168,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::sem::Integral& type);
  * @param type The floating type to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::sem::Floating& type);
+std::ostream& operator<<(std::ostream& os, const Floating& type);
 
 /**
  * @brief Streams a detailed description of a `Boolean`.
@@ -178,7 +177,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::sem::Floating& type);
  * @param type The boolean type to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::sem::Boolean& type);
+std::ostream& operator<<(std::ostream& os, const Boolean& type);
 
 /**
  * @brief Streams a detailed description of a `sem::Type`.
@@ -187,7 +186,8 @@ std::ostream& operator<<(std::ostream& os, const arkoi::sem::Boolean& type);
  * @param type The type to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::sem::Type& type);
+std::ostream& operator<<(std::ostream& os, const Type& type);
+} // namespace arkoi::sem
 
 //==============================================================================
 // BSD 3-Clause License

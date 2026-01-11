@@ -51,7 +51,7 @@ sem::Type Operand::type() const {
     return std::visit([](const auto& value) { return value.type(); }, *this);
 }
 
-std::ostream& operator<<(std::ostream& os, const Immediate& operand) {
+std::ostream& il::operator<<(std::ostream& os, const Immediate& operand) {
     std::visit(
         match{
             [&os](const bool& value) { os << (value ? "1" : "0"); },
@@ -62,34 +62,33 @@ std::ostream& operator<<(std::ostream& os, const Immediate& operand) {
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Variable& operand) {
+std::ostream& il::operator<<(std::ostream& os, const Variable& operand) {
     os << "$" << operand.name();
     os << "." << operand.version();
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Memory& operand) {
+std::ostream& il::operator<<(std::ostream& os, const Memory& operand) {
     os << "%" << operand.name();
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Operand& operand) {
+std::ostream& il::operator<<(std::ostream& os, const Operand& operand) {
     std::visit([&os](const auto& other) { os << other; }, operand);
     return os;
 }
 
-namespace std {
-size_t hash<Variable>::operator()(const Variable& variable) const noexcept {
+size_t std::hash<Variable>::operator()(const Variable& variable) const noexcept {
     const size_t name_hash = std::hash<std::string>{ }(variable.name());
     const size_t generation_hash = std::hash<size_t>{ }(variable.version());
     return name_hash ^ (generation_hash << 1);
 }
 
-size_t hash<Memory>::operator()(const Memory& memory) const noexcept {
+size_t std::hash<Memory>::operator()(const Memory& memory) const noexcept {
     return std::hash<std::string>{ }(memory.name());
 }
 
-size_t hash<Immediate>::operator()(const Immediate& immediate) const noexcept {
+size_t std::hash<Immediate>::operator()(const Immediate& immediate) const noexcept {
     return std::visit(
         []<typename T>(const T& value) -> size_t {
             return std::hash<std::decay_t<T>>{ }(value);
@@ -98,7 +97,7 @@ size_t hash<Immediate>::operator()(const Immediate& immediate) const noexcept {
     );
 }
 
-size_t hash<Operand>::operator()(const Operand& operand) const noexcept {
+size_t std::hash<Operand>::operator()(const Operand& operand) const noexcept {
     return std::visit(
         []<typename T>(const T& value) -> size_t {
             return std::hash<std::decay_t<T>>{ }(value);
@@ -106,7 +105,6 @@ size_t hash<Operand>::operator()(const Operand& operand) const noexcept {
         operand
     );
 }
-} // namespace std
 
 //==============================================================================
 // BSD 3-Clause License

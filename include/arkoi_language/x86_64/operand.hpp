@@ -204,7 +204,6 @@ struct Immediate : std::variant<std::string, uint64_t, int64_t, uint32_t, int32_
 struct Operand : std::variant<Memory, Register, Immediate> {
     using variant::variant;
 };
-} // namespace arkoi::x86_64
 
 /**
  * @brief Streams a detailed description of a `Register`.
@@ -213,7 +212,7 @@ struct Operand : std::variant<Memory, Register, Immediate> {
  * @param reg The register to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register& reg);
+std::ostream& operator<<(std::ostream& os, const Register& reg);
 
 /**
  * @brief Streams a detailed description of a `Register::Base`.
@@ -222,7 +221,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register& reg);
  * @param base The register base to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register::Base& base);
+std::ostream& operator<<(std::ostream& os, const Register::Base& base);
 
 /**
  * @brief Streams a detailed description of a `Memory`.
@@ -231,7 +230,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Register::Base& 
  * @param memory The memory to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Memory& memory);
+std::ostream& operator<<(std::ostream& os, const Memory& memory);
 
 /**
  * @brief Streams a detailed description of a `Memory::Address`.
@@ -240,7 +239,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Memory& memory);
  * @param address The memory address to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Memory::Address& address);
+std::ostream& operator<<(std::ostream& os, const Memory::Address& address);
 
 /**
  * @brief Streams a detailed description of a `Immediate`.
@@ -249,7 +248,7 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Memory::Address&
  * @param immediate The immediate to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Immediate& immediate);
+std::ostream& operator<<(std::ostream& os, const Immediate& immediate);
 
 /**
  * @brief Streams a detailed description of a `Operand`.
@@ -258,9 +257,8 @@ std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Immediate& immed
  * @param operand The operand to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::x86_64::Operand& operand);
+std::ostream& operator<<(std::ostream& os, const Operand& operand);
 
-namespace arkoi::x86_64 {
 static constexpr std::array INTEGER_CALLEE_SAVED{
     Register::Base::B, Register::Base::R12, Register::Base::R13, Register::Base::R14,
     Register::Base::R15,

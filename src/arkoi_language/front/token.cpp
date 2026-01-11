@@ -5,6 +5,7 @@
 #include "arkoi_language/utils/utils.hpp"
 
 using namespace arkoi::front;
+using namespace arkoi;
 
 std::optional<Token::Type> Token::lookup_keyword(const std::string_view& value) {
     static const std::unordered_map<std::string_view, Type> KEYWORDS = {
@@ -68,7 +69,7 @@ std::optional<Token::Type> Token::lookup_special(const std::string_view& value) 
     return std::nullopt;
 }
 
-std::ostream& operator<<(std::ostream& os, const Token::Type& type) {
+std::ostream& front::operator<<(std::ostream& os, const Token::Type& type) {
     switch (type) {
         case Token::Type::Indentation: return os << "Indentation";
         case Token::Type::Dedentation: return os << "Dedentation";
@@ -127,10 +128,10 @@ std::ostream& operator<<(std::ostream& os, const Token::Type& type) {
     std::unreachable();
 }
 
-std::ostream& operator<<(std::ostream& os, const Token& token) {
+std::ostream& front::operator<<(std::ostream& os, const Token& token) {
     os << "Token(";
     os << "kind=\"" << to_string(token.type()) << "\", ";
-    os << "span=\"" << token.span() << "\"";
+    os << "span=\"" << to_string(token.span()) << "\"";
     os << ")";
     return os;
 }

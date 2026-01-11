@@ -7,7 +7,7 @@ const front::Token& Symbol::name() const {
     return std::visit([&](auto& value) -> const front::Token& { return value.name(); }, *this);
 }
 
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Symbol>& symbol) {
+std::ostream& sem::operator<<(std::ostream& os, const std::shared_ptr<Symbol>& symbol) {
     std::visit([&os](auto& value) { os << value.name(); }, *symbol);
     return os;
 }

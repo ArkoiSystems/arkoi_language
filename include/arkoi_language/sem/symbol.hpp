@@ -136,7 +136,6 @@ struct Symbol : std::variant<Function, Variable> {
      */
     [[nodiscard]] const front::Token& name() const;
 };
-} // namespace arkoi::sem
 
 /**
  * @brief Streams a detailed description of a `Symbol`.
@@ -146,6 +145,8 @@ struct Symbol : std::variant<Function, Variable> {
  * @return A reference to the output stream @p os.
  */
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<arkoi::sem::Symbol>& symbol);
+} // namespace arkoi::sem
+
 
 //==============================================================================
 // BSD 3-Clause License

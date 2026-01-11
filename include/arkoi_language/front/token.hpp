@@ -117,7 +117,6 @@ private:
     pretty_diagnostics::Span _span;
     Type _type;
 };
-} // namespace arkoi::front
 
 /**
  * @brief Streams a human-readable name for a `Token::Type`.
@@ -126,7 +125,7 @@ private:
  * @param type The token type to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::front::Token::Type& type);
+std::ostream& operator<<(std::ostream& os, const Token::Type& type);
 
 /**
  * @brief Streams a detailed description of a `Token` (type and span).
@@ -135,7 +134,8 @@ std::ostream& operator<<(std::ostream& os, const arkoi::front::Token::Type& type
  * @param token The token to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::front::Token& token);
+std::ostream& operator<<(std::ostream& os, const Token& token);
+} // namespace arkoi::front
 
 //==============================================================================
 // BSD 3-Clause License

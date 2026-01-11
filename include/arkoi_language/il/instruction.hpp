@@ -1022,7 +1022,6 @@ struct Instruction final : std::variant<
      */
     [[nodiscard]] std::optional<pretty_diagnostics::Span> span() const;
 };
-} // namespace arkoi::il
 
 /**
  * @brief Streams a detailed description of a `Binary::Operator`.
@@ -1031,7 +1030,8 @@ struct Instruction final : std::variant<
  * @param op The binary operator to describe.
  * @return A reference to the output stream @p os
  */
-std::ostream& operator<<(std::ostream& os, const arkoi::il::Binary::Operator& op);
+std::ostream& operator<<(std::ostream& os, const Binary::Operator& op);
+} // namespace arkoi::il
 
 //==============================================================================
 // BSD 3-Clause License
