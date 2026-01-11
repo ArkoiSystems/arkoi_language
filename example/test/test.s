@@ -13,32 +13,30 @@ _start:
 .type main, @function
 main:
 	enter 0, 0
-	push rbx
 	# arg @f64 5
 	# $07.0 @bool = call ok, 1
 	.loc 1 3 0
 	movsd xmm0, QWORD PTR [float0]
 	call ok
-	mov bl, al
 	# $08.0 @u32 = cast @bool $07.0
 	.loc 1 3 0
-	movzx r10d, bl
-	mov ebx, r10d
+	movzx r10d, al
+	mov eax, r10d
 	# $09.0 @u32 = mul @u32 1, $08.0
 	mov r10d, 1
-	imul r10d, ebx
-	mov ebx, r10d
+	imul r10d, eax
+	mov eax, r10d
 	# $12.0 @u32 = add @u32 $09.0, 1
-	mov r10d, ebx
+	mov r10d, eax
 	add r10d, 1
-	mov ebx, r10d
+	mov eax, r10d
 	# $13.0 @s32 = cast @u32 $12.0
-	mov r10d, ebx
-	mov ebx, r10d
+	mov r10d, eax
+	mov eax, r10d
 	# arg @s32 $13.0
 	# arg @f64 10.5
 	# $18.0 @f32 = call test1, 2
-	mov edi, ebx
+	mov edi, eax
 	movsd xmm0, QWORD PTR [float1]
 	call test1
 	movss xmm8, xmm0
@@ -55,7 +53,6 @@ main:
 	cvttss2si r10, xmm8
 	mov rax, r10
 	# ret $24.0
-	pop rbx
 	leave
 	ret
 .size main, .-main
@@ -64,33 +61,32 @@ main:
 .type ok, @function
 ok:
 	enter 0, 0
-	push rbx
 	# $02.0 @f64 = $foo1.0
 	movsd xmm8, xmm0
 	# $06.0 @bool = gth @f64 $foo1.0, 5
 	.loc 1 6 0
 	ucomisd xmm0, QWORD PTR [float4]
-	seta bl
+	seta al
 	# if $06.0 then L4 else L5
-	test bl, bl
+	test al, al
 	jnz L4
 	jmp L5
 L5:
 	# $12.0 @bool = goe @f64 $02.0, 10
 	.loc 1 7 0
 	ucomisd xmm8, QWORD PTR [float5]
-	setae bl
+	setae al
 	# if $12.0 then L7 else L8
-	test bl, bl
+	test al, al
 	jnz L7
 	jmp L8
 L8:
 	# $18.0 @bool = neq @f64 $02.0, 0
 	.loc 1 8 0
 	ucomisd xmm8, QWORD PTR [float6]
-	setne bl
+	setne al
 	# if $18.0 then L10 else L11
-	test bl, bl
+	test al, al
 	jnz L10
 	jmp L11
 L11:
@@ -114,11 +110,10 @@ L6:
 	mov eax, 4
 	mov r11d, 2
 	idiv r11d
-	mov ebx, eax
 	# arg @s32 $25.0
 	# arg @f64 $02.1
 	# $29.0 @f32 = call test2, 2
-	mov edi, ebx
+	mov edi, eax
 	movsd xmm0, xmm8
 	call test2
 	movss xmm8, xmm0
@@ -131,7 +126,6 @@ L6:
 	or r10b, r11b
 	mov al, r10b
 	# ret $30.0
-	pop rbx
 	leave
 	ret
 L10:
@@ -160,10 +154,8 @@ L4:
 .global test1
 .type test1, @function
 test1:
-	push rbx
-	push r12
 	# $02.0 @s32 = $foo2.0
-	mov ebx, edi
+	mov ecx, edi
 	# $03.0 @f64 = $bar.0
 	movsd xmm9, xmm0
 	# $07.0 @f64 = cast @s32 $foo2.0
@@ -172,27 +164,27 @@ test1:
 	movsd xmm8, xmm10
 	# $09.0 @bool = loe @f64 $07.0, $bar.0
 	ucomisd xmm8, xmm0
-	setbe r12b
+	setbe al
 	# if $09.0 then L15 else L16
-	test r12b, r12b
+	test al, al
 	jnz L15
 	jmp L16
 L16:
 	# $21.0 @f64 = cast @s32 $02.0
 	.loc 1 15 0
-	cvtsi2sd xmm10, ebx
+	cvtsi2sd xmm10, ecx
 	movsd xmm8, xmm10
 	# $23.0 @bool = equ @f64 $21.0, $03.0
 	ucomisd xmm8, xmm9
-	sete r12b
+	sete al
 	# if $23.0 then L18 else L19
-	test r12b, r12b
+	test al, al
 	jnz L18
 	jmp L19
 L19:
 	# $27.0 @f64 = cast @s32 $02.0
 	.loc 1 16 0
-	cvtsi2sd xmm10, ebx
+	cvtsi2sd xmm10, ecx
 	movsd xmm8, xmm10
 	# $29.0 @f64 = mul @f64 $27.0, $03.0
 	movsd xmm10, xmm8
@@ -213,13 +205,11 @@ L20:
 	jmp L17
 L17:
 	# ret $04.1
-	pop r12
-	pop rbx
 	ret
 L18:
 	# $25.0 @f32 = cast @s32 $02.0
 	.loc 1 15 0
-	cvtsi2ss xmm10, ebx
+	cvtsi2ss xmm10, ecx
 	movss xmm8, xmm10
 	# $04.4 @f32 = $25.0
 	# $04.2 @f32 = $04.4
@@ -228,17 +218,17 @@ L18:
 L15:
 	# $12.0 @f64 = cast @s32 $02.0
 	.loc 1 14 0
-	cvtsi2sd xmm10, ebx
+	cvtsi2sd xmm10, ecx
 	movsd xmm8, xmm10
 	# $13.0 @f64 = mul @f64 $03.0, $12.0
 	movsd xmm10, xmm9
 	mulsd xmm10, xmm8
 	movsd xmm9, xmm10
 	# $16.0 @bool = lth @s32 $02.0, $02.0
-	cmp ebx, ebx
-	setl bl
+	cmp ecx, ecx
+	setl al
 	# $17.0 @f64 = cast @bool $16.0
-	movzx r10d, bl
+	movzx r10d, al
 	cvtsi2sd xmm10, r10d
 	movsd xmm8, xmm10
 	# $18.0 @f64 = add @f64 $13.0, $17.0
@@ -259,10 +249,8 @@ L15:
 .global test2
 .type test2, @function
 test2:
-	push rbx
-	push r12
 	# $02.0 @s32 = $foo2.0
-	mov ebx, edi
+	mov ecx, edi
 	# $03.0 @f64 = $bar.0
 	movsd xmm9, xmm0
 	# $05.0 @f64 = cast @s32 $foo2.0
@@ -271,15 +259,15 @@ test2:
 	movsd xmm8, xmm10
 	# $07.0 @bool = lth @f64 $05.0, $bar.0
 	ucomisd xmm8, xmm0
-	setb r12b
+	setb al
 	# if $07.0 then L23 else L24
-	test r12b, r12b
+	test al, al
 	jnz L23
 	jmp L24
 L24:
 	# $14.0 @f64 = cast @s32 $02.0
 	.loc 1 21 0
-	cvtsi2sd xmm10, ebx
+	cvtsi2sd xmm10, ecx
 	movsd xmm8, xmm10
 	# $16.0 @f64 = mul @f64 $14.0, $03.0
 	movsd xmm10, xmm8
@@ -297,13 +285,11 @@ L24:
 	jmp L22
 L22:
 	# ret $01.0
-	pop r12
-	pop rbx
 	ret
 L23:
 	# $10.0 @f64 = cast @s32 $02.0
 	.loc 1 20 0
-	cvtsi2sd xmm10, ebx
+	cvtsi2sd xmm10, ecx
 	movsd xmm8, xmm10
 	# $11.0 @f64 = mul @f64 $03.0, $10.0
 	movsd xmm10, xmm9
