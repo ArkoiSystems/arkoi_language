@@ -4,6 +4,7 @@
 #include <variant>
 
 using namespace arkoi::x86_64;
+using namespace arkoi;
 
 bool Register::operator==(const Register& other) const {
     return _size == other._size && _base == other._base;
@@ -22,7 +23,7 @@ bool Memory::operator!=(const Memory& other) const {
     return !(other == *this);
 }
 
-std::ostream& operator<<(std::ostream& os, const Register& reg) {
+std::ostream& x86_64::operator<<(std::ostream& os, const Register& reg) {
     if (reg.base() >= Register::Base::R8 && reg.base() <= Register::Base::R15) {
         switch (reg.size()) {
             case Size::BYTE: return os << reg.base() << "b";
@@ -57,7 +58,7 @@ std::ostream& operator<<(std::ostream& os, const Register& reg) {
     throw std::invalid_argument("This register is not implemented.");
 }
 
-std::ostream& operator<<(std::ostream& os, const Register::Base& base) {
+std::ostream& x86_64::operator<<(std::ostream& os, const Register::Base& base) {
     switch (base) {
         case Register::Base::A: return os << "a";
         case Register::Base::C: return os << "c";
@@ -97,7 +98,7 @@ std::ostream& operator<<(std::ostream& os, const Register::Base& base) {
     std::unreachable();
 }
 
-std::ostream& operator<<(std::ostream& os, const Memory& memory) {
+std::ostream& x86_64::operator<<(std::ostream& os, const Memory& memory) {
     os << memory.size() << " PTR ";
 
     os << "[" << memory.address();
@@ -120,17 +121,17 @@ std::ostream& operator<<(std::ostream& os, const Memory& memory) {
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Memory::Address& address) {
+std::ostream& x86_64::operator<<(std::ostream& os, const Memory::Address& address) {
     std::visit([&os](const auto& value) { os << value; }, address);
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Immediate& immediate) {
+std::ostream& x86_64::operator<<(std::ostream& os, const Immediate& immediate) {
     std::visit([&](const auto& value) { os << value; }, immediate);
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const Operand& operand) {
+std::ostream& x86_64::operator<<(std::ostream& os, const Operand& operand) {
     std::visit([&](const auto& value) { os << value; }, operand);
     return os;
 }

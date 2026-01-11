@@ -45,6 +45,13 @@ public:
     [[nodiscard]] auto& assigned() { return _assigned; }
 
     /**
+     * @brief Returns the pre-colored virtual-to-physical register assignments.
+     *
+     * @return A constant reference to the `Mapping`.
+     */
+    [[nodiscard]] auto& precolored() { return _precolored; }
+
+    /**
      * @brief Returns the variables that could not be assigned a register.
      *
      * Spilled variables must be handled by the code generator by using
@@ -55,6 +62,8 @@ public:
     [[nodiscard]] auto& spilled() { return _spilled; }
 
 private:
+    void _cleanup();
+
     /**
      * @brief Re-indexes variables to ensure unique identification during allocation.
      */
@@ -70,12 +79,17 @@ private:
      */
     void _simplify();
 
+    void _select();
+
+    void _rewrite();
+
 private:
     il::DataflowAnalysis<il::InstructionLivenessAnalysis> _analysis{ };
     utils::InterferenceGraph<il::Variable> _graph{ };
+    Mapping _assigned{ }, _precolored{ };
+    std::vector<il::Variable> _stack{ };
     std::set<il::Variable> _spilled{ };
     il::Function& _function;
-    Mapping _assigned{ };
 };
 } // namespace arkoi::x86_64
 

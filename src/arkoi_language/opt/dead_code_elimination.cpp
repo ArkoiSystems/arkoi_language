@@ -36,9 +36,9 @@ bool DeadCodeElimination::enter_function(il::Function& function) {
                     [&](il::Argument& instruction) {
                         _used.insert(instruction.source());
                     },
-                    [&](const il::Phi& instruction) {
-                        for (auto& use : instruction.uses()) {
-                            _used.insert(use);
+                    [&](il::Phi& instruction) {
+                        for (auto& operand : instruction.incoming() | std::views::values) {
+                            _used.insert(operand);
                         }
                     },
                     [&](il::Assign& instruction) {

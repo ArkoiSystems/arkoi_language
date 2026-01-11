@@ -233,7 +233,7 @@ void Mapper::_add_local(const il::Operand& operand) {
 void Mapper::_add_register(const il::Variable& variable, const Register& reg) {
     _locals.erase(variable);
     _mappings.insert_or_assign(variable, reg);
-    _register_allocator.assigned().insert_or_assign(variable, reg.base());
+    _register_allocator.precolored().insert_or_assign(variable, reg.base());
 }
 
 void Mapper::_add_memory(const il::Variable& variable, const Memory& memory) {
