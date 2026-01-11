@@ -96,6 +96,16 @@ public:
      * @return The liveness state before the instruction.
      */
     [[nodiscard]] State transfer(Instruction& current, const State& state) override;
+
+    /**
+     * @brief Returns a `State` with all live across calls operands.
+     *
+     * @return A reference to the `State`s that are live across calls.
+     */
+    [[nodiscard]] auto& live_across_calls() { return _live_across_calls; }
+
+private:
+    State _live_across_calls;
 };
 } // namespace arkoi::il
 

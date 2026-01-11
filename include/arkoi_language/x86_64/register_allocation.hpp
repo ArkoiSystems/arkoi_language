@@ -84,6 +84,7 @@ private:
     void _rewrite();
 
 private:
+    std::shared_ptr<il::InstructionLivenessAnalysis> _liveness_analysis{ };
     il::DataflowAnalysis<il::InstructionLivenessAnalysis> _analysis{ };
     utils::InterferenceGraph<il::Variable> _graph{ };
     Mapping _assigned{ }, _precolored{ };

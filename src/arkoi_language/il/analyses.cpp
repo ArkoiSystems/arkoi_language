@@ -48,6 +48,16 @@ State InstructionLivenessAnalysis::initialize(Function&, Instruction&) {
 State InstructionLivenessAnalysis::transfer(Instruction& current, const State& state) {
     assert(!std::holds_alternative<Phi>(current));
 
+    if (std::holds_alternative<Call>(current)) {
+        State in = state;
+
+        for (auto& definition : current.defs()) {
+            in.erase(definition);
+        }
+
+        _live_across_calls.insert(in.begin(), in.end());
+    }
+
     State in = state;
     for (const auto& definition : current.defs()) {
         if (std::holds_alternative<Immediate>(definition)) continue;

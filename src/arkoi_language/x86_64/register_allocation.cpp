@@ -7,29 +7,32 @@ using namespace arkoi;
 
 void RegisterAllocater::run() {
     do {
-        _cleanup();
         _renumber();
         _build();
         _simplify();
         _select();
-        _rewrite();
+
+        if (!_spilled.empty()) {
+            _rewrite();
+            _cleanup();
+        }
     } while (!_spilled.empty());
 }
 
 void RegisterAllocater::_cleanup() {
+    _graph = utils::InterferenceGraph<il::Variable>();
     _assigned.clear();
     _spilled.clear();
     _stack.clear();
 }
 
 void RegisterAllocater::_renumber() {
-    _analysis = il::DataflowAnalysis<il::InstructionLivenessAnalysis>();
+    _liveness_analysis = std::make_shared<il::InstructionLivenessAnalysis>();
+    _analysis = il::DataflowAnalysis(_liveness_analysis);
     _analysis.run(_function);
 }
 
 void RegisterAllocater::_build() {
-    _graph = utils::InterferenceGraph<il::Variable>();
-
     for (auto& block : _function) {
         for (auto& instruction : block) {
             const auto& defs = instruction.defs();
@@ -86,9 +89,27 @@ void RegisterAllocater::_simplify() {
     // TODO: Do this differently.
     auto temp_graph = _graph;
 
+    auto compute_k = [&](const il::Variable& variable) {
+        if (std::holds_alternative<sem::Floating>(variable.type())) {
+            return FLOATING_REGISTERS.size();
+        }
+
+        if (_liveness_analysis->live_across_calls().contains(variable)) {
+            return INTEGER_CALLEE_SAVED.size();
+        }
+
+        return INTEGER_CALLER_SAVED.size();
+    };
+
     // For now this spill cost is only calculated on its degree.
     auto spill_cost = [&](const il::Variable& first, const il::Variable& second) {
-        return temp_graph.interferences(first).size() < temp_graph.interferences(second).size();
+        const auto first_size = temp_graph.interferences(first).size();
+        const auto first_k = compute_k(first);
+
+        const auto second_size = temp_graph.interferences(second).size();
+        const auto second_k = compute_k(second);
+
+        return (first_size * first_k) < (second_size * second_k);
     };
 
     for (const auto& variable : std::views::keys(_precolored)) {
@@ -101,10 +122,8 @@ void RegisterAllocater::_simplify() {
         for (auto it = work_list.begin(); it != work_list.end(); ++it) {
             const auto& node = *it;
 
-            const auto is_floating = std::holds_alternative<sem::Floating>(node.type());
-            const auto K = is_floating ? FLOATING_REGISTERS.size() : INTEGER_CALLEE_SAVED.size();
             const auto interferences = temp_graph.interferences(node);
-            if (interferences.size() >= K) continue;
+            if (interferences.size() >= compute_k(node)) continue;
 
             _stack.push_back(node);
             temp_graph.remove_node(node);
@@ -145,8 +164,16 @@ void RegisterAllocater::_select() {
                 success = true;
                 break;
             }
-        } else {
+        } else if (_liveness_analysis->live_across_calls().contains(node)) {
             for (const auto base : INTEGER_CALLEE_SAVED) {
+                if (forbidden.contains(base)) continue;
+
+                _assigned[node] = base;
+                success = true;
+                break;
+            }
+        } else {
+            for (const auto base : INTEGER_CALLER_SAVED) {
                 if (forbidden.contains(base)) continue;
 
                 _assigned[node] = base;

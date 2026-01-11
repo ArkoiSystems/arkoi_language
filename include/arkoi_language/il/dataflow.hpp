@@ -121,7 +121,15 @@ public:
      */
     template <typename... Args>
     explicit DataflowAnalysis(Args&&... args) :
-        _pass(std::make_unique<Pass>(std::forward<Args>(args)...)) { }
+        _pass(std::make_shared<Pass>(std::forward<Args>(args)...)) { }
+
+    /**
+     * @brief Constructs an analysis instance using a `Pass` instance.
+     *
+     * @param pass The being used by the dataflow framework.
+     */
+    explicit DataflowAnalysis(std::shared_ptr<Pass> pass) :
+        _pass(std::move(pass)) { }
 
     /**
      * @brief Executes the worklist algorithm on the provided function.
@@ -155,7 +163,7 @@ public:
 private:
     std::unordered_map<Key, State> _out{ };
     std::unordered_map<Key, State> _in{ };
-    std::unique_ptr<Pass> _pass;
+    std::shared_ptr<Pass> _pass;
 };
 
 #include "../../../src/arkoi_language/il/dataflow.tpp"
