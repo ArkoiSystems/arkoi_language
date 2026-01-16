@@ -57,7 +57,7 @@ struct CallFrame {
  * stack slot) for every `il::Operand` in a function. It calculates the necessary
  * stack frame size and handles calling convention details like parameter passing.
  *
- * @see il::Visitor, il::Operand, Register, Memory, RegisterAllocater
+ * @see il::Visitor, il::Operand, Register, Memory, RegisterAllocator
  */
 class Mapper final : il::Visitor {
 public:
@@ -104,7 +104,7 @@ public:
      *
      * @return A reference to the instance of the `RegisterAllocator`.
      */
-    [[nodiscard]] auto &register_allocater() { return _register_allocator; }
+    [[nodiscard]] auto &register_allocator() { return _register_allocator; }
 
     /**
      * @brief Determines the physical register used for returning a specific type.
@@ -263,7 +263,7 @@ private:
 private:
     std::unordered_map<il::Call *, CallFrame> _call_frames{ };
     std::unordered_map<il::Operand, Operand> _mappings{ };
-    RegisterAllocater _register_allocator;
+    RegisterAllocator _register_allocator;
     OrderedSet<il::Operand> _locals{ };
     CallFrame _current_call_frame{ };
     il::Function& _function;

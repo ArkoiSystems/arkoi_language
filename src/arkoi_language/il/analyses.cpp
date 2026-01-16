@@ -72,6 +72,10 @@ State InstructionLivenessAnalysis::transfer(Instruction& current, const State& s
     return in;
 }
 
+bool InstructionLivenessAnalysis::is_live_across_calls(const Operand& operand) const {
+    return _live_across_calls.contains(operand);
+}
+
 //==============================================================================
 // BSD 3-Clause License
 //

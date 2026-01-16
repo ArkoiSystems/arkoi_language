@@ -27,7 +27,7 @@ struct ClassifiedArguments {
  * It manages register usage, stack frame setup/teardown (prologue/epilogue),
  * and handles calling convention details for both function definitions and calls.
  *
- * @see il::Visitor, Mapper, RegisterAllocater, AssemblyItem
+ * @see il::Visitor, Mapper, RegisterAllocator, AssemblyItem
  */
 class Generator final : il::Visitor {
 public:

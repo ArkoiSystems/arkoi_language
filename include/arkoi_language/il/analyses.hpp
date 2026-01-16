@@ -62,7 +62,7 @@ public:
  * Direction: Backward
  * Granularity: Instruction
  *
- * @see DataflowPass, BlockLivenessAnalysis, x86_64::RegisterAllocater
+ * @see DataflowPass, BlockLivenessAnalysis, x86_64::RegisterAllocator
  */
 class InstructionLivenessAnalysis final :
     public DataflowPass<Operand, DataflowDirection::Backward, DataflowGranularity::Instruction> {
@@ -103,6 +103,14 @@ public:
      * @return A reference to the `State`s that are live across calls.
      */
     [[nodiscard]] auto& live_across_calls() { return _live_across_calls; }
+
+    /**
+     * @brief Checks and returns if the provided operand is live across call instructions.
+     *
+     * @param operand The operand to check.
+     * @return If the operand is live across calls.
+     */
+    [[nodiscard]] bool is_live_across_calls(const Operand& operand) const;
 
 private:
     State _live_across_calls;

@@ -5,7 +5,7 @@
 using namespace arkoi::x86_64;
 using namespace arkoi;
 
-void RegisterAllocater::run() {
+void RegisterAllocator::run() {
     do {
         _renumber();
         _build();
@@ -19,31 +19,29 @@ void RegisterAllocater::run() {
     } while (!_spilled.empty());
 }
 
-void RegisterAllocater::_cleanup() {
+void RegisterAllocator::_cleanup() {
     _graph = utils::InterferenceGraph<il::Variable>();
     _assigned.clear();
     _spilled.clear();
     _stack.clear();
 }
 
-void RegisterAllocater::_renumber() {
+void RegisterAllocator::_renumber() {
     _liveness_analysis = std::make_shared<il::InstructionLivenessAnalysis>();
     _analysis = il::DataflowAnalysis(_liveness_analysis);
     _analysis.run(_function);
 }
 
-void RegisterAllocater::_build() {
+void RegisterAllocator::_build() {
     for (auto& block : _function) {
         for (auto& instruction : block) {
-            const auto& defs = instruction.defs();
-            for (const auto& def : defs) {
+            for (const auto& def : instruction.defs()) {
                 auto* def_variable = std::get_if<il::Variable>(&def);
                 if (!def_variable) continue;
                 _graph.add_node(*def_variable);
             }
 
-            const auto& uses = instruction.uses();
-            for (const auto& use : uses) {
+            for (const auto& use : instruction.uses()) {
                 auto* use_variable = std::get_if<il::Variable>(&use);
                 if (!use_variable) continue;
                 _graph.add_node(*use_variable);
@@ -51,8 +49,23 @@ void RegisterAllocater::_build() {
         }
     }
 
+    auto add_clique = [&](auto const& operands) {
+        for (size_t i = 0; i < operands.size(); ++i) {
+            auto* i_op = std::get_if<il::Variable>(&operands[i]);
+            if (!i_op) continue;
+
+            for (size_t j = i + 1; j < operands.size(); ++j) {
+                auto* j_op = std::get_if<il::Variable>(&operands[j]);
+                if (!j_op) continue;
+
+                _graph.add_edge(*i_op, *j_op);
+            }
+        }
+    };
+
     for (const auto& [instruction, outs] : _analysis.out()) {
         const auto& defs = instruction->defs();
+        const auto& uses = instruction->uses();
 
         for (const auto& def : defs) {
             auto* def_variable = std::get_if<il::Variable>(&def);
@@ -67,16 +80,8 @@ void RegisterAllocater::_build() {
             }
         }
 
-        for (size_t i = 0; i < defs.size(); i++) {
-            auto* i_def = std::get_if<il::Variable>(&defs[i]);
-            if (!i_def) continue;
-            for (size_t j = i + 1; j < defs.size(); j++) {
-                auto* j_def = std::get_if<il::Variable>(&defs[j]);
-                if (!j_def) continue;
-
-                _graph.add_edge(*i_def, *j_def);
-            }
-        }
+        add_clique(uses);
+        add_clique(defs);
     }
 
     for (const auto& [variable, color] : _precolored) {
@@ -84,10 +89,17 @@ void RegisterAllocater::_build() {
     }
 }
 
-void RegisterAllocater::_simplify() {
+void RegisterAllocator::_simplify() {
     auto work_list = _graph.nodes();
-    // TODO: Do this differently.
-    auto temp_graph = _graph;
+
+    std::unordered_map<il::Variable, size_t> current_degree;
+    for (const auto& node : work_list) {
+        current_degree[node] = _graph.interferences(node).size();
+    }
+
+    for (const auto& variable : std::views::keys(_precolored)) {
+        work_list.erase(variable);
+    }
 
     auto compute_k = [&](const il::Variable& variable) {
         if (std::holds_alternative<sem::Floating>(variable.type())) {
@@ -103,92 +115,87 @@ void RegisterAllocater::_simplify() {
 
     // For now this spill cost is only calculated on its degree.
     auto spill_cost = [&](const il::Variable& first, const il::Variable& second) {
-        const auto first_size = temp_graph.interferences(first).size();
+        const auto first_size = current_degree[first];
         const auto first_k = compute_k(first);
 
-        const auto second_size = temp_graph.interferences(second).size();
+        const auto second_size = current_degree[second];
         const auto second_k = compute_k(second);
 
         return (first_size * first_k) < (second_size * second_k);
     };
 
-    for (const auto& variable : std::views::keys(_precolored)) {
-        work_list.erase(variable);
-    }
+    auto remove_node = [&](const il::Variable& node) {
+        for (const auto& neighbor : _graph.interferences(node)) {
+            if (!current_degree.contains(neighbor)) continue;
+            current_degree[neighbor]--;
+        }
+        work_list.erase(node);
+    };
 
     while (!work_list.empty()) {
-        auto found = false;
+        auto result = std::ranges::find_if(
+            work_list,
+            [&](const auto& node) {
+                return current_degree[node] < compute_k(node);
+            }
+        );
 
-        for (auto it = work_list.begin(); it != work_list.end(); ++it) {
-            const auto& node = *it;
-
-            const auto interferences = temp_graph.interferences(node);
-            if (interferences.size() >= compute_k(node)) continue;
-
-            _stack.push_back(node);
-            temp_graph.remove_node(node);
-            work_list.erase(it);
-
-            found = true;
-            break;
+        if (result != work_list.end()) {
+            _stack.push_back(*result);
+            remove_node(*result);
+            continue;
         }
-
-        if (found) continue;
 
         const auto& candidate = *std::max_element(work_list.begin(), work_list.end(), spill_cost);
         _stack.push_back(candidate);
-        temp_graph.remove_node(candidate);
-        work_list.erase(candidate);
+        remove_node(candidate);
     }
 }
 
-void RegisterAllocater::_select() {
+void RegisterAllocator::_select() {
     while (!_stack.empty()) {
         auto node = _stack.back();
         _stack.pop_back();
-        if (_assigned.contains(node)) continue;
 
-        std::unordered_set<Register::Base> forbidden;
+        if (_assigned.contains(node)) {
+            continue;
+        }
+
+        std::unordered_set<Register::Base> taken;
         for (const auto& interference : _graph.interferences(node)) {
             const auto found = _assigned.find(interference);
             if (found == _assigned.end()) continue;
-            forbidden.insert(found->second);
+
+            taken.insert(found->second);
         }
 
-        auto success = false;
+        auto try_assign = [&](const auto& regs) -> bool {
+            for (const auto base : regs) {
+                if (taken.contains(base)) continue;
+                _assigned[node] = base;
+                return true;
+            }
+
+            return false;
+        };
+
+        auto succeeded = false;
         if (std::holds_alternative<sem::Floating>(node.type())) {
-            for (const auto base : FLOATING_REGISTERS) {
-                if (forbidden.contains(base)) continue;
-
-                _assigned[node] = base;
-                success = true;
-                break;
-            }
-        } else if (_liveness_analysis->live_across_calls().contains(node)) {
-            for (const auto base : INTEGER_CALLEE_SAVED) {
-                if (forbidden.contains(base)) continue;
-
-                _assigned[node] = base;
-                success = true;
-                break;
-            }
+            succeeded = try_assign(FLOATING_REGISTERS);
+        } else if (_liveness_analysis->is_live_across_calls(node)) {
+            succeeded = try_assign(INTEGER_CALLEE_SAVED);
         } else {
-            for (const auto base : INTEGER_CALLER_SAVED) {
-                if (forbidden.contains(base)) continue;
-
-                _assigned[node] = base;
-                success = true;
-                break;
-            }
+            succeeded = try_assign(INTEGER_CALLER_SAVED);
         }
 
-        if (success) continue;
-        _spilled.insert(node);
+        if (!succeeded) {
+            _spilled.insert(node);
+        }
     }
 }
 
 // ReSharper disable once CppMemberFunctionMayBeStatic
-void RegisterAllocater::_rewrite() {
+void RegisterAllocator::_rewrite() {
     // TODO: Add spilled variables to the IL.
 }
 

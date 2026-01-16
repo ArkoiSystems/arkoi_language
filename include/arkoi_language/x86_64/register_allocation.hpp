@@ -9,14 +9,14 @@ namespace arkoi::x86_64 {
 /**
  * @brief Performs register allocation for an x86-64 function using graph coloring.
  *
- * `RegisterAllocater` maps virtual IL variables to physical machine registers.
+ * `RegisterAllocator` maps virtual IL variables to physical machine registers.
  * It uses an `InterferenceGraph` built from liveness analysis to determine
  * which variables can share registers. If the graph cannot be colored with the
  * available registers, some variables are marked as "spilled" to memory.
  *
  * @see InterferenceGraph, il::InstructionLivenessAnalysis, Register
  */
-class RegisterAllocater {
+class RegisterAllocator {
 public:
     /**
      * @brief Mapping from virtual IL variables to physical register bases.
@@ -25,11 +25,11 @@ public:
 
 public:
     /**
-     * @brief Constructs a `RegisterAllocater`.
+     * @brief Constructs a `RegisterAllocator`.
      *
      * @param function The `il::Function` whose variables need allocation.
      */
-    explicit RegisterAllocater(il::Function& function) :
+    explicit RegisterAllocator(il::Function& function) :
         _function(function) { }
 
     /**

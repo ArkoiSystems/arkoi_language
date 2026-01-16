@@ -27,9 +27,7 @@ main:
 	imul r10d, eax
 	mov eax, r10d
 	# $12.0 @u32 = add @u32 $09.0, 1
-	mov r10d, eax
-	add r10d, 1
-	mov eax, r10d
+	add eax, 1
 	# $13.0 @s32 = cast @u32 $12.0
 	mov r10d, eax
 	mov eax, r10d
@@ -42,13 +40,9 @@ main:
 	movss xmm8, xmm0
 	# $20.0 @f32 = mul @f32 $18.0, 2.01
 	.loc 1 3 0
-	movss xmm10, xmm8
-	mulss xmm10, DWORD PTR [float2]
-	movss xmm8, xmm10
+	mulss xmm8, DWORD PTR [float2]
 	# $23.0 @f32 = sub @f32 $20.0, 42
-	movss xmm10, xmm8
-	subss xmm10, DWORD PTR [float3]
-	movss xmm8, xmm10
+	subss xmm8, DWORD PTR [float3]
 	# $24.0 @u64 = cast @f32 $23.0
 	cvttss2si r10, xmm8
 	mov rax, r10
@@ -187,13 +181,9 @@ L19:
 	cvtsi2sd xmm10, ecx
 	movsd xmm8, xmm10
 	# $29.0 @f64 = mul @f64 $27.0, $03.0
-	movsd xmm10, xmm8
-	mulsd xmm10, xmm9
-	movsd xmm8, xmm10
+	mulsd xmm8, xmm9
 	# $30.0 @f32 = cast @f64 $29.0
-	movsd xmm10, xmm8
-	cvtsd2ss xmm10, xmm10
-	movss xmm8, xmm10
+	cvtsd2ss xmm8, xmm8
 	# $04.3 @f32 = $30.0
 	# $04.2 @f32 = $04.3
 	# goto L20
@@ -221,9 +211,7 @@ L15:
 	cvtsi2sd xmm10, ecx
 	movsd xmm8, xmm10
 	# $13.0 @f64 = mul @f64 $03.0, $12.0
-	movsd xmm10, xmm9
-	mulsd xmm10, xmm8
-	movsd xmm9, xmm10
+	mulsd xmm9, xmm8
 	# $16.0 @bool = lth @s32 $02.0, $02.0
 	cmp ecx, ecx
 	setl al
@@ -236,9 +224,7 @@ L15:
 	addsd xmm10, xmm8
 	movsd xmm8, xmm10
 	# $19.0 @f32 = cast @f64 $18.0
-	movsd xmm10, xmm8
-	cvtsd2ss xmm10, xmm10
-	movss xmm8, xmm10
+	cvtsd2ss xmm8, xmm8
 	# $04.5 @f32 = $19.0
 	# $04.1 @f32 = $04.5
 	movss xmm0, xmm8
@@ -270,16 +256,12 @@ L24:
 	cvtsi2sd xmm10, ecx
 	movsd xmm8, xmm10
 	# $16.0 @f64 = mul @f64 $14.0, $03.0
-	movsd xmm10, xmm8
-	mulsd xmm10, xmm9
-	movsd xmm8, xmm10
+	mulsd xmm8, xmm9
 	# $03.2 @f64 = $16.0
 	movsd xmm9, xmm8
 	# $18.0 @f32 = cast @f64 $16.0
 	.loc 1 22 0
-	movsd xmm10, xmm8
-	cvtsd2ss xmm10, xmm10
-	movss xmm8, xmm10
+	cvtsd2ss xmm8, xmm8
 	# $01.1 @f32 = $18.0
 	# goto L22
 	jmp L22
@@ -296,9 +278,7 @@ L23:
 	mulsd xmm10, xmm8
 	movsd xmm8, xmm10
 	# $12.0 @f32 = cast @f64 $11.0
-	movsd xmm10, xmm8
-	cvtsd2ss xmm10, xmm10
-	movss xmm8, xmm10
+	cvtsd2ss xmm8, xmm8
 	# $01.2 @f32 = $12.0
 	# $03.1 @f64 = $03.0
 	# $01.0 @f32 = $01.2

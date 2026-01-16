@@ -109,15 +109,11 @@ L11:
 L10:
 	# $12.0 @u32 = mul @u32 $03.1, $02.1
 	.loc 1 13 0
-	mov r10d, eax
-	imul r10d, ecx
-	mov eax, r10d
+	imul eax, ecx
 	# $03.2 @u32 = $12.0
 	# $16.0 @u32 = sub @u32 $02.1, 1
 	.loc 1 14 0
-	mov r10d, ecx
-	sub r10d, 1
-	mov ecx, r10d
+	sub ecx, 1
 	# $02.2 @u32 = $16.0
 	# $03.1 @u32 = $03.2
 	# $02.1 @u32 = $02.2
