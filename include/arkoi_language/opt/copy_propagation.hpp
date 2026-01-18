@@ -3,7 +3,6 @@
 #include "arkoi_language/opt/pass.hpp"
 
 namespace arkoi::opt {
-
 /**
  * @brief Optimization pass that performs copy propagation within basic blocks.
  *

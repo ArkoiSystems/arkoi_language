@@ -354,7 +354,7 @@ UnknownChar::UnknownChar(const char got, const Span& span) :
     ScannerError(
         Report::Builder()
        .severity(Severity::Error)
-       .message("Unrecognized character '" + std::string(1, got) +"' found in source")
+       .message("Unrecognized character '" + std::string(1, got) + "' found in source")
        .code("E1003")
        .label("This character was not expected", span)
        .build()

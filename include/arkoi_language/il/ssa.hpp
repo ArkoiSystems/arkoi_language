@@ -7,7 +7,7 @@
 namespace arkoi::il {
 class SSAPromoter {
 public:
-    explicit SSAPromoter(Function &function);
+    explicit SSAPromoter(Function& function);
 
     void promote();
 
@@ -16,7 +16,7 @@ private:
 
     void _place_phi_nodes(const std::string& candidate) const;
 
-    void _rename(BasicBlock *block, std::unordered_set<BasicBlock*>& visited);
+    void _rename(BasicBlock* block, std::unordered_set<BasicBlock*>& visited);
 
 private:
     std::unordered_map<BasicBlock*, std::vector<BasicBlock*>> _children{ };
@@ -29,7 +29,7 @@ private:
 
 class PhiLowerer {
 public:
-    explicit PhiLowerer(Function &function);
+    explicit PhiLowerer(Function& function);
 
     void lower() const;
 

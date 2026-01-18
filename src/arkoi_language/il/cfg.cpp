@@ -112,7 +112,7 @@ DominatorTree::Frontiers DominatorTree::compute_frontiers(const Function& functi
     if (function.entry() == nullptr) return frontiers;
 
     auto immediates = compute_immediates(function);
-    for (auto *block : immediates | std::views::keys) {
+    for (auto* block : immediates | std::views::keys) {
         frontiers[block] = { };
     }
 

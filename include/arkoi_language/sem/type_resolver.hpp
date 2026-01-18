@@ -20,7 +20,7 @@ public:
     /**
      * @brief Constructs a `TypeResolver`.
      */
-    explicit TypeResolver(utils::Diagnostics &diagnostics) :
+    explicit TypeResolver(utils::Diagnostics& diagnostics) :
         _diagnostics(diagnostics) { }
 
     /**
@@ -31,7 +31,6 @@ public:
     void visit(ast::Program& node) override;
 
 private:
-
     /**
      * @brief First-pass visitor for function prototypes.
      *
@@ -181,7 +180,7 @@ private:
 
 private:
     std::optional<Type> _current_type{ }, _return_type{ };
-    utils::Diagnostics &_diagnostics;
+    utils::Diagnostics& _diagnostics;
 };
 } // namespace arkoi::sem
 

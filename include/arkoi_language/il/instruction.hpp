@@ -925,7 +925,7 @@ public:
      * @param span Optional source span for diagnostics.
      */
     Assign(Variable result, Operand value, std::optional<pretty_diagnostics::Span> span)
-        : _span(std::move(span)), _result(std::move(result)), _value(std::move(value)) {}
+        : _span(std::move(span)), _result(std::move(result)), _value(std::move(value)) { }
 
     /**
      * @brief Accepts a visitor to process this instruction.
@@ -991,10 +991,10 @@ private:
  * the `Visitor` pattern.
  */
 struct Instruction final : std::variant<
-                               Goto, If, Cast, Call, Return,
-                               Binary, Alloca, Store, Load,
-                               Argument, Phi, Assign
-                           > {
+        Goto, If, Cast, Call, Return,
+        Binary, Alloca, Store, Load,
+        Argument, Phi, Assign
+    > {
     using variant::variant;
 
     /**

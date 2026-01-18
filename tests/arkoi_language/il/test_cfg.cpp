@@ -62,7 +62,8 @@ TEST(ControlFlowGraph, IteratorPreOrder) {
     auto [_, blocks] = il::BlockTraversal::build(function.entry(), il::BlockTraversal::DFSOrder::PreOrder);
     std::vector<std::string> labels;
     std::ranges::transform(
-        blocks, std::back_inserter(labels),
+        blocks,
+        std::back_inserter(labels),
         [](const il::BasicBlock* block) {
             return block->label();
         }
@@ -78,7 +79,8 @@ TEST(ControlFlowGraph, IteratorReversePreOrder) {
     auto [_, blocks] = il::BlockTraversal::build(function.entry(), il::BlockTraversal::DFSOrder::ReversePreOrder);
     std::vector<std::string> labels;
     std::ranges::transform(
-        blocks, std::back_inserter(labels),
+        blocks,
+        std::back_inserter(labels),
         [](const il::BasicBlock* block) {
             return block->label();
         }
@@ -94,7 +96,8 @@ TEST(ControlFlowGraph, IteratorPostOrder) {
     auto [_, blocks] = il::BlockTraversal::build(function.entry(), il::BlockTraversal::DFSOrder::PostOrder);
     std::vector<std::string> labels;
     std::ranges::transform(
-        blocks, std::back_inserter(labels),
+        blocks,
+        std::back_inserter(labels),
         [](const il::BasicBlock* block) {
             return block->label();
         }
@@ -110,7 +113,8 @@ TEST(ControlFlowGraph, IteratorReversePostOrder) {
     auto [_, blocks] = il::BlockTraversal::build(function.entry(), il::BlockTraversal::DFSOrder::ReversePostOrder);
     std::vector<std::string> labels;
     std::ranges::transform(
-        blocks, std::back_inserter(labels),
+        blocks,
+        std::back_inserter(labels),
         [](const il::BasicBlock* block) {
             return block->label();
         }
@@ -125,7 +129,7 @@ TEST(DominatorTree, ImmediateDominators) {
 
     const auto immediates = il::DominatorTree::compute_immediates(function);
 
-    auto get_immediate = [&](const std::string &label) -> const std::string& {
+    auto get_immediate = [&](const std::string& label) -> const std::string& {
         const auto target = function.block_pool()[label];
         return immediates.at(target.get())->label();
     };
@@ -142,12 +146,13 @@ TEST(DominatorTree, FrontierDominators) {
 
     const auto frontiers = il::DominatorTree::compute_frontiers(function);
 
-    auto get_frontier = [&](const std::string &label) -> std::vector<std::string> {
+    auto get_frontier = [&](const std::string& label) -> std::vector<std::string> {
         const auto target = function.block_pool()[label];
         const auto result = frontiers.at(target.get());
         std::vector<std::string> labels;
         std::ranges::transform(
-            result, std::back_inserter(labels),
+            result,
+            std::back_inserter(labels),
             [](const il::BasicBlock* block) {
                 return block->label();
             }

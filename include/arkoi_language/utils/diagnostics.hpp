@@ -6,7 +6,6 @@
 #include "pretty_diagnostics/report.hpp"
 
 namespace arkoi::utils {
-
 /**
  * @brief Collects and manages diagnostic reports during the compilation process.
  *
@@ -51,7 +50,6 @@ public:
 private:
     std::vector<pretty_diagnostics::Report> _reports;
 };
-
 } // namespace arkoi::utils
 
 // BSD 3-Clause License

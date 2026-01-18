@@ -73,7 +73,7 @@ public:
      * @param report Diagnostic report describing the error.
      */
     explicit SemanticError(pretty_diagnostics::Report report)
-        : _report(std::move(report)) {}
+        : _report(std::move(report)) { }
 
     /**
      * @brief Returns the diagnostic report associated with this error.

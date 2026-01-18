@@ -7,7 +7,7 @@
 using namespace arkoi::x86_64;
 using namespace arkoi;
 
-void Resolver::run(il::Function& function, const Mapping &mapping) {
+void Resolver::run(il::Function& function, const Mapping& mapping) {
     for (auto& [variable, reg_base] : mapping) {
         auto reg = Register(reg_base, variable.type().size());
         _mappings.insert_or_assign(variable, reg);
@@ -77,7 +77,7 @@ void Resolver::visit(il::Function& function) {
             auto* memory = std::get_if<Memory>(&target);
             if (!memory) continue;
 
-            auto *reg = std::get_if<Register>(&memory->address());
+            auto* reg = std::get_if<Register>(&memory->address());
             if (!reg || *reg != RBP) continue;
 
             memory->set_address(stack_reg);

@@ -70,7 +70,7 @@ void Generator::visit(il::BasicBlock& block) {
         const auto stack_size = current_resolver().stack_size();
         if (!_function->is_leaf() || stack_size > 128) _enter(stack_size);
 
-        const auto &mappings = current_resolver().mappings();
+        const auto& mappings = current_resolver().mappings();
         std::set<Register::Base> saved_registers;
 
         for (const auto& operand : mappings | std::views::values) {
@@ -84,7 +84,7 @@ void Generator::visit(il::BasicBlock& block) {
             saved_registers.insert(base);
         }
 
-        for (const auto &base : saved_registers) {
+        for (const auto& base : saved_registers) {
             _push(Register(base, Size::QWORD));
         }
     } else {
@@ -114,7 +114,7 @@ void Generator::visit(il::BasicBlock& block) {
     }
 
     if (_function->exit() == &block) {
-        const auto &mappings = current_resolver().mappings();
+        const auto& mappings = current_resolver().mappings();
         std::set<Register::Base> saved_registers;
 
         for (const auto& operand : mappings | std::views::values) {
@@ -128,7 +128,7 @@ void Generator::visit(il::BasicBlock& block) {
             saved_registers.insert(base);
         }
 
-        for (const auto &base : std::views::reverse(saved_registers)) {
+        for (const auto& base : std::views::reverse(saved_registers)) {
             _pop(Register(base, Size::QWORD));
         }
 

@@ -410,7 +410,7 @@ public:
      * @param label The label for the constructed `BasicBlock`.
      * @return A pointer to the newly created `BasicBlock`.
      */
-    BasicBlock* emplace_back(const std::string &label);
+    BasicBlock* emplace_back(const std::string& label);
 
     /**
      * @brief Determines if this function contains any `Call` instructions.

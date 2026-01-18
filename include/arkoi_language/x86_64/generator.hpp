@@ -40,7 +40,7 @@ public:
      */
     Generator(
         const std::shared_ptr<pretty_diagnostics::Source>& source, il::Module& module,
-        const std::unordered_map<il::Function*, Resolver> &resolvers
+        const std::unordered_map<il::Function*, Resolver>& resolvers
     ) :
         _mappings(std::move(resolvers)), _source(source), _function(nullptr), _module(module) { }
 

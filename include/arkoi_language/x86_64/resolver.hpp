@@ -19,7 +19,7 @@ struct CallFrame {
      * and will be assigned to the first available integer registers according
      * to the calling convention (e.g., RDI, RSI, RDX, etc. on x86-64 SysV ABI).
      */
-    std::vector<il::Argument *> integer{ };
+    std::vector<il::Argument*> integer{ };
 
     /**
      * @brief Arguments to be passed in floating-point registers.
@@ -28,7 +28,7 @@ struct CallFrame {
      * and will be assigned to the first available floating-point registers
      * according to the calling convention (e.g., XMM0–XMM7 on x86-64 SysV ABI).
      */
-    std::vector<il::Argument *> floating{ };
+    std::vector<il::Argument*> floating{ };
 
     /**
      * @brief Arguments that must be passed on the stack.
@@ -38,7 +38,7 @@ struct CallFrame {
      * These arguments will be pushed onto the stack (in reverse order) before
      * making the function call.
      */
-    std::vector<il::Argument *> stack{ };
+    std::vector<il::Argument*> stack{ };
 
     /**
      * @brief Total size of the stack portion of the arguments.
@@ -61,7 +61,7 @@ struct CallFrame {
  */
 class Resolver final : il::Visitor {
 public:
-    void run(il::Function& function, const Mapping &mapping);
+    void run(il::Function& function, const Mapping& mapping);
 
     [[nodiscard]] auto& mappings() const { return _mappings; }
 
@@ -87,7 +87,7 @@ public:
      *
      * @return A unordered map of call frames associated with `il::Call` instructions.
      */
-    [[nodiscard]] auto &call_frames() const { return _call_frames; }
+    [[nodiscard]] auto& call_frames() const { return _call_frames; }
 
     /**
      * @brief Rounds up a size to satisfy the x86-64 16-byte stack alignment.
@@ -219,7 +219,7 @@ private:
     void _add_memory(const il::Variable& variable, const Memory& memory);
 
 private:
-    std::unordered_map<il::Call *, CallFrame> _call_frames{ };
+    std::unordered_map<il::Call*, CallFrame> _call_frames{ };
     std::unordered_map<il::Operand, Operand> _mappings{ };
     OrderedSet<il::Operand> _locals{ };
     CallFrame _current_call_frame{ };

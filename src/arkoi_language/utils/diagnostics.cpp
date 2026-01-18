@@ -11,10 +11,13 @@ void utils::Diagnostics::add(Report report) {
     _reports.push_back(std::move(report));
 }
 
-bool utils::Diagnostics::has_errors() const  {
-    return std::ranges::any_of(_reports, [](const auto& report) {
-        return report.severity() == Severity::Error;
-    });
+bool utils::Diagnostics::has_errors() const {
+    return std::ranges::any_of(
+        _reports,
+        [](const auto& report) {
+            return report.severity() == Severity::Error;
+        }
+    );
 }
 
 void utils::Diagnostics::render(std::ostream& os) const {

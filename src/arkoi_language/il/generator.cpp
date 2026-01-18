@@ -210,7 +210,7 @@ void Generator::visit(ast::Binary& node) {
 }
 
 void Generator::visit_and(ast::Binary& node) {
-    auto result = _make_memory(sem::Boolean{});
+    auto result = _make_memory(sem::Boolean{ });
 
     auto true_label = _make_label_symbol();
     auto* true_block = _current_function->emplace_back(true_label);
@@ -263,7 +263,7 @@ void Generator::visit_and(ast::Binary& node) {
 }
 
 void Generator::visit_or(ast::Binary& node) {
-    auto result = _make_memory(sem::Boolean{});
+    auto result = _make_memory(sem::Boolean{ });
 
     auto true_label = _make_label_symbol();
     auto* true_block = _current_function->emplace_back(true_label);

@@ -23,7 +23,7 @@ public:
     /**
      * @brief Constructs a `NameResolver`.
      */
-    explicit NameResolver(utils::Diagnostics &diagnostics) :
+    explicit NameResolver(utils::Diagnostics& diagnostics) :
         _diagnostics(diagnostics) { }
 
     /**
@@ -156,7 +156,7 @@ private:
 
 private:
     std::stack<std::shared_ptr<SymbolTable>> _scopes{ };
-    utils::Diagnostics &_diagnostics;
+    utils::Diagnostics& _diagnostics;
 };
 
 #include "../../../src/arkoi_language/sem/name_resolver.tpp"

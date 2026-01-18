@@ -19,7 +19,7 @@ IdentifierNotFound::IdentifierNotFound(const front::Token& name) :
     SemanticError(
         Report::Builder()
        .severity(Severity::Error)
-       .message("The identifier '" + name.span().substr() +  "' was not found")
+       .message("The identifier '" + name.span().substr() + "' was not found")
        .code("E3002")
        .label("There was no definition for this identifier", name.span())
        .build()
