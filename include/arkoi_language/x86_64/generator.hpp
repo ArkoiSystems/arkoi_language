@@ -4,7 +4,7 @@
 
 #include "arkoi_language/il/instruction.hpp"
 #include "arkoi_language/x86_64/assembly.hpp"
-#include "arkoi_language/x86_64/mapper.hpp"
+#include "arkoi_language/x86_64/resolver.hpp"
 
 namespace arkoi::x86_64 {
 /**
@@ -27,16 +27,24 @@ struct ClassifiedArguments {
  * It manages register usage, stack frame setup/teardown (prologue/epilogue),
  * and handles calling convention details for both function definitions and calls.
  *
- * @see il::Visitor, Mapper, RegisterAllocator, AssemblyItem
+ * @see il::Visitor, Resolver, RegisterAllocator, AssemblyItem
  */
 class Generator final : il::Visitor {
 public:
     /**
      * @brief Constructs an x86-64 code generator for the given module.
      *
+     * @param source The `pretty_diagnostics::Source` of this module.
      * @param module The `il::Module` to be translated.
+     * @param resolvers The function resolvers for IL operands.
      */
-    Generator(const std::shared_ptr<pretty_diagnostics::Source>& source, il::Module& module);
+    Generator(
+        const std::shared_ptr<pretty_diagnostics::Source>& source, il::Module& module,
+        const std::unordered_map<il::Function*, Resolver> &resolvers
+    ) :
+        _mappings(std::move(resolvers)), _source(source), _function(nullptr), _module(module) { }
+
+    void run();
 
     /**
      * @brief Finalizes generation and returns the assembly source as a stream.
@@ -287,7 +295,7 @@ private:
      *
      * @param argument The `il::Argument` to translate.
      */
-    void _generate_argument(il::Argument &argument);
+    void _generate_argument(il::Argument& argument);
 
     /**
      * @brief Translates a conditional jump into machine code.
@@ -304,7 +312,7 @@ private:
     void visit(il::Goto& instruction) override;
 
     /**
-     * @brief Stack allocations are handled by the prologue and `Mapper`.
+     * @brief Stack allocations are handled by the prologue and `Resolver`.
      *
      * @param instruction The `il::Alloca` node to visit.
      */
@@ -339,7 +347,7 @@ private:
     void visit(il::Assign& instruction) override;
 
     /**
-     * @brief Resolves an IL operand to its machine location via the `Mapper`.
+     * @brief Resolves an IL operand to its machine location via the `Resolver`.
      *
      * @param operand The input IL operand.
      * @return The resulting x86_64 operand.
@@ -800,19 +808,19 @@ private:
     static void _newline(std::vector<AssemblyItem>& output);
 
     /**
-     * @brief Returns the current mapper which must be set at calling
-     *        time.
+     * @brief Returns the current resolver which must be set at calling time.
      *
-     * @return Returns the current mapper.
+     * @return Returns the current resolver.
      */
-    [[nodiscard]] Mapper& current_mapper() const;
+    [[nodiscard]] const Resolver& current_resolver() const;
 
 private:
     std::optional<pretty_diagnostics::Span> _debug_span{ };
+    std::unordered_map<il::Function*, Resolver> _mappings;
     std::shared_ptr<pretty_diagnostics::Source> _source;
-    std::unique_ptr<Mapper> _current_mapper{ };
     std::vector<AssemblyItem> _data{ };
     std::vector<AssemblyItem> _text{ };
+    il::Function* _function;
     size_t _constants{ };
     il::Module& _module;
 };

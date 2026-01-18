@@ -133,7 +133,7 @@ arkoi_language/
 │   ├── sem/            # Semantic Analysis (name and type resolution)
 │   ├── il/             # Intermediate Language (dataflow, control flow graph, generator, printer, instructions, operands, visitor)
 │   ├── opt/            # Optimization Passes
-│   ├── x86_64/         # x86_64 Code Generation (generator, mapper, operands)
+│   ├── x86_64/         # x86_64 Code Generation (generator, resolver, allocator, operands)
 │   └── utils/          # Some useful utility functions
 │── test/               # Unit tests for specific code parts
 │   ├── e2e/            # End to end tests (lexer, parser, semantic analysis, optimization, code generation)

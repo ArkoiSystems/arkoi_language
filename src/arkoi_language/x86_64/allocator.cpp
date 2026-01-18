@@ -1,9 +1,103 @@
-#include "arkoi_language/x86_64/register_allocation.hpp"
+#include "arkoi_language/x86_64/allocator.hpp"
 
 #include <array>
 
+#include "arkoi_language/utils/utils.hpp"
+
 using namespace arkoi::x86_64;
 using namespace arkoi;
+
+void PreColorer::run() {
+    _function.accept(*this);
+}
+
+Register PreColorer::return_register(const sem::Type& target) {
+    return std::visit(
+        match{
+            [&](const sem::Integral& type) -> Register {
+                return { Register::Base::A, type.size() };
+            },
+            [&](const sem::Floating& type) -> Register {
+                return { Register::Base::XMM0, type.size() };
+            },
+            [&](const sem::Boolean&) -> Register {
+                return { Register::Base::A, Size::BYTE };
+            }
+        },
+        target
+    );
+}
+
+void PreColorer::visit(il::Function& function) {
+    size_t integer = 0, floating = 0;
+
+    for (auto& parameter : function.parameters()) {
+        std::visit(
+            match{
+                [&](const sem::Floating& type) {
+                    if (floating >= SSE_ARGUMENT_REGISTERS.size()) return;
+
+                    const auto reg = Register(SSE_ARGUMENT_REGISTERS[floating++], type.size());
+                    _assigned.insert_or_assign(parameter, reg.base());
+                },
+                [&](const sem::Boolean& type) {
+                    if (integer >= INTEGER_ARGUMENT_REGISTERS.size()) return;
+
+                    const auto reg = Register(INTEGER_ARGUMENT_REGISTERS[integer++], type.size());
+                    _assigned.insert_or_assign(parameter, reg.base());
+                },
+                [&](const sem::Integral& type) {
+                    if (integer >= INTEGER_ARGUMENT_REGISTERS.size()) return;
+
+                    const auto reg = Register(INTEGER_ARGUMENT_REGISTERS[integer++], type.size());
+                    _assigned.insert_or_assign(parameter, reg.base());
+                }
+            },
+            parameter.type()
+        );
+    }
+
+    for (auto& block : function) {
+        block.accept(*this);
+    }
+}
+
+void PreColorer::visit(il::BasicBlock& block) {
+    for (auto& instruction : block) {
+        instruction.accept(*this);
+    }
+}
+
+void PreColorer::visit(il::Return& instruction) {
+    const auto* variable = std::get_if<il::Variable>(&instruction.value());
+    if (!variable) return;
+
+    const auto reg = return_register(instruction.value().type());
+    _assigned.insert_or_assign(*variable, reg.base());
+}
+
+void PreColorer::visit(il::Argument& argument) {
+    const auto& result = argument.result();
+    const auto& type = result.type();
+
+    if (std::holds_alternative<sem::Integral>(type) || std::holds_alternative<sem::Boolean>(type)) {
+        if (_integer < INTEGER_ARGUMENT_REGISTERS.size()) {
+            const auto reg = Register(INTEGER_ARGUMENT_REGISTERS[_integer++], type.size());
+            _assigned.insert_or_assign(result, reg.base());
+        }
+    } else if (std::holds_alternative<sem::Floating>(type)) {
+        if (_floating < SSE_ARGUMENT_REGISTERS.size()) {
+            const auto reg = Register(SSE_ARGUMENT_REGISTERS[_floating++], type.size());
+            _assigned.insert_or_assign(result, reg.base());
+        }
+    }
+}
+
+void PreColorer::visit(il::Call&) {
+    // Reset the floating and integer counter for the next call.
+    _floating = 0;
+    _integer = 0;
+}
 
 void RegisterAllocator::run() {
     do {
@@ -84,7 +178,10 @@ void RegisterAllocator::_build() {
         add_clique(defs);
     }
 
-    for (const auto& [variable, color] : _precolored) {
+    PreColorer pre_colorer(_function);
+    pre_colorer.run();
+
+    for (const auto& [variable, color] : pre_colorer.assigned()) {
         _assigned.insert_or_assign(variable, color);
     }
 }
@@ -97,7 +194,7 @@ void RegisterAllocator::_simplify() {
         current_degree[node] = _graph.interferences(node).size();
     }
 
-    for (const auto& variable : std::views::keys(_precolored)) {
+    for (const auto& variable : std::views::keys(_assigned)) {
         work_list.erase(variable);
     }
 

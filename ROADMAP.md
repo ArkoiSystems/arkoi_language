@@ -77,7 +77,7 @@ Checklist convention:
   - Files: include/x86_64/operand.hpp, src/x86_64/operand.cpp
 - [x] Register allocation
   - Summary: Assigns virtual registers to physical and handles spills
-  - Files: include/x86_64/register_allocation.hpp, src/x86_64/register_allocation.cpp
+  - Files: include/x86_64/allocator.hpp, src/x86_64/allocator.cpp
 - [x] Simple DWARF generation (only stepping)
   - Summary: Generates DWARF debug information for the generated assembly
   - Files: include/x86_64/generator.hpp, src/x86_64/generator.cpp
@@ -86,7 +86,7 @@ Checklist convention:
   - Files: include/utils/interference_graph.hpp, src/utils/interference_graph.tpp
 - [x] Mapping helpers
   - Summary: Helpers for calling conventions and operand mappings
-  - Files: include/x86_64/mapper.hpp, src/x86_64/mapper.cpp
+  - Files: include/x86_64/resolver.hpp, src/x86_64/resolver.cpp
 
 ## 5. Testing
 - [x] GoogleTest integration

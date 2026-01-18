@@ -61,8 +61,8 @@ add_library(${PROJECT_NAME}
         src/arkoi_language/opt/dead_code_elimination.cpp
         src/arkoi_language/opt/simplify_cfg.cpp
         src/arkoi_language/x86_64/assembly.cpp
-        src/arkoi_language/x86_64/register_allocation.cpp
-        src/arkoi_language/x86_64/mapper.cpp
+        src/arkoi_language/x86_64/allocator.cpp
+        src/arkoi_language/x86_64/resolver.cpp
         src/arkoi_language/x86_64/operand.cpp
         src/arkoi_language/x86_64/generator.cpp
         src/arkoi_language/utils/interference_graph.tpp
@@ -121,9 +121,9 @@ set(PUBLIC_HEADERS
         include/arkoi_language/utils/utils.hpp
         include/arkoi_language/x86_64/assembly.hpp
         include/arkoi_language/x86_64/generator.hpp
-        include/arkoi_language/x86_64/mapper.hpp
+        include/arkoi_language/x86_64/resolver.hpp
         include/arkoi_language/x86_64/operand.hpp
-        include/arkoi_language/x86_64/register_allocation.hpp)
+        include/arkoi_language/x86_64/allocator.hpp)
 
 # Set the properties of the resulting library
 set_target_properties(${PROJECT_NAME}

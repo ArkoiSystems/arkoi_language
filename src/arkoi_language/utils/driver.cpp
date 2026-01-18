@@ -50,7 +50,7 @@ int32_t utils::compile(
     std::ofstream* cfg_ostream,
     std::ofstream* asm_ostream
 ) {
-    utils::Diagnostics diagnostics;
+    Diagnostics diagnostics;
 
     front::Scanner scanner(source, diagnostics);
     auto tokens = scanner.tokenize();
@@ -111,8 +111,21 @@ int32_t utils::compile(
         phi_lowerer.lower();
     }
 
+    std::unordered_map<il::Function*, x86_64::Resolver> resolvers;
+    for (auto& function : module) {
+        auto allocator = x86_64::RegisterAllocator(function);
+        allocator.run();
+
+        auto resolver = x86_64::Resolver();
+        resolver.run(function, allocator.assigned());
+
+        resolvers.insert_or_assign(&function, std::move(resolver));
+    }
+
     if (asm_ostream) {
-        auto asm_generator = x86_64::Generator(source, module);
+        auto asm_generator = x86_64::Generator(source, module, resolvers);
+        asm_generator.run();
+
         *asm_ostream << asm_generator.output().str();
         asm_ostream->flush();
     }

@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-#include "register_allocation.hpp"
+#include "allocator.hpp"
 #include "arkoi_language/il/instruction.hpp"
 #include "arkoi_language/utils/ordered_set.hpp"
 #include "arkoi_language/x86_64/operand.hpp"
@@ -53,20 +53,17 @@ struct CallFrame {
 /**
  * @brief Visitor that maps abstract IL operands to physical x86-64 machine operands.
  *
- * `Mapper` is responsible for determining the storage location (register or
+ * `Resolver` is responsible for determining the storage location (register or
  * stack slot) for every `il::Operand` in a function. It calculates the necessary
- * stack frame size and handles calling convention details like parameter passing.
+ * stack frame size.
  *
  * @see il::Visitor, il::Operand, Register, Memory, RegisterAllocator
  */
-class Mapper final : il::Visitor {
+class Resolver final : il::Visitor {
 public:
-    /**
-     * @brief Constructs a `Mapper` for the specified IL function.
-     *
-     * @param function The `il::Function` to process.
-     */
-    explicit Mapper(il::Function& function);
+    void run(il::Function& function, const Mapping &mapping);
+
+    [[nodiscard]] auto& mappings() const { return _mappings; }
 
     /**
      * @brief Retrieves the machine operand associated with a generic IL operand.
@@ -74,7 +71,7 @@ public:
      * @param operand The source IL operand.
      * @return The mapped `x86_64::Operand`.
      */
-    [[nodiscard]] Operand operator[](const il::Operand& operand);
+    [[nodiscard]] Operand operator[](const il::Operand& operand) const;
 
     /**
      * @brief Returns the total size of the stack frame in bytes.
@@ -86,35 +83,11 @@ public:
     [[nodiscard]] size_t stack_size() const;
 
     /**
-     * @brief Returns the IL function associated with this mapper.
-     *
-     * @return A constant reference to the `il::Function`.
-     */
-    [[nodiscard]] auto& function() const { return _function; }
-
-    /**
      * @brief Returns all the call frames which got mapped.
      *
      * @return A unordered map of call frames associated with `il::Call` instructions.
      */
-    [[nodiscard]] auto &call_frames() { return _call_frames; }
-
-    /**
-     * @brief Returns the register allocator used for this mapping.
-     *
-     * @return A reference to the instance of the `RegisterAllocator`.
-     */
-    [[nodiscard]] auto &register_allocator() { return _register_allocator; }
-
-    /**
-     * @brief Determines the physical register used for returning a specific type.
-     *
-     * For example, integers are typically returned in `RAX`.
-     *
-     * @param target The semantic type being returned.
-     * @return The corresponding `Register`.
-     */
-    [[nodiscard]] static Register return_register(const sem::Type& target);
+    [[nodiscard]] auto &call_frames() const { return _call_frames; }
 
     /**
      * @brief Rounds up a size to satisfy the x86-64 16-byte stack alignment.
@@ -138,13 +111,6 @@ private:
      * @param function The `il::Function` node to visit.
      */
     void visit(il::Function& function) override;
-
-    /**
-     * @brief Places function parameters into their initial registers or stack slots.
-     *
-     * @param parameters The formal parameters of the function.
-     */
-    void _map_parameters(const std::vector<il::Variable>& parameters);
 
     /**
      * @brief Maps all instructions within a basic block.
@@ -172,7 +138,7 @@ private:
      *
      * @param instruction The `il::Return` node to visit.
      */
-    void visit(il::Return& instruction) override;
+    void visit([[maybe_unused]] il::Return& instruction) override { }
 
     /**
      * @brief Maps the call argument.
@@ -245,14 +211,6 @@ private:
     void _add_local(const il::Operand& operand);
 
     /**
-     * @brief Creates a mapping to a physical machine register.
-     *
-     * @param variable The variable which should get mapped.
-     * @param reg The target register of the mapped variable.
-     */
-    void _add_register(const il::Variable& variable, const Register& reg);
-
-    /**
     * @brief Creates a mapping to a relative memory address (on the stack).
      *
      * @param variable The variable which should get mapped.
@@ -263,10 +221,8 @@ private:
 private:
     std::unordered_map<il::Call *, CallFrame> _call_frames{ };
     std::unordered_map<il::Operand, Operand> _mappings{ };
-    RegisterAllocator _register_allocator;
     OrderedSet<il::Operand> _locals{ };
     CallFrame _current_call_frame{ };
-    il::Function& _function;
 };
 } // namespace arkoi::x86_64
 

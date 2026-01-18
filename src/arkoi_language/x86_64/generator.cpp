@@ -10,9 +10,8 @@
 using namespace arkoi::x86_64;
 using namespace arkoi;
 
-Generator::Generator(const std::shared_ptr<pretty_diagnostics::Source>& source, il::Module& module) :
-    _source(source), _module(module) {
-    module.accept(*this);
+void Generator::run() {
+    _module.accept(*this);
 }
 
 std::stringstream Generator::output() const {
@@ -47,7 +46,7 @@ void Generator::visit(il::Module& module) {
 }
 
 void Generator::visit(il::Function& function) {
-    _current_mapper = std::make_unique<Mapper>(function);
+    _function = &function;
 
     _directive(".global " + function.name(), _text);
     _directive(".type " + function.name() + ", @function", _text);
@@ -65,20 +64,24 @@ void Generator::visit(il::BasicBlock& block) {
     // Reset the debug span every time a new basic block is generated.
     _debug_span = { };
 
-
-    if (current_mapper().function().entry() == &block) {
+    if (_function->entry() == &block) {
         // If we are in a leaf function and the stack size in less or equal to 128 bytes (redzone), we can skip the enter
         // instruction.
-        const auto stack_size = current_mapper().stack_size();
-        if (!current_mapper().function().is_leaf() || stack_size > 128) _enter(stack_size);
+        const auto stack_size = current_resolver().stack_size();
+        if (!_function->is_leaf() || stack_size > 128) _enter(stack_size);
 
-        auto &register_allocator = current_mapper().register_allocator();
-        const auto &assigned = register_allocator.assigned();
-
+        const auto &mappings = current_resolver().mappings();
         std::set<Register::Base> saved_registers;
-        for (const auto& base : assigned | std::views::values) {
+
+        for (const auto& operand : mappings | std::views::values) {
+            auto* reg = std::get_if<Register>(&operand);
+            if (!reg) continue;
+
+            const auto base = reg->base();
             const auto is_callee_saved = std::ranges::find(INTEGER_CALLEE_SAVED, base) != INTEGER_CALLEE_SAVED.end();
-            if (is_callee_saved) saved_registers.insert(base);
+            if (!is_callee_saved) continue;
+
+            saved_registers.insert(base);
         }
 
         for (const auto &base : saved_registers) {
@@ -110,14 +113,19 @@ void Generator::visit(il::BasicBlock& block) {
         }
     }
 
-    if (current_mapper().function().exit() == &block) {
-        auto &register_allocator = current_mapper().register_allocator();
-        const auto &assigned = register_allocator.assigned();
-
+    if (_function->exit() == &block) {
+        const auto &mappings = current_resolver().mappings();
         std::set<Register::Base> saved_registers;
-        for (const auto& base : assigned | std::views::values) {
+
+        for (const auto& operand : mappings | std::views::values) {
+            auto* reg = std::get_if<Register>(&operand);
+            if (!reg) continue;
+
+            const auto base = reg->base();
             const auto is_callee_saved = std::ranges::find(INTEGER_CALLEE_SAVED, base) != INTEGER_CALLEE_SAVED.end();
-            if (is_callee_saved) saved_registers.insert(base);
+            if (!is_callee_saved) continue;
+
+            saved_registers.insert(base);
         }
 
         for (const auto &base : std::views::reverse(saved_registers)) {
@@ -126,8 +134,8 @@ void Generator::visit(il::BasicBlock& block) {
 
         // If the function is not a leaf or the stack size exceeds 128 bytes, we need to restore the stack using the
         // leave instruction.
-        const auto stack_size = current_mapper().stack_size();
-        if (!current_mapper().function().is_leaf() || stack_size > 128) _leave();
+        const auto stack_size = current_resolver().stack_size();
+        if (!_function->is_leaf() || stack_size > 128) _leave();
 
         _ret();
     }
@@ -719,7 +727,7 @@ void Generator::visit(il::Call& instruction) {
         floating,
         stack,
         stack_size
-    ] = current_mapper().call_frames().at(&instruction);
+    ] = current_resolver().call_frames().at(&instruction);
 
     const auto result = _load(instruction.result());
     const auto type = instruction.result().type();
@@ -740,7 +748,7 @@ void Generator::visit(il::Call& instruction) {
 
     if (stack_size != 0) _add(RSP, stack_size);
 
-    const auto return_reg = Mapper::return_register(type);
+    const auto return_reg = PreColorer::return_register(type);
     _store(return_reg, result, type);
 }
 
@@ -816,10 +824,10 @@ Operand Generator::_load(const il::Operand& operand) {
                 return std::visit([](const auto& value) -> Immediate { return value; }, immediate);
             },
             [&](const il::Memory& memory) -> Operand {
-                return current_mapper()[memory];
+                return current_resolver()[memory];
             },
             [&](const il::Variable& variable) -> Operand {
-                return current_mapper()[variable];
+                return current_resolver()[variable];
             },
         },
         operand
@@ -1094,9 +1102,8 @@ void Generator::_newline(std::vector<AssemblyItem>& output) {
     _directive("", output);
 }
 
-Mapper& Generator::current_mapper() const {
-    if (_current_mapper != nullptr) return *_current_mapper;
-    throw std::runtime_error("No mapper set.");
+const Resolver& Generator::current_resolver() const {
+    return _mappings.at(_function);
 }
 
 //==============================================================================
