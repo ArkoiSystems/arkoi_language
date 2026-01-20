@@ -190,7 +190,9 @@ void Generator::visit(ast::Identifier& node) {
 void Generator::visit(ast::Binary& node) {
     if (node.op() == ast::Binary::Operator::And) {
         return visit_and(node);
-    } else if (node.op() == ast::Binary::Operator::Or) {
+    }
+
+    if (node.op() == ast::Binary::Operator::Or) {
         return visit_or(node);
     }
 

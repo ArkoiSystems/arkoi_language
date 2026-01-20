@@ -1,8 +1,8 @@
 #pragma once
 
-#include "arkoi_language/utils/interference_graph.hpp"
-#include "arkoi_language/il/instruction.hpp"
 #include "arkoi_language/il/analyses.hpp"
+#include "arkoi_language/il/instruction.hpp"
+#include "arkoi_language/utils/interference_graph.hpp"
 #include "arkoi_language/x86_64/operand.hpp"
 
 namespace arkoi::x86_64 {

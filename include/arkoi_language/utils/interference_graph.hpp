@@ -1,8 +1,8 @@
 #pragma once
 
+#include <ostream>
 #include <unordered_map>
 #include <unordered_set>
-#include <ostream>
 
 namespace arkoi::utils {
 /**

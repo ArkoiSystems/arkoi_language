@@ -5,9 +5,9 @@
 
 #include "../../snapshot/snapshot.hpp"
 
-#include "arkoi_language/front/scanner.hpp"
-#include "arkoi_language/front/parser.hpp"
 #include "arkoi_language/ast/ast_printer.hpp"
+#include "arkoi_language/front/parser.hpp"
+#include "arkoi_language/front/scanner.hpp"
 
 static const std::string SCANNER_FILES = TEST_PATH "/arkoi_language/snapshot/scanner/";
 

@@ -8,7 +8,6 @@
 #include "arkoi_language/ast/nodes.hpp"
 #include "arkoi_language/front/token.hpp"
 #include "arkoi_language/utils/diagnostics.hpp"
-#include "arkoi_language/utils/utils.hpp"
 
 #include "pretty_diagnostics/source.hpp"
 

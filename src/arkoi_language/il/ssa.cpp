@@ -1,7 +1,5 @@
 #include "arkoi_language/il/ssa.hpp"
 
-#include "arkoi_language/utils/utils.hpp"
-
 using namespace arkoi::il;
 using namespace arkoi;
 

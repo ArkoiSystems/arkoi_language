@@ -2,6 +2,7 @@
 
 #include "arkoi_language/il/instruction.hpp"
 #include "arkoi_language/sem/symbol_table.hpp"
+#include "arkoi_language/utils/utils.hpp"
 
 #include "pretty_diagnostics/report.hpp"
 

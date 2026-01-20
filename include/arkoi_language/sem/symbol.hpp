@@ -144,7 +144,7 @@ struct Symbol : std::variant<Function, Variable> {
  * @param symbol The symbol to describe.
  * @return A reference to the output stream @p os.
  */
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<arkoi::sem::Symbol>& symbol);
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Symbol>& symbol);
 } // namespace arkoi::sem
 
 
