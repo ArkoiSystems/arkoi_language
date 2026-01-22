@@ -75,6 +75,9 @@ void SSAPromoter::_place_phi_nodes(const std::string& candidate) const {
 
     std::deque worklist(definition_blocks.begin(), definition_blocks.end());
     std::unordered_set<BasicBlock*> inserted_blocks{ };
+    
+    // Collect phi nodes per block instead of inserting immediately
+    std::unordered_map<BasicBlock*, std::vector<Phi>> phis_per_block;
 
     while (!worklist.empty()) {
         auto* block = worklist.front();
@@ -86,15 +89,23 @@ void SSAPromoter::_place_phi_nodes(const std::string& candidate) const {
             if (inserted_blocks.contains(frontier)) continue;
             inserted_blocks.insert(frontier);
 
-            frontier->instructions().insert(
-                frontier->instructions().begin(),
-                Phi(variable, { }, std::nullopt)
-            );
+            // Collect phi node instead of inserting immediately
+            phis_per_block[frontier].emplace_back(variable, Phi::Incoming{ }, std::nullopt);
 
             if (!definition_blocks.contains(frontier)) {
                 worklist.push_back(frontier);
             }
         }
+    }
+    
+    // Now insert all collected phi nodes at the beginning of each block at once
+    // This avoids O(N) insertions per phi node
+    for (auto& [block, phis] : phis_per_block) {
+        auto& instructions = block->instructions();
+        // Insert all phi nodes at once
+        instructions.insert(instructions.begin(), 
+                           std::make_move_iterator(phis.begin()),
+                           std::make_move_iterator(phis.end()));
     }
 }
 
