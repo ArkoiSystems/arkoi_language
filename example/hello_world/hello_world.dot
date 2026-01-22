@@ -1,9 +1,0 @@
-digraph CFG {
-	graph [fontname = "Monospace"];
-	node  [fontname = "Monospace", shape=box, style=filled, margin=0.1];
-	edge  [fontname = "Monospace"];
-	bgcolor = "#f7f7f7";
-	splines = false;
-
-	L0 [label="fun main() @s32:\l ret 0\l\lIN:  { }\lOUT: { }\l"];
-}
