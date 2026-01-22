@@ -1,5 +1,5 @@
 ### --- Project Initialization and Configuration --- ###
-cmake_minimum_required(VERSION 4.2)   # Require CMake 4.2 or later
+cmake_minimum_required(VERSION 3.29.6)   # Require CMake 3.29.6 or later
 project(arkoi_language VERSION 0.1.0)
 
 # Use C++23 and enforce it
