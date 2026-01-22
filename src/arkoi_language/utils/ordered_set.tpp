@@ -19,9 +19,8 @@ bool OrderedSet<T>::erase(const T& value) {
     
     // Swap with the last element to avoid shifting all elements
     if (index != _vector.size() - 1) {
-        const T& last = _vector.back();
-        _vector[index] = last;
-        _index_map[last] = index;  // Update the swapped element's index
+        _vector[index] = std::move(_vector.back());
+        _index_map[_vector[index]] = index;  // Update the swapped element's index
     }
     
     _vector.pop_back();
