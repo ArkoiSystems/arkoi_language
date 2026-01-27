@@ -6,14 +6,24 @@
 
 using namespace arkoi::il;
 
-void BasicBlock::set_branch(BasicBlock* branch) {
-    if (branch) branch->_predecessors.insert(this);
-    _branch = branch;
+void BasicBlock::set_branch(BasicBlock* target) {
+    if (_branch == target) return;
+
+    if (_branch != nullptr) _branch->remove_predecessor(this);
+
+    _branch = target;
+
+    if (_branch != nullptr) _branch->add_predecessor(this);
 }
 
-void BasicBlock::set_next(BasicBlock* next) {
-    if (next) next->_predecessors.insert(this);
-    _next = next;
+void BasicBlock::set_next(BasicBlock* target) {
+    if (_next == target) return;
+
+    if (_next) _next->remove_predecessor(this);
+
+    _next = target;
+
+    if (_next) _next->add_predecessor(this);
 }
 
 BlockTraversal::BlockOrder BlockTraversal::build(BasicBlock* start, const DFSOrder order) {
@@ -233,8 +243,8 @@ bool Function::is_leaf() {
 bool Function::remove(BasicBlock* target) {
     assert(target->predecessors().empty());
 
-    if (target->next()) target->next()->predecessors().erase(target);
-    if (target->branch()) target->branch()->predecessors().erase(target);
+    target->set_branch(nullptr);
+    target->set_next(nullptr);
 
     return _block_pool.erase(target->label());
 }

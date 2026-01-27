@@ -1,0 +1,8 @@
+fun main() @u32:
+    return fib(20)
+
+fun fib(n @u32) @u32:
+    # TODO: return if n <= 1 then n else fib(n - 1) + fib(n - 2)
+    if n <= 1:
+        return n
+    return fib(n - 1) + fib(n - 2)

@@ -1,0 +1,17 @@
+digraph CFG {
+	graph [fontname = "Monospace"];
+	node  [fontname = "Monospace", shape=box, style=filled, margin=0.1];
+	edge  [fontname = "Monospace"];
+	bgcolor = "#f7f7f7";
+	splines = false;
+
+	L0 [label="fun main() @u32:\l arg @u32 20\l $05.0 @u32 = call fib, 1\l ret $05.0\l\lIN:  { }\lOUT: { }\l"];
+	L2 [label="fun fib(n @u32) @u32:\l $02.0 @u32 = $n.0\l $06.0 @bool = loe @u32 $n.0, 1\l if $06.0 then L4 else L5\l\lIN:  { $n.0 $01.1 $01.2 }\lOUT: { $01.1 $01.2 $02.0 }\l"];
+	L2 -> L5 [label="Next"];
+	L2 -> L4 [label="Branch"];
+	L5 [label="L5:\l $11.0 @u32 = sub @u32 $02.0, 1\l arg @u32 $11.0\l $13.0 @u32 = call fib, 1\l $17.0 @u32 = sub @u32 $02.0, 2\l arg @u32 $17.0\l $19.0 @u32 = call fib, 1\l $20.0 @u32 = add @u32 $13.0, $19.0\l $01.1 @u32 = $20.0\l goto L3\l\lIN:  { $02.0 $01.2 }\lOUT: { $01.2 $01.1 }\l"];
+	L5 -> L3 [label="Next"];
+	L3 [label="L3:\l $01.0 @u32 = phi [ L4: $01.2, L6: $01.1 ]\l ret $01.0\l\lIN:  { $01.1 $01.2 }\lOUT: { }\l"];
+	L4 [label="L4:\l $01.2 @u32 = $02.0\l goto L3\l\lIN:  { $02.0 $01.1 }\lOUT: { $01.2 $01.1 }\l"];
+	L4 -> L3 [label="Next"];
+}

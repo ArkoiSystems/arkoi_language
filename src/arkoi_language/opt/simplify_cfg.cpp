@@ -5,56 +5,33 @@
 using namespace arkoi::opt;
 using namespace arkoi;
 
-bool SimplifyCFG::enter_function(il::Function&) {
-    _simple_blocks.clear();
-    _proxy_blocks.clear();
-    return false;
-}
-
 bool SimplifyCFG::exit_function(il::Function& function) {
-    bool changed = false;
-
-    for (auto& block : _proxy_blocks) {
-        _remove_proxy_block(function, *block);
-        changed = true;
+    for (auto& block : function) {
+        if (_remove_proxy_block(block) || _merge_block(function, block)) {
+            assert(function.remove(&block));
+            return true;
+        }
     }
 
-    for (auto& block : _simple_blocks) {
-        _merge_block(function, *block);
-        changed = true;
-    }
-
-    return changed;
-}
-
-bool SimplifyCFG::on_block(il::BasicBlock& block) {
-    if (is_simple_block(block)) {
-        _simple_blocks.insert(&block);
-    } else if (_is_proxy_block(block)) {
-        _proxy_blocks.insert(&block);
-    }
     return false;
 }
 
-void SimplifyCFG::_remove_proxy_block(il::Function& function, il::BasicBlock& block) {
+bool SimplifyCFG::_remove_proxy_block(il::BasicBlock& block) {
+    if (!_is_proxy_block(block)) return false;
+
     const auto& target = std::get<il::Goto>(block.instructions().front());
     auto* target_block = block.next();
 
     // Replace every predecessor goto with a copy of the current one. Also, delete the predecessor, as an
     // empty predecessor vector is needed to delete a BasicBlock from a function.
-    std::erase_if(
-        block.predecessors(),
-        [&](il::BasicBlock* predecessor) {
-            auto& instruction = std::get<il::Goto>(predecessor->instructions().back());
-            instruction = target;
-            predecessor->set_next(target_block);
-            return true;
-        }
-    );
+    for (auto& predecessor : block.predecessors()) {
+        auto& instruction = std::get<il::Goto>(predecessor->instructions().back());
+        instruction = target;
+        predecessor->set_next(target_block);
+        block.remove_predecessor(predecessor);
+    }
 
-    // Be sure to delete the current block from the function.
-    assert(function.remove(&block));
-    (void) function;
+    return true;
 }
 
 bool SimplifyCFG::_is_proxy_block(il::BasicBlock& block) {
@@ -72,7 +49,9 @@ bool SimplifyCFG::_is_proxy_block(il::BasicBlock& block) {
     return true;
 }
 
-void SimplifyCFG::_merge_block(il::Function& function, il::BasicBlock& block) {
+bool SimplifyCFG::_merge_block(il::Function& function, il::BasicBlock& block) {
+    if (!is_simple_block(block)) return false;
+
     auto* predecessor = *block.predecessors().begin();
     auto& instructions = predecessor->instructions();
 
@@ -95,13 +74,12 @@ void SimplifyCFG::_merge_block(il::Function& function, il::BasicBlock& block) {
     if (&block == function.exit()) function.set_exit(predecessor);
 
     // Remove the predecessor, as it is required to remove the entire basic block from the function.
-    block.predecessors().clear();
+    block.remove_predecessor(predecessor);
 
-    // Be sure to delete the current block from the function.
-    assert(function.remove(&block));
+    return true;
 }
 
-bool SimplifyCFG::is_simple_block(il::BasicBlock& block) {
+bool SimplifyCFG::is_simple_block(const il::BasicBlock& block) {
     if (block.branch()) return false;
     if (block.predecessors().size() != 1) return false;
 

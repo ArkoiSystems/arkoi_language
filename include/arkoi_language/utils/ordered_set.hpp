@@ -1,14 +1,17 @@
 #pragma once
 
-#include <unordered_set>
+#include <unordered_map>
 #include <vector>
 
 /**
  * @brief A set that maintains the insertion order of its elements.
  *
- * OrderedSet combines the properties of `std::unordered_set` (for fast lookup)
+ * OrderedSet combines the properties of `std::unordered_map` (for fast lookup)
  * and `std::vector` (to preserve insertion order). This is particularly useful
  * in compiler passes where deterministic iteration order is required.
+ *
+ * Note: erase() uses swap-and-pop, which changes the relative order of elements
+ * when an element is removed (the last element takes its place).
  *
  * @tparam T The type of elements in the set. Must be hashable and comparable.
  */
@@ -33,8 +36,11 @@ public:
     /**
      * @brief Erases a value from the set.
      *
-     * Complexity: O(N) where N is the number of elements, as it requires
-     * removing from the internal vector.
+     * Uses swap-and-pop strategy for O(1) amortized complexity.
+     * The element is swapped with the last element and then removed.
+     * This changes the relative order of elements when removing non-last elements.
+     *
+     * Complexity: O(1) average.
      *
      * @param value The value to erase.
      * @return True if the value was erased, false if it didn't exist.
@@ -64,7 +70,7 @@ public:
      * @return The size of the set.
      * @see empty
      */
-    [[nodiscard]] size_t size() const { return _set.size(); }
+    [[nodiscard]] size_t size() const { return _vector.size(); }
 
     /**
      * @brief Checks if the set is empty.
@@ -72,7 +78,7 @@ public:
      * @return True if empty, false otherwise.
      * @see size
      */
-    [[nodiscard]] bool empty() const { return _set.empty(); }
+    [[nodiscard]] bool empty() const { return _vector.empty(); }
 
     /**
      * @brief Returns a const iterator to the first element.
@@ -107,7 +113,7 @@ public:
     iterator end() { return _vector.end(); }
 
 private:
-    std::unordered_set<T> _set;
+    std::unordered_map<T, size_t> _indices;
     std::vector<T> _vector;
 };
 

@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="hello_world.ark" type="CMakeRunConfiguration" factoryName="Application" folderName="Compile Examples" PROGRAM_PARAMS="-print-il -print-cfg -print-asm -vr hello_world.ark" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$/example/hello_world" PASS_PARENT_ENVS_2="true" PROJECT_NAME="arkoi_language" TARGET_NAME="arkoi_language" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="arkoi_language" RUN_TARGET_NAME="arkoi_language_app">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

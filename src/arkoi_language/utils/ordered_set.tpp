@@ -4,33 +4,40 @@ template <typename T>
 bool OrderedSet<T>::insert(const T& value) {
     if (this->contains(value)) return false;
 
+    _indices[value] = _vector.size();
     _vector.push_back(value);
-    _set.insert(value);
 
     return true;
 }
 
 template <typename T>
 bool OrderedSet<T>::erase(const T& value) {
-    if (!this->contains(value)) return false;
+    auto it = _indices.find(value);
+    if (it == _indices.end()) return false;
 
-    // This can be very inefficient, use something else in the future, maybe.
-    std::erase_if(_vector, [&](const auto& it) { return it == value; });
+    size_t index = it->second;
 
-    _set.erase(value);
+    // Swap with the last element to avoid shifting all elements
+    if (index != _vector.size() - 1) {
+        _vector[index] = std::move(_vector.back());
+        _indices[_vector[index]] = index;  // Update the swapped element's index
+    }
+
+    _vector.pop_back();
+    _indices.erase(it);
 
     return true;
 }
 
 template <typename T>
 bool OrderedSet<T>::contains(const T& value) const {
-    return _set.contains(value);
+    return _indices.contains(value);
 }
 
 template <typename T>
 void OrderedSet<T>::clear() {
     _vector.clear();
-    _set.clear();
+    _indices.clear();
 }
 
 //==============================================================================

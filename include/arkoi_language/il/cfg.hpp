@@ -67,9 +67,9 @@ public:
     /**
      * @brief Sets the non-sequential branch target.
      *
-     * @param branch Pointer to the destination `BasicBlock`.
+     * @param target Pointer to the destination `BasicBlock`.
      */
-    void set_branch(BasicBlock* branch);
+    void set_branch(BasicBlock* target);
 
     /**
      * @brief Returns the sequential fallthrough target.
@@ -83,16 +83,30 @@ public:
     /**
      * @brief Sets the sequential fallthrough target.
      *
-     * @param next Pointer to the destination `BasicBlock`.
+     * @param target Pointer to the destination `BasicBlock`.
      */
-    void set_next(BasicBlock* next);
+    void set_next(BasicBlock* target);
+
+    /**
+     * @brief Adds a predecessor to the basic block.
+     *
+     * @param predecessor The predecessor to be added.
+     */
+    void add_predecessor(BasicBlock* predecessor) { _predecessors.insert(predecessor); }
+
+    /**
+     * @brief Removes a predecessor from the basic block.
+     *
+     * @param predecessor The predecessor to be removed.
+     */
+    void remove_predecessor(BasicBlock* predecessor) { _predecessors.erase(predecessor); }
 
     /**
      * @brief Returns the set of all blocks that can jump to this one.
      *
      * @return A reference to the set of predecessor `BasicBlock` pointers.
      */
-    [[nodiscard]] auto& predecessors() { return _predecessors; }
+    [[nodiscard]] const auto& predecessors() const { return _predecessors; }
 
     /**
      * @brief Returns the sequence of instructions within this block.

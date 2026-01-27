@@ -10,13 +10,30 @@ using namespace pretty_diagnostics;
 using namespace arkoi::front;
 using namespace arkoi;
 
+Parser::Parser(const std::shared_ptr<Source>& source, std::vector<Token>&& tokens, utils::Diagnostics& diagnostics) :
+    _source(source), _diagnostics(diagnostics), _tokens(std::move(tokens)) {
+    for (auto it = _tokens.begin(); it != _tokens.end();) {
+        if (it->type() == Token::Type::Comment) {
+            it = _tokens.erase(it);
+
+            if (it == _tokens.end() || it->type() != Token::Type::Newline) {
+                continue;
+            }
+
+            it = _tokens.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 ast::Program Parser::parse_program() {
     std::vector<std::unique_ptr<ast::Node>> statements;
     auto own_scope = _enter_scope();
 
     while (true) {
         const auto& current = _current();
-        if (current.type() == Token::Type::Comment || current.type() == Token::Type::Newline) {
+        if (current.type() == Token::Type::Newline) {
             _next();
             continue;
         }

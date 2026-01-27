@@ -26,38 +26,31 @@ public:
     bool exit_module([[maybe_unused]] il::Module& module) override { return false; }
 
     /**
-     * @brief Initializes simplification state for a function.
+     * @brief No-op for function entry.
      */
-    bool enter_function(il::Function& function) override;
+    bool enter_function([[maybe_unused]] il::Function& function) override { return false; }
 
     /**
-     * @brief Performs cleanup and structural changes after individual blocks are processed.
-     *
-     * This is where block merging and removal actually occur.
+     * @brief Identifies and modifies the control flow to simplify common basic block structures.
      *
      * @param function The `il::Function` being optimized.
      * @return True if the function structure was modified.
      */
-    bool exit_function(il::Function& function) override;
+    bool exit_function([[maybe_unused]] il::Function& function)  override;
 
     /**
-     * @brief Identifies blocks within a function that are candidates for simplification.
-     *
-     * Categorizes blocks as "simple" (can be merged) or "proxy" (can be bypassed).
-     *
-     * @param block The `il::BasicBlock` to analyze.
-     * @return False (actual modification happens in `exit_function`).
+     * @brief No-op for basic blocks.
      */
-    bool on_block(il::BasicBlock& block) override;
+    bool on_block([[maybe_unused]] il::BasicBlock& block) override { return false; }
 
 private:
     /**
      * @brief Bypasses a proxy block, connecting its predecessors directly to its successor.
      *
-     * @param function The containing function.
      * @param block The proxy block to remove.
+     * @return True if the block was removed.
      */
-    static void _remove_proxy_block(il::Function& function, il::BasicBlock& block);
+    [[nodiscard]] static bool _remove_proxy_block(il::BasicBlock& block);
 
     /**
      * @brief Determines if a block is a "proxy" (empty or jump-only).
@@ -72,8 +65,9 @@ private:
      *
      * @param function The containing function.
      * @param block The block to be merged and deleted.
+     * @return True if the block was merged.
      */
-    static void _merge_block(il::Function& function, il::BasicBlock& block);
+    [[nodiscard]] static bool _merge_block(il::Function& function, il::BasicBlock& block);
 
     /**
      * @brief Determines if a block can be merged into its predecessor.
@@ -84,11 +78,7 @@ private:
      * @param block The block to check.
      * @return True if the block is mergeable.
      */
-    [[nodiscard]] static bool is_simple_block(il::BasicBlock& block);
-
-private:
-    std::unordered_set<il::BasicBlock*> _simple_blocks;
-    std::unordered_set<il::BasicBlock*> _proxy_blocks;
+    [[nodiscard]] static bool is_simple_block(const il::BasicBlock& block);
 };
 } // namespace arkoi::opt
 
