@@ -5,6 +5,7 @@ project(arkoi_language VERSION 0.1.0)
 # Use C++23 and enforce it
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 # Option to enable/disable testing:
 option(BUILD_TESTING "Enable testing" ON)

@@ -1,5 +1,4 @@
 #include <filesystem>
-#include <fstream>
 
 #include "gtest/gtest.h"
 
@@ -19,8 +18,7 @@ TEST(Snapshot, Scanner) {
         const auto file_name = entry.path().filename().stem().string();
         const auto file_path = entry.path().string();
 
-        const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path);
-        source->set_working_path(TEST_PATH);
+        const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path, TEST_PATH);
 
         auto diagnostics = arkoi::utils::Diagnostics();
         auto scanner = arkoi::front::Scanner(source, diagnostics);
@@ -47,8 +45,7 @@ TEST(Snapshot, Parser) {
         const auto file_name = entry.path().filename().stem().string();
         const auto file_path = entry.path().string();
 
-        const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path);
-        source->set_working_path(TEST_PATH);
+        const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_path, TEST_PATH);
 
         auto diagnostics = arkoi::utils::Diagnostics();
         auto scanner = arkoi::front::Scanner(source, diagnostics);
