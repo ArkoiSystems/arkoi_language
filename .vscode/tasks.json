@@ -17,6 +17,22 @@
       "label": "check-and-build-current-file",
       "dependsOn": ["check-ark-file", "build"],
       "dependsOrder": "sequence"
+    },
+    {
+      "label": "build-with-update-snapshots",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-DUPDATE_SNAPSHOTS=ON",
+        "-B",
+        "${workspaceFolder}/build",
+        "${workspaceFolder}",
+        "&&",
+        "cmake",
+        "--build",
+        "${workspaceFolder}/build"
+      ],
+      "group": "build"
     }
   ]
 }
