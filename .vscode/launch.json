@@ -1,0 +1,94 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "inputs": [
+    {
+      "id": "ark_file",
+      "type": "pickString",
+      "description": "Select an example to run",
+      "options": [
+        "example/hello_world/hello_world.ark",
+        "example/factorial/factorial.ark",
+        "example/cc/cc.ark",
+        "example/fibonacci/fibonacci.ark",
+        "example/test/test.ark"
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "preLaunchTask": "check-and-build-current-file",
+      "name": "Run Current File",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/arkoi_language_app",
+      "args": [
+        "${relativeFile}",
+        "-print-il",
+        "-print-cfg",
+        "-print-asm",
+        "-vr"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "preLaunchTask": "build",
+      "name": "Run Picked Example",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/arkoi_language_app",
+      "args": [
+        "${input:ark_file}",
+        "-print-il",
+        "-print-cfg",
+        "-print-asm",
+        "-vr"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "preLaunchTask": "build",
+      "name": "Run Tests",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/tests/arkoi_language_tests",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 .intel_syntax noprefix
-.file 1 "factorial.ark"
+.file 1 "example/factorial/factorial.ark"
 
 .section .text
 .global _start

@@ -1,5 +1,5 @@
 .intel_syntax noprefix
-.file 1 "fibonacci.ark"
+.file 1 "example/fibonacci/fibonacci.ark"
 
 .section .text
 .global _start

@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "${workspaceFolder}/build"],
+      "group": "build"
+    },
+    {
+      "label": "check-ark-file",
+      "type": "shell",
+      "command": "if [ \"${fileExtname}\" != \".ark\" ]; then echo 'Not an .ark file'; exit 1; fi"
+    },
+    {
+      "label": "check-and-build-current-file",
+      "dependsOn": ["check-ark-file", "build"],
+      "dependsOrder": "sequence"
+    }
+  ]
+}
