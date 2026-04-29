@@ -29,6 +29,8 @@ std::filesystem::path generate_temp_path();
  * @param cfg_ostream Optional output stream for the control-flow graph (CFG).
  *                    If provided, the CFG will be printed in DOT format.
  * @param asm_ostream Optional output stream for the generated x86-64 assembly.
+ * @param verbose     If true, enables verbose output during compilation stages (e.g., 
+ *                    command execution).
  *
  * @return The compilation status code (0 on success, non-zero on failure).
  * @see assemble, link
@@ -37,7 +39,8 @@ int32_t compile(
     const std::shared_ptr<pretty_diagnostics::Source>& source,
     std::ofstream* il_ostream,
     std::ofstream* cfg_ostream,
-    std::ofstream* asm_ostream
+    std::ofstream* asm_ostream,
+    bool verbose = false
 );
 
 /**

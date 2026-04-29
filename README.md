@@ -14,6 +14,7 @@ Arkoi Language is a small toy compiler project designed to provide a hands-on ex
 ---
 
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [Features](#features)
 - [Installation](#installation)
@@ -26,7 +27,9 @@ Arkoi Language is a small toy compiler project designed to provide a hands-on ex
 ---
 
 ## Introduction
+
 Arkoi Language is a work-in-progress toy compiler written primarily in C++. It is aimed at developers and enthusiasts who are interested in:
+
 - Understanding compiler internals.
 - Experimenting with custom language features and optimizations.
 - Building a small custom ecosystem around a toy programming language.
@@ -36,6 +39,7 @@ While the project is in its early stages, it is designed to be a learning platfo
 ---
 
 ## Features
+
 - **Custom Syntax**: A unique and intuitive syntax design for the Arkoi Language.
 - **Compiler Development**: Learn how a compiler is structured, from parsing to code generation.
 - **Optimization Techniques**: Explore basic optimization strategies for compiled code.
@@ -44,14 +48,17 @@ While the project is in its early stages, it is designed to be a learning platfo
 ---
 
 ## Installation
+
 To build and run the Arkoi compiler, follow the steps below:
 
 ### Prerequisites
+
 - A C++23 compatible compiler (e.g., GCC, Clang, or MSVC).
 - CMake 3.29.6 or higher.
 - A supported build system (e.g., make, Ninja).
 
 ### Steps
+
 1. Clone the repository:
    ```bash
    git clone https://github.com/Excse/arkoi_language.git
@@ -62,11 +69,13 @@ To build and run the Arkoi compiler, follow the steps below:
    cmake -S . -B build
    ```
 3. Build the project:
+
    ```bash
    cmake --build build
    ```
 
 4. Run the compiler:
+
    ```bash
    ./arkoi_language <input_file>
    ```
@@ -79,11 +88,13 @@ To build and run the Arkoi compiler, follow the steps below:
 ---
 
 ## Usage
+
 Once the Arkoi compiler is built, you can use it to compile Arkoi source files into executable binaries or intermediate representations.
 
 ### CLI Options
+
 ```bash
-Usage: arkoi_language [--help] [--version] [--output VAR] [-v] [-S] [-c] [-r] [-print-asm] [-print-cfg] [-print-il] inputs...
+Usage: arkoi_language [--help] [--version] [--output VAR] [--verbose] [--compile-only] [--assemble-only] [--link-only] [--run] [--emit-asm] [--emit-cfg] [--emit-il] inputs...
 
 The Arkoi Compiler is a lightweight experimental compiler for the Arkoi
 Programming Language, designed to explore a mix of Python and C programming
@@ -92,33 +103,35 @@ new language features, compiler techniques, and language design concepts.
 
 Positional arguments:
   inputs        All input files that should be compiled
-                [nargs: 1 or more] 
+                [nargs: 1 or more]
 
 Optional arguments:
-  -h, --help    Shows the help message and exits 
-  --version     Prints version information and exits 
+   -h, --help           Shows the help message and exits
+   --version            Prints version information and exits
 
 Input and output control (detailed usage):
-  -o, --output  The output file name of the compiled files
-                [nargs=0..1] [default: "a.out"]
-  -v            Print (on the standard error output) the commands executed to run the stages of compilation 
+   -o, --output         The output file name of the compiled files
+                                  [nargs=0..1] [default: "a.out"]
+   -v, --verbose        Print (on the standard error output) the commands executed to run the stages of compilation
 
 Compilation modes (detailed usage):
-  -S            Only compile but do not assemble.
-                For each source an assembly file ".s" is generated 
-  -c            Only compile and assemble, but do not link.
-                For each source an object file ".o" is generated 
-  -r            Compile, assemble, link and run the program afterwards 
+   -c, --compile-only   Only compile but do not assemble.
+                        For each source an assembly file ".s" is generated
+   -a, --assemble-only  Only compile and assemble, but do not link.
+                        For each source an object file ".o" is generated
+   -l, --link-only      Only compile, assemble and link, but do not run the program afterwards
+   -r, --run            Compile, assemble, link and run the program afterwards
 
 Output control of compilation stages (detailed usage):
-  -print-asm    Print the assembly code of each source to a file ending in ".s" 
-  -print-cfg    Print the Control-Flow-Graph of each source to a file ending in ".dot" 
-  -print-il     Print the Intermediate Language of each source to a file ending in ".il" 
+   --emit-asm           Emits the assembly code of each source to a file ending in ".s"
+   --emit-cfg           Emits the Control-Flow-Graph of each source to a file ending in ".dot"
+   --emit-il            Emits the Intermediate Language of each source to a file ending in ".il"
 ```
 
 ---
 
 ## Project Structure
+
 Here is an overview of the repository structure:
 
 ```
@@ -150,11 +163,13 @@ arkoi_language/
 ---
 
 ## Roadmap
+
 There is a separate [ROADMAP.md](ROADMAP.md) file that lists the planned features and improvements for the compiler.
 
 ---
 
 ## Contributing
+
 We welcome contributions to improve the Arkoi Language project! Here’s how you can get involved:
 
 1. Clone the repository and create a new branch for your feature or bugfix.
@@ -166,13 +181,16 @@ Please make sure to follow the [contribution guidelines](CODE_OF_CONDUCT.md).
 ---
 
 ## Credits
+
 This repository uses the following open-source projects:
+
 - [Google Test](https://github.com/google/googletest)
 - [argparse](https://github.com/p-ranav/argparse/)
 
 ---
 
 ## License
+
 This project is licensed under the BSD 3-Clause License. See the [LICENSE](LICENSE.txt) file for details.
 
 ---

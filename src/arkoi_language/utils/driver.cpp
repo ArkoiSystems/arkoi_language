@@ -48,12 +48,17 @@ int32_t utils::compile(
     const std::shared_ptr<pretty_diagnostics::Source>& source,
     std::ofstream* il_ostream,
     std::ofstream* cfg_ostream,
-    std::ofstream* asm_ostream
+    std::ofstream* asm_ostream,
+    bool verbose
 ) {
     Diagnostics diagnostics;
 
+    if (verbose) std::cerr << "STAGE=SCANNER: path=" << source->path() << std::endl;
+
     front::Scanner scanner(source, diagnostics);
     auto tokens = scanner.tokenize();
+
+    if (verbose) std::cerr << "STAGE=PARSER: path=" << source->path() << std::endl;
 
     front::Parser parser(source, std::move(tokens), diagnostics);
     auto program = parser.parse_program();
@@ -63,12 +68,16 @@ int32_t utils::compile(
         return 1;
     }
 
+    if (verbose) std::cerr << "STAGE=NAME_RESOLVER: path=" << source->path() << std::endl;
+
     auto name_resolver = sem::NameResolver(diagnostics);
     name_resolver.visit(program);
     if (diagnostics.has_errors()) {
         diagnostics.render(std::cerr);
         return 1;
     }
+
+    if (verbose) std::cerr << "STAGE=TYPE_RESOLVER: path=" << source->path() << std::endl;
 
     auto type_resolver = sem::TypeResolver(diagnostics);
     type_resolver.visit(program);
@@ -77,14 +86,20 @@ int32_t utils::compile(
         return 1;
     }
 
+    if (verbose) std::cerr << "STAGE=IL_GENERATOR: path=" << source->path() << std::endl;
+
     auto il_generator = il::Generator();
     il_generator.visit(program);
+
+    if (verbose) std::cerr << "STAGE=SSA_PROMOTION: path=" << source->path() << std::endl;
 
     auto module = il_generator.module();
     for (auto& function : module) {
         auto ssa_promoter = il::SSAPromoter(function);
         ssa_promoter.promote();
     }
+
+    if (verbose) std::cerr << "STAGE=OPTIMIZATION: path=" << source->path() << std::endl;
 
     opt::PassManager manager;
     manager.add<opt::ConstantFolding>();
@@ -95,16 +110,22 @@ int32_t utils::compile(
     manager.run(module);
 
     if (il_ostream) {
+        if (verbose) std::cerr << "STAGE=IL_PRINTING: path=" << source->path() << std::endl;
+
         auto il_printer = il::ILPrinter(*il_ostream);
         il_printer.visit(module);
         il_ostream->flush();
     }
 
     if (cfg_ostream) {
+        if (verbose) std::cerr << "STAGE=CFG_PRINTING: path=" << source->path() << std::endl;
+
         auto cfg_printer = il::CFGPrinter(*cfg_ostream);
         cfg_printer.visit(module);
         cfg_ostream->flush();
     }
+
+    if (verbose) std::cerr << "STAGE=PHI_LOWERING: path=" << source->path() << std::endl;
 
     for (auto& function : module) {
         auto phi_lowerer = il::PhiLowerer(function);
@@ -113,8 +134,12 @@ int32_t utils::compile(
 
     std::unordered_map<il::Function*, x86_64::Resolver> resolvers;
     for (auto& function : module) {
+        if (verbose) std::cerr << "STAGE=REGISTER_ALLOCATION: path=" << source->path() <<", function=" << function.name() << std::endl;
+
         auto allocator = x86_64::RegisterAllocator(function);
         allocator.run();
+
+        if (verbose) std::cerr << "STAGE=RESOLUTION: path=" << source->path() <<", function=" << function.name() << std::endl;
 
         auto resolver = x86_64::Resolver();
         resolver.run(function, allocator.assigned());
@@ -123,6 +148,8 @@ int32_t utils::compile(
     }
 
     if (asm_ostream) {
+        if (verbose) std::cerr << "STAGE=ASM_GENERATION: path=" << source->path() << std::endl;
+        
         auto asm_generator = x86_64::Generator(source, module, resolvers);
         asm_generator.run();
 

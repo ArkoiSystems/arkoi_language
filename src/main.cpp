@@ -1,14 +1,111 @@
-#include <complex>
 #include <fstream>
 #include <iostream>
+#include <filesystem>
+#include <ostream>
 #include <sstream>
+#include <vector>
 
 #include "argparse/argparse.hpp"
 
 #include "arkoi_language/utils/driver.hpp"
-#include "arkoi_language/utils/utils.hpp"
 
 using namespace arkoi;
+
+struct PipelineFileUnit {
+    std::filesystem::path input_path;
+    std::filesystem::path cfg_path;
+    std::filesystem::path asm_path;
+    std::filesystem::path obj_path;
+    std::filesystem::path il_path;
+};
+
+struct PipelineContext {
+    std::vector<PipelineFileUnit> file_units;
+    std::filesystem::path output_path;
+
+    bool emit_cfg = false;
+    bool emit_asm = false;
+    bool emit_il = false;
+    bool verbose = false;
+};
+
+enum class PipelineMode {
+    CompileOnly,
+    AssembleOnly,
+    LinkOnly,
+    Run,
+    Full
+};
+
+using Stage = std::function<int(PipelineContext&)>;
+
+int compile_stage(PipelineContext& context) {
+    for (const auto& file_unit : context.file_units) {
+        const auto source = std::make_shared<pretty_diagnostics::FileSource>(file_unit.input_path);
+
+        std::ofstream il_file, cfg_file, asm_file;
+
+        std::ofstream* il_ostream = nullptr;
+        if (context.emit_il) {
+            il_file.open(file_unit.il_path);
+            if (!il_file.is_open()) return 1;
+            il_ostream = &il_file;
+        }
+
+        std::ofstream* cfg_ostream = nullptr;
+        if (context.emit_cfg) {
+            cfg_file.open(file_unit.cfg_path);
+            if (!cfg_file.is_open()) return 1;
+            cfg_ostream = &cfg_file;
+        }
+
+        std::ofstream* asm_ostream = nullptr;
+        if (context.emit_asm) {
+            asm_file.open(file_unit.asm_path);
+            asm_ostream = &asm_file;
+        }
+
+        int compile_exit = utils::compile(source, il_ostream, cfg_ostream, asm_ostream, context.verbose);
+        if (compile_exit != 0) {
+             return compile_exit;
+        }
+    }
+
+    return 0;
+}
+
+int assemble_stage(PipelineContext& context) {
+    for (const auto& file_unit : context.file_units) {
+        const auto obj_path = file_unit.obj_path;
+        const auto asm_path = file_unit.asm_path;
+        
+        auto obj_ostream = std::ofstream(obj_path);
+
+        int assemble_exit = utils::assemble(asm_path, obj_ostream, context.verbose);
+        if (assemble_exit != 0) {
+             return assemble_exit;
+        }
+    }
+
+    return 0;
+}
+
+int link_stage(PipelineContext& context) {
+    auto output_ostream = std::ofstream(context.output_path);
+
+    std::vector<std::string> obj_paths;
+    for (const auto& file_unit : context.file_units) {
+        obj_paths.push_back(file_unit.obj_path);
+    }
+
+    return utils::link(obj_paths, output_ostream, context.verbose);
+}
+
+int run_stage(PipelineContext& context) {
+    int result = utils::run_binary(context.output_path);
+    std::filesystem::remove(context.output_path);
+    return result; 
+}
 
 int main(const int argc, const char* argv[]) {
     argparse::ArgumentParser argument_parser(PROJECT_NAME, PROJECT_VERSION, argparse::default_arguments::none);
@@ -21,21 +118,17 @@ int main(const int argc, const char* argv[]) {
     );
 
     argument_parser.add_argument("-h", "--help")
-                   .action(
-                        [&](const auto&) {
-                            std::cout << argument_parser.help().str();
-                            std::exit(0);
-                        }
-                    )
+                   .action([&](const auto&) {
+                        std::cout << argument_parser.help().str();
+                        std::exit(0);
+                    })
                    .help("Shows the help message and exits")
                    .flag();
     argument_parser.add_argument("--version")
-                   .action(
-                        [&](const auto&) {
-                            std::cout << PROJECT_VERSION << std::endl;
-                            std::exit(0);
-                        }
-                    )
+                   .action([&](const auto&) {
+                        std::cout << PROJECT_VERSION << std::endl;
+                        std::exit(0);
+                    })
                    .help("Prints version information and exits")
                    .flag();
 
@@ -43,33 +136,38 @@ int main(const int argc, const char* argv[]) {
     argument_parser.add_argument("inputs")
                    .help("All input files that should be compiled\n\b")
                    .nargs(argparse::nargs_pattern::at_least_one);
-    argument_parser.add_argument("-o", "--output")
+    argument_parser.add_argument("--output", "-o")
                    .help("The output file name of the compiled files\n\b")
                    .default_value("a.out");
-    argument_parser.add_argument("-v")
+    argument_parser.add_argument("--verbose", "-v")
                    .help("Print (on the standard error output) the commands executed to run the stages of compilation")
                    .flag();
 
     argument_parser.add_group("Compilation modes");
-    argument_parser.add_argument("-S")
+    argument_parser.add_argument("--compile-only", "-c")
                    .help("Only compile but do not assemble.\nFor each source an assembly file \".s\" is generated")
                    .flag();
-    argument_parser.add_argument("-c")
+    argument_parser.add_argument("--assemble-only", "-a")
                    .help("Only compile and assemble, but do not link.\nFor each source an object file \".o\" is generated")
                    .flag();
-    argument_parser.add_argument("-r")
+    argument_parser.add_argument("--link-only", "-l")
+                   .help("Only compile, assemble and link, but do not run the program afterwards")
+                   .flag();
+    argument_parser.add_argument("--run", "-r")
                    .help("Compile, assemble, link and run the program afterwards")
                    .flag();
 
     argument_parser.add_group("Output control of compilation stages");
-    argument_parser.add_argument("-print-asm")
-                   .help("Print the assembly code of each source to a file ending in \".s\"")
+    argument_parser.add_argument("--emit-asm")
+                   .help("Emits the assembly code of each source to a file ending in \".s\"")
                    .flag();
-    argument_parser.add_argument("-print-cfg")
-                   .help("Print the Control-Flow-Graph of each source to a file ending in \".dot\"")
+
+    argument_parser.add_argument("--emit-cfg")
+                   .help("Emits the Control-Flow-Graph of each source to a file ending in \".dot\"")
                    .flag();
-    argument_parser.add_argument("-print-il")
-                   .help("Print the Intermediate Language of each source to a file ending in \".il\"")
+
+    argument_parser.add_argument("--emit-il")
+                   .help("Emits the Intermediate Language of each source to a file ending in \".il\"")
                    .flag();
 
     try {
@@ -80,71 +178,66 @@ int main(const int argc, const char* argv[]) {
         return 1;
     }
 
-    const auto input_paths = argument_parser.get<std::vector<std::string>>("inputs");
-    const auto output_path = argument_parser.get<std::string>("output");
-    const auto verbose = argument_parser.get<bool>("-v");
+    std::vector<PipelineFileUnit> file_units;    
+    for (const auto& input_path : argument_parser.get<std::vector<std::string>>("inputs")) {
+        const auto base_path = std::filesystem::path(input_path).replace_extension();
 
-    const auto mode_S = argument_parser.get<bool>("-S");
-    const auto mode_c = argument_parser.get<bool>("-c");
-    const auto mode_r = argument_parser.get<bool>("-r");
-    const bool mode_full = !mode_S && !mode_c && !mode_r;
+        file_units.push_back({
+            .input_path = input_path,
+            .cfg_path = std::filesystem::path(base_path).replace_extension(".dot"),
+            .asm_path = std::filesystem::path(base_path).replace_extension(".s"),
+            .obj_path = std::filesystem::path(base_path).replace_extension(".o"),
+            .il_path = std::filesystem::path(base_path).replace_extension(".il"),
+        });
+    }
 
-    const auto print_cfg = argument_parser.get<bool>("-print-cfg");
-    const auto print_asm = argument_parser.get<bool>("-print-asm");
-    const auto print_il = argument_parser.get<bool>("-print-il");
+    PipelineContext context {
+        .file_units = file_units,
+        .output_path = argument_parser.get<std::string>("output"),
+        .emit_cfg = argument_parser.get<bool>("--emit-cfg"),
+        .emit_asm = argument_parser.get<bool>("--emit-asm"),
+        .emit_il = argument_parser.get<bool>("--emit-il"),
+        .verbose = argument_parser.get<bool>("--verbose"),
+    };
 
-    const bool should_assemble = !mode_S;
-    const bool should_link = mode_full || mode_r;
-    const bool should_run = mode_r;
+    PipelineMode mode;
+    if(argument_parser.get<bool>("--compile-only")) {
+        mode = PipelineMode::CompileOnly;
+    } else if (argument_parser.get<bool>("--assemble-only")) {
+        mode = PipelineMode::AssembleOnly;
+    } else if (argument_parser.get<bool>("--link-only")) {
+        mode = PipelineMode::LinkOnly;
+    } else if (argument_parser.get<bool>("--run")) {
+        mode = PipelineMode::Run;
+    } else {
+        mode = PipelineMode::Full;
+    }
 
-    std::vector<std::string> object_files;
-    for (const auto& input_path : input_paths) {
-        const auto source = std::make_shared<pretty_diagnostics::FileSource>(input_path);
-        const auto base_path = get_base_path(input_path);
+    std::vector<Stage> pipeline;
+    switch (mode) {
+        case PipelineMode::CompileOnly:
+            pipeline = {compile_stage};
+            break;
+        case PipelineMode::AssembleOnly:
+            pipeline = {compile_stage, assemble_stage};
+            break;
+        case PipelineMode::Full:
+        case PipelineMode::LinkOnly:
+            pipeline = {compile_stage, assemble_stage, link_stage};
+            break;
+        case PipelineMode::Run:
+            pipeline = {compile_stage, assemble_stage, link_stage, run_stage};
+            break;
+    }
 
-        const auto il_path = base_path + ".il";
-        const auto cfg_path = base_path + ".dot";
-        const auto asm_path = base_path + ".s";
-        const auto obj_path = base_path + ".o";
-
-        { // This block has to exist, as the files get closed automatically because of RAII,
-            // which is necessary so the files get written before commands are executed with it.
-            auto il_ostream = std::ofstream(il_path);
-            auto cfg_ostream = std::ofstream(cfg_path);
-            auto asm_ostream = std::ofstream(asm_path);
-
-            const auto compile_exit = utils::compile(
-                source,
-                print_il ? &il_ostream : nullptr,
-                print_cfg ? &cfg_ostream : nullptr,
-                print_asm ? &asm_ostream : nullptr
-            );
-            if (compile_exit != 0) return compile_exit;
+    for (const auto& stage : pipeline) {
+        int stage_exit = stage(context);
+        if (stage_exit != 0) {
+            return stage_exit;
         }
-
-        if (!should_assemble) continue;
-
-        auto obj_ostream = std::ofstream(obj_path);
-        auto assemble_exit = utils::assemble(asm_path, obj_ostream, verbose);
-        if (assemble_exit != 0) return assemble_exit;
-
-        object_files.push_back(obj_path);
     }
 
-    if (!should_link || object_files.empty()) return 0;
-
-    { // The same RAII logic applies here.
-        auto output_ostream = std::ofstream(output_path);
-        auto link_exit = utils::link(object_files, output_ostream, verbose);
-        if (link_exit != 0) return link_exit;
-    }
-
-    if (!should_run || object_files.empty()) return 0;
-
-    const int32_t run_exit = utils::run_binary(output_path);
-    std::remove(output_path.c_str());
-
-    return run_exit;
+    return 0;
 }
 
 //==============================================================================

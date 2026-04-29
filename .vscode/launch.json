@@ -26,9 +26,9 @@
       "program": "${workspaceFolder}/build/arkoi_language_app",
       "args": [
         "${relativeFile}",
-        "-print-il",
-        "-print-cfg",
-        "-print-asm",
+        "--emit-il",
+        "--emit-cfg",
+        "--emit-asm",
         "-vr"
       ],
       "stopAtEntry": false,
@@ -52,9 +52,9 @@
       "program": "${workspaceFolder}/build/arkoi_language_app",
       "args": [
         "${input:ark_file}",
-        "-print-il",
-        "-print-cfg",
-        "-print-asm",
+        "--emit-il",
+        "--emit-cfg",
+        "--emit-asm",
         "-vr"
       ],
       "stopAtEntry": false,
