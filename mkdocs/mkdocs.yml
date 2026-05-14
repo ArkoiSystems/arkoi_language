@@ -1,0 +1,30 @@
+site_name: "Arkoi"
+site_description: "Minimal documentation for the Arkoi programming language"
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started/installation.md
+  - Syntax: getting-started/syntax.md
+  - CLI usage: getting-started/cli.md
+  - Classes: arkoi_language/classes.md
+
+plugins:
+  - search:
+      lang: en
+  - mkdoxy:
+      projects:
+        arkoi_language:
+          src-dirs: ../include/arkoi_language
+          full-doc: True
+          doxy-cfg-file: ../Doxyfile
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true

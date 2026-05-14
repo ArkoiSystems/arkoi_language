@@ -112,4 +112,6 @@ _deps
 *.o
 *.exe
 a.out
-.cache/*
+.cache
+.venv
+site
