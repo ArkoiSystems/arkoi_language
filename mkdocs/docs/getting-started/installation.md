@@ -1,6 +1,6 @@
 # Installation
 
-This page covers the minimum needed to build Arkoi locally.
+This page covers the minimum needed to build Arkoi locally and run the compiler against an example program.
 
 ## Requirements
 
@@ -8,13 +8,16 @@ This page covers the minimum needed to build Arkoi locally.
 - CMake
 - A C++23 compiler
 
-## Build
+## Quick path
+
+If you have the prerequisites, the shortest path is:
 
 ```bash
 git clone https://github.com/ArkoiSystems/arkoi_language
 cd arkoi_language
 cmake -S . -B build
 cmake --build build
+./build/bin/arkoi_language example/hello_world/hello_world.ark
 ```
 
 ## Run the compiler
@@ -33,4 +36,4 @@ ctest --test-dir build --output-on-failure
 
 ## Next
 
-Read the [syntax overview](syntax.md) to see the current language shape, or go to [CLI usage](cli.md) for command examples.
+Read the [overview](overview.md) to understand the language design, then move to the [syntax reference](syntax.md) for the exact forms.

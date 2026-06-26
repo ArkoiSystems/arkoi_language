@@ -1,17 +1,29 @@
 site_name: "Arkoi"
-site_description: "Minimal documentation for the Arkoi programming language"
+site_description: "A practical guide to the Arkoi programming language"
 
 theme:
   name: material
   features:
     - content.code.copy
 
+hooks:
+  - hooks.py
+
 nav:
   - Home: index.md
-  - Getting Started: getting-started/installation.md
-  - Syntax: getting-started/syntax.md
-  - CLI usage: getting-started/cli.md
-  - Classes: arkoi_language/classes.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - CLI usage: getting-started/cli.md
+      - Syntax reference: getting-started/syntax.md
+  - Language guide:
+      - Overview: getting-started/overview.md
+      - Grammar: getting-started/grammar.md
+      - Language rules: getting-started/rules.md
+      - Functions: getting-started/functions.md
+      - Types: getting-started/types.md
+      - Control flow: getting-started/control-flow.md
+      - Examples: getting-started/examples.md
+  - API reference: arkoi_language/classes.md
 
 plugins:
   - search:
@@ -26,5 +38,9 @@ plugins:
 markdown_extensions:
   - admonition
   - tables
+  - pymdownx.highlight:
+      pygments_lang_class: true
+      guess_lang: false
+  - pymdownx.superfences
   - toc:
       permalink: true

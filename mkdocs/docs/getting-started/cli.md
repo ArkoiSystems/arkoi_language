@@ -22,6 +22,13 @@ arkoi_language [options] <inputs...>
 - `--emit-cfg` writes `.dot` control-flow graph files
 - `--emit-il` writes `.il` files
 
+## Typical workflow
+
+1. Build the compiler.
+2. Run it on a source file.
+3. Use `--emit-il`, `--emit-cfg`, or `--emit-asm` when you want to inspect the pipeline.
+4. Use `--run` when you want the produced binary executed immediately.
+
 ## Examples
 
 Compile and run a program:
@@ -47,3 +54,7 @@ Use a custom output name:
 ```bash
 arkoi_language example/hello_world/hello_world.ark --output hello
 ```
+
+## Notes
+
+Examples use the executable produced in `build/bin/arkoi_language`, while the command-line help text shown by the binary uses the same options described above.

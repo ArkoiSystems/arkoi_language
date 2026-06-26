@@ -1,26 +1,50 @@
-# Syntax
+# Syntax reference
 
-Arkoi is still evolving, so this page keeps the syntax overview short and example-driven.
+The syntax is centered on a few explicit rules: typed functions, typed variables, simple expressions, and structured control flow.
 
-## Functions
+## Lexical shape
 
-Functions currently use `fun`, a typed parameter list, and a typed return annotation:
+- Source files are plain text files with the `.ark` extension.
+- Comments start with `#` and continue to the end of the line.
+- Whitespace is used for readability and indentation in block-oriented code.
+
+## Declarations
+
+### Functions
+
+Functions use `fun`, a name, a typed parameter list, and a return type annotation.
 
 ```arkoi
-fun main() @s32:
+fun main() @u64:
     return 0
 ```
 
-Some examples also omit the trailing colon and rely on indentation for the body:
+Parameters are written with a name followed by `@type`.
 
 ```arkoi
-fun main() @u64
-    return 1
+fun add(lhs @s32, rhs @s32) @s32:
+    return lhs + rhs
+```
+
+### Variables
+
+Variables are declared with an explicit type annotation.
+
+```arkoi
+result @f32 = 0.0
+flag @bool = true
+count @s32 = 10
+```
+
+Assignments reuse the variable name without repeating the type.
+
+```arkoi
+result = result + 1.0
 ```
 
 ## Types
 
-The current examples use `@`-prefixed types such as:
+The language uses a compact primitive type set:
 
 - `@s32`
 - `@u32`
@@ -28,17 +52,63 @@ The current examples use `@`-prefixed types such as:
 - `@f32`
 - `@f64`
 - `@bool`
+- [See more about types](types.md)
+
+Types are explicit in declarations, parameters, and return annotations.
+
+## Expressions
+
+The language supports arithmetic, comparisons, logical operators, function calls, and explicit grouping with parentheses.
+
+```arkoi
+return (bar * foo2) + (foo2 < foo2)
+```
+
+Operators shown in the examples include:
+
+- Arithmetic: `+`, `-`, `*`, `/`
+- Comparison: `<`, `<=`, `>`, `>=`, `==`, `!=`
+- Boolean: `&&`, `||`
 
 ## Control flow
 
-The language currently shows simple `if`, `else`, `while`, and `return` forms in the examples and tests.
+Conditionals and loops are block-oriented.
 
 ```arkoi
-fun ok(foo @s32) @bool
-    if foo return 1
+if foo1 > 5.0:
+    foo1 = 0.0
+else if foo1 >= 10.0:
+    foo1 = 20.0
+else:
+    foo1 = 21.0
+```
+
+```arkoi
+while n != 0:
+    result = result * n
+    n = n - 1
+```
+
+`return` exits the current function.
+
+## Literals
+
+The language includes integer, floating-point, and boolean literals.
+
+```arkoi
+0
+10.5
+true
+false
+```
+
+## Example shape
+
+This is a representative minimal program:
+
+```arkoi
+fun main() @s32:
     return 0
 ```
 
-## Try the examples
-
-If you want a small reference while reading, start with the `example/hello_world/hello_world.ark` file and then look at the scanner snapshot example in the tests.
+See `example/test/test.ark` for a broader sample that exercises functions, branches, loops, arithmetic, comparisons, logical expressions, and assignments.
