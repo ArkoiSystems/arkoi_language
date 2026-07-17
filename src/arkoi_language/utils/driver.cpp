@@ -49,6 +49,7 @@ int32_t utils::compile(
     std::ofstream* il_ostream,
     std::ofstream* cfg_ostream,
     std::ofstream* asm_ostream,
+    OptimizationLevel opt_level,
     bool verbose
 ) {
     Diagnostics diagnostics;
@@ -102,11 +103,16 @@ int32_t utils::compile(
     if (verbose) std::cerr << "STAGE=OPTIMIZATION: path=" << source->path() << std::endl;
 
     opt::PassManager manager;
-    manager.add<opt::ConstantFolding>();
-    manager.add<opt::ConstantPropagation>();
-    manager.add<opt::CopyPropagation>();
-    manager.add<opt::DeadCodeElimination>();
-    manager.add<opt::SimplifyCFG>();
+    if (opt_level == OptimizationLevel::Common) {
+        manager.add<opt::ConstantFolding>();
+        manager.add<opt::ConstantPropagation>();
+        manager.add<opt::CopyPropagation>();
+        manager.add<opt::DeadCodeElimination>();
+        manager.add<opt::SimplifyCFG>();
+    } else if (verbose) {
+        std::cerr << "STAGE=OPTIMIZATION: skipping optimizations" << std::endl; 
+    }
+
     manager.run(module);
 
     if (il_ostream) {

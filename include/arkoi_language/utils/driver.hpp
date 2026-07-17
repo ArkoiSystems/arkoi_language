@@ -7,6 +7,18 @@
 #include <vector>
 
 namespace arkoi::utils {
+
+/**
+ * @brief Enum representing the available optimization levels
+ *
+ * This enum is getting used to decide which optimizations are getting used for 
+ * the compilation. 
+ */
+enum class OptimizationLevel {
+    None,
+    Common
+};
+
 /**
  * @brief Generate a unique temporary filesystem path.
  *
@@ -40,6 +52,7 @@ int32_t compile(
     std::ofstream* il_ostream,
     std::ofstream* cfg_ostream,
     std::ofstream* asm_ostream,
+    OptimizationLevel opt_level,
     bool verbose = false
 );
 

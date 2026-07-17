@@ -21,6 +21,7 @@ struct PipelineFileUnit {
 
 struct PipelineContext {
     std::vector<PipelineFileUnit> file_units;
+    utils::OptimizationLevel opt_level;
     std::filesystem::path output_path;
 
     bool emit_cfg = false;
@@ -65,7 +66,7 @@ int compile_stage(PipelineContext& context) {
             asm_ostream = &asm_file;
         }
 
-        int compile_exit = utils::compile(source, il_ostream, cfg_ostream, asm_ostream, context.verbose);
+        int compile_exit = utils::compile(source, il_ostream, cfg_ostream, asm_ostream, context.opt_level, context.verbose);
         if (compile_exit != 0) {
              return compile_exit;
         }
@@ -170,6 +171,14 @@ int main(const int argc, const char* argv[]) {
                    .help("Emits the Intermediate Language of each source to a file ending in \".il\"")
                    .flag();
 
+    argument_parser.add_group("Optimiozation control");
+    argument_parser.add_argument("-O0")
+                   .help("No optimizations are performed (default)")
+                   .flag();
+    argument_parser.add_argument("-O1")
+                   .help("Most common optimization without compromising speed for size")
+                   .flag();
+
     try {
         argument_parser.parse_args(argc, argv);
     } catch (const std::exception& error) {
@@ -191,8 +200,18 @@ int main(const int argc, const char* argv[]) {
         });
     }
 
+    utils::OptimizationLevel opt_level;
+    if (argument_parser.get<bool>("-O0")) {
+        opt_level = utils::OptimizationLevel::None;
+    } else if (argument_parser.get<bool>("-O1")) {
+        opt_level = utils::OptimizationLevel::Common;
+    } else {
+        opt_level = utils::OptimizationLevel::None;
+    }
+
     PipelineContext context {
         .file_units = file_units,
+        .opt_level = opt_level,
         .output_path = argument_parser.get<std::string>("output"),
         .emit_cfg = argument_parser.get<bool>("--emit-cfg"),
         .emit_asm = argument_parser.get<bool>("--emit-asm"),

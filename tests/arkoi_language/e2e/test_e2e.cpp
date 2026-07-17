@@ -24,7 +24,7 @@ TEST(EndToEnd, AllPrograms) {
         { // Compile the source to assembly
             std::ofstream asm_ostream(asm_path);
 
-            const int32_t compiler_exit = utils::compile(source, nullptr, nullptr, &asm_ostream);
+            const int32_t compiler_exit = utils::compile(source, nullptr, nullptr, &asm_ostream, utils::OptimizationLevel::None);
             if (compiler_exit != 0) std::remove(asm_path.c_str());
 
             ASSERT_EQ(0, compiler_exit);
