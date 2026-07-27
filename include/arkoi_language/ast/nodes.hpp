@@ -771,7 +771,7 @@ private:
 /**
  * @brief Represents a literal (immediate) value in the source code.
  *
- * Immediates can be integers, floating-point numbers, or booleans.
+ * Immediates can either be of type numeric or boolean.
  */
 class Immediate final : public Node {
 public:
@@ -1111,7 +1111,7 @@ public:
     /**
      * @brief Returns the expression being cast.
      *
-     * @return A constant reference to the unique pointer of the expression `Node`.
+     * @return A  reference to the unique pointer of the expression `Node`.
      */
     [[nodiscard]] auto& expression() { return _expression; }
 
