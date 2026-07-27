@@ -63,7 +63,7 @@ private:
     /**
      * @brief Lexes a numeric literal, supporting both integer and floating point.
      *
-     * @return A `Token` of type `Integer` or `Floating`.
+     * @return A `Token` of type `Numeric`.
      */
     [[nodiscard]] Token _lex_numeric();
 
