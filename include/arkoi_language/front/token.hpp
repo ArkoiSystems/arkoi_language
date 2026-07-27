@@ -22,8 +22,7 @@ public:
         Dedentation, ///< Decrease in indentation level
         Newline,     ///< End of line
 
-        Integer,    ///< Integer literal
-        Floating,   ///< Floating-point literal
+        Numeric,    ///< Numeric literal
         Identifier, ///< User-defined name
         Comment,    ///< Source code comment
 

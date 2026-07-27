@@ -65,7 +65,7 @@ private:
      *
      * @return A `Token` of type `Integer` or `Floating`.
      */
-    [[nodiscard]] Token _lex_number();
+    [[nodiscard]] Token _lex_numeric();
 
     /**
      * @brief Lexes a single character literal or special symbol.
@@ -220,6 +220,15 @@ private:
     [[nodiscard]] static bool _is_hex(char input);
 
     /**
+     * @brief Checks if a character is a valid hexadecimal marker.
+     *
+     * @param input The character to check.
+     *
+     * @return True if a hex marker, false otherwise.
+     */
+    [[nodiscard]] static bool _is_hex_marker(char input);
+
+    /**
      * @brief Checks if a character is a hexadecimal exponent marker ('p' or 'P').
      *
      * @param input The character to check.
@@ -227,6 +236,42 @@ private:
      * @return True if a hex exponent marker, false otherwise.
      */
     [[nodiscard]] static bool _is_hex_expo(char input);
+
+    /**
+     * @brief Checks if a character is a valid binary digit.
+     *
+     * @param input The character to check.
+     *
+     * @return True if a binary digit, false otherwise.
+     */
+    [[nodiscard]] static bool _is_bin(char input);
+
+    /**
+     * @brief Checks if a character is a valid binary marker.
+     *
+     * @param input The character to check.
+     *
+     * @return True if a binary marker, false otherwise.
+     */
+    [[nodiscard]] static bool _is_bin_marker(char input);
+
+    /**
+     * @brief Checks if a character is a valid octal digit.
+     *
+     * @param input The character to check.
+     *
+     * @return True if a octal digit, false otherwise.
+     */
+    [[nodiscard]] static bool _is_oct(char input);
+
+    /**
+     * @brief Checks if a character is a valid octal marker.
+     *
+     * @param input The character to check.
+     *
+     * @return True if a octal marker, false otherwise.
+     */
+    [[nodiscard]] static bool _is_oct_marker(char input);
 
     /**
      * @brief Checks if a character is a decimal exponent marker ('e' or 'E').
@@ -341,18 +386,6 @@ public:
     UnknownChar(char got, const pretty_diagnostics::Span& span);
 };
 
-/**
- * @brief Scanner error indicating a numeric literal out of range.
- */
-class NumberOutOfRange final : public ScannerError {
-public:
-    /**
-     * @brief Constructs a `NumberOutOfRange` error.
-     *
-     * @param span Source span of the number literal.
-     */
-    explicit NumberOutOfRange(const pretty_diagnostics::Span& span);
-};
 } // namespace arkoi::front
 
 //==============================================================================

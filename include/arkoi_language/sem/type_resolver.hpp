@@ -67,18 +67,11 @@ private:
     void visit(ast::Immediate& node) override;
 
     /**
-     * @brief Resolves types for integer literals.
+     * @brief Resolves types for numeric literals.
      *
      * @param node The `Immediate` node to visit.
      */
-    void visit_integer(ast::Immediate& node);
-
-    /**
-     * @brief Resolves types for floating-point literals.
-     *
-     * @param node The `Immediate` node to visit.
-     */
-    void visit_floating(ast::Immediate& node);
+    void visit_numeric(ast::Immediate& node);
 
     /**
      * @brief Resolves types for boolean literals.
@@ -151,6 +144,15 @@ private:
     void visit(ast::While& node) override;
 
     /**
+     * @brief Resolves a type of a given node with an optional target hint type
+     * 
+     * @param operand The node to resolve the type for
+     * @param target An optional target type hint for internal type resolution
+     * @return std::optional<Type> std::nullopt if no type could be resolved, otherwise a resolved `Type`
+     */
+    std::optional<Type> _resolve_type(ast::Node& operand, const std::optional<Type>& target);
+
+    /**
      * @brief Determines the common result type for an operation between two types.
      *
      * @param left_type The type of the left operand.
@@ -179,7 +181,7 @@ private:
     static std::unique_ptr<ast::Node> _cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to);
 
 private:
-    std::optional<Type> _current_type{ }, _return_type{ };
+    std::optional<Type> _current_type{ }, _return_type{ }, _target_type{ };
     utils::Diagnostics& _diagnostics;
 };
 } // namespace arkoi::sem

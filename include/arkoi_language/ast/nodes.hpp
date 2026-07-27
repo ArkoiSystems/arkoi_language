@@ -776,8 +776,7 @@ private:
 class Immediate final : public Node {
 public:
 #define IMMEDIATE_KIND_TYPES \
-    X(Integer)     \
-    X(Floating)    \
+    X(Numeric)     \
     X(Boolean)
 
     /**
@@ -873,27 +872,42 @@ private:
  */
 class Binary final : public Node {
 public:
-#define BINARY_OPERATOR_TYPES \
-    X(Add)                    \
-    X(Sub)                    \
-    X(Mul)                    \
-    X(Div)                    \
-    X(GreaterThan)            \
-    X(LessThan)               \
-    X(GreaterEqual)           \
-    X(LessEqual)              \
-    X(Equal)                  \
-    X(NotEqual)               \
-    X(And)                    \
-    X(Or)
+#define BINARY_OPERATOR_TYPES(X) \
+    X(Add,          Arithmetic)  \
+    X(Sub,          Arithmetic)  \
+    X(Mul,          Arithmetic)  \
+    X(Div,          Arithmetic)  \
+    X(GreaterThan,  Comparison)  \
+    X(LessThan,     Comparison)  \
+    X(GreaterEqual, Comparison)  \
+    X(LessEqual,    Comparison)  \
+    X(Equal,        Comparison)  \
+    X(NotEqual,     Comparison)  \
+    X(And,          Logical)     \
+    X(Or,           Logical)
+
+#define BINARY_OPERATOR_CATEGORIES(X) \
+    X(Arithmetic, arithmetic)         \
+    X(Comparison, comparison)         \
+    X(Logical,    logical)
 
     /**
      * @brief Specifies the binary operator.
      */
     enum class Operator {
-#define X(element) element,
-        BINARY_OPERATOR_TYPES
+#define X(element, category) element,
+        BINARY_OPERATOR_TYPES(X)
 #undef X
+    };
+
+    /**
+     * @brief Specifies the binary operator category
+     */
+    enum class OperatorCategory {
+#define X(category, function_name) category,
+        BINARY_OPERATOR_CATEGORIES(X)
+#undef X
+        Unknown
     };
 
 public:
@@ -1001,14 +1015,47 @@ public:
      * @param op The operator to convert.
      * @return A string literal representing the operator.
      */
-    static const char* to_string(const Operator op) {
+    [[nodiscard]] static const char* to_string(const Operator op) {
         switch (op) {
-#define X(element) case Operator::element: return #element;
-            BINARY_OPERATOR_TYPES
+#define X(element, category) \
+            case Operator::element: return #element;
+            BINARY_OPERATOR_TYPES(X)
 #undef X
         }
         return "<unknown>";
     }
+
+    /**
+     * Returns the category associated with an operator.
+     */
+    [[nodiscard]] static constexpr OperatorCategory category(const Operator op) {
+        switch (op) {
+#define X(name, category) \
+            case Operator::name: return OperatorCategory::category;
+            BINARY_OPERATOR_TYPES(X)
+#undef X
+        }
+        return OperatorCategory::Unknown;
+    }
+
+    /*
+     * Used to generate functions to check whether a binary node is 
+     * a arithmetic, logical or comparison operation.
+     * 
+     * This will generate a global function and local method e.g.:
+     * static bool is_arithmetic(Operator);
+     * bool is_arithmetic() const;
+     */
+#define X(category_name, function_name)                                         \
+    [[nodiscard]] static constexpr bool is_##function_name(const Operator op) { \
+        return category(op) == OperatorCategory::category_name;                 \
+    }                                                                           \
+                                                                                \
+    [[nodiscard]] constexpr bool is_##function_name() const {                   \
+        return is_##function_name(_op);                                         \
+    }
+    BINARY_OPERATOR_CATEGORIES(X)
+#undef X
 
 private:
     std::optional<sem::Type> _result_type{ }, _op_type{ };
@@ -1066,7 +1113,7 @@ public:
      *
      * @return A constant reference to the unique pointer of the expression `Node`.
      */
-    [[nodiscard]] auto& expression() const { return _expression; }
+    [[nodiscard]] auto& expression() { return _expression; }
 
     /**
      * @brief Returns the source type of the cast.

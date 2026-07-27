@@ -84,7 +84,7 @@ Token Scanner::_next_token() {
     }
 
     if (current == '-' || _is_digit(current)) {
-        return _lex_number();
+        return _lex_numeric();
     }
 
     if (current == '\'') {
@@ -121,7 +121,7 @@ Token Scanner::_lex_identifier() {
     return { Token::Type::Identifier, span };
 }
 
-Token Scanner::_lex_number() {
+Token Scanner::_lex_numeric() {
     const auto start_location = _current_location();
 
     if (_try_consume('-') && !_is_digit(_current_char())) {
@@ -129,14 +129,12 @@ Token Scanner::_lex_number() {
     }
 
     const auto consumed = _consume(_is_digit, "0-9");
-    bool floating;
-
-    if (consumed == '0' && _try_consume('x')) {
+    if (consumed == '0' && _try_consume(_is_hex_marker)) {
         _consume(_is_hex, "0-9, a-f or A-F");
 
-        while (_try_consume(_is_hex)) { }
+        while (_try_consume(_is_hex) || _try_consume('_')) { }
 
-        floating = _try_consume('.');
+        std::ignore = _try_consume('.');
 
         while (_try_consume(_is_hex)) { }
 
@@ -145,39 +143,29 @@ Token Scanner::_lex_number() {
 
             while (_try_consume(_is_hex));
         }
-    } else {
-        while (_try_consume(_is_digit)) { }
+    } else if (consumed == '0' && _try_consume(_is_bin_marker)) {
+        _consume(_is_bin, "0 or 1");
 
-        floating = _try_consume('.');
+        while (_try_consume(_is_bin) || _try_consume('_')) { }
+    } else if (consumed == '0' && _try_consume(_is_oct_marker)) {
+        _consume(_is_oct, "0-7");
+
+        while (_try_consume(_is_oct) || _try_consume('_')) { }
+    } else {
+        while (_try_consume(_is_digit) || _try_consume('_')) { }
+
+        std::ignore = _try_consume('.');
 
         while (_try_consume(_is_digit)) { }
 
         if (_try_consume(_is_expo)) {
-            floating = true;
-
             std::ignore = _try_consume(_is_decimal_sign);
 
             while (_try_consume(_is_hex));
         }
     }
 
-    const auto span = Span(_source, start_location, _current_location());
-    const auto kind = (floating ? Token::Type::Floating : Token::Type::Integer);
-    const auto number = span.substr();
-
-    try {
-        if (floating) {
-            std::stold(number);
-        } else if (number.starts_with("-")) {
-            std::stoll(number);
-        } else {
-            std::stoull(number);
-        }
-    } catch (const std::out_of_range&) {
-        throw NumberOutOfRange(span);
-    }
-
-    return { kind, span };
+    return { Token::Type::Numeric, { _source, start_location, _current_location() } };
 }
 
 Token Scanner::_lex_char() {
@@ -187,7 +175,7 @@ Token Scanner::_lex_char() {
     std::ignore = _consume(_is_ascii, "'");
     _consume('\'');
 
-    return { Token::Type::Integer, { _source, start_location, _current_location() } };
+    return { Token::Type::Numeric, { _source, start_location, _current_location() } };
 }
 
 Token Scanner::_lex_special() {
@@ -308,8 +296,28 @@ bool Scanner::_is_hex(const char input) {
            (input >= 'A' && input <= 'F');
 }
 
+bool Scanner::_is_hex_marker(const char input) {
+    return input == 'x' || input == 'X';
+}
+
 bool Scanner::_is_hex_expo(const char input) {
     return input == 'p' || input == 'P';
+}
+
+bool Scanner::_is_bin(const char input) {
+    return input == '0' || input == '1';
+}
+
+bool Scanner::_is_bin_marker(const char input) {
+    return input == 'b' || input == 'B';
+}
+
+bool Scanner::_is_oct(const char input) {
+    return (input >= '0' && input <= '7');
+}
+
+bool Scanner::_is_oct_marker(const char input) {
+    return input == 'o' || input == 'O';
 }
 
 bool Scanner::_is_expo(const char input) {
@@ -357,16 +365,6 @@ UnknownChar::UnknownChar(const char got, const Span& span) :
        .message("Unrecognized character '" + std::string(1, got) + "' found in source")
        .code("E1003")
        .label("This character was not expected", span)
-       .build()
-    ) { }
-
-NumberOutOfRange::NumberOutOfRange(const Span& span) :
-    ScannerError(
-        Report::Builder()
-       .severity(Severity::Error)
-       .message("Numeric literal exceeds the 64-bit range")
-       .code("E1004")
-       .label("This number is out of range", span)
        .build()
     ) { }
 

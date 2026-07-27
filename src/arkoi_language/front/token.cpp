@@ -75,8 +75,7 @@ std::ostream& front::operator<<(std::ostream& os, const Token::Type& type) {
         case Token::Type::Dedentation: return os << "Dedentation";
         case Token::Type::Newline: return os << "Newline";
 
-        case Token::Type::Integer: return os << "Integer";
-        case Token::Type::Floating: return os << "Floating";
+        case Token::Type::Numeric: return os << "Numeric";
         case Token::Type::Identifier: return os << "Identifier";
         case Token::Type::Comment: return os << "Comment";
 
