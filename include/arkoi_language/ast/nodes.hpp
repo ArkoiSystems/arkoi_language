@@ -969,7 +969,7 @@ public:
      *
      * @return A reference to the unique pointer of the right `Node`.
      */
-    [[nodiscard]] auto& right() { return _right; }
+    [[nodiscard]] auto& right(this auto& self) { return self._right; }
 
     /**
      * @brief Sets the right operand.
@@ -983,7 +983,7 @@ public:
      *
      * @return A reference to the unique pointer of the left `Node`.
      */
-    [[nodiscard]] auto& left() { return _left; }
+    [[nodiscard]] auto& left(this auto& self) { return self._left; }
 
     /**
      * @brief Sets the left operand.

@@ -50,14 +50,9 @@ private:
     void visit(ast::Immediate& node) override;
 
     /**
-     * @brief Specialized handler for integer literals.
+     * @brief Specialized handler for numeric literals.
      */
-    void visit_integer(const ast::Immediate& node);
-
-    /**
-     * @brief Specialized handler for floating-point literals.
-     */
-    void visit_floating(const ast::Immediate& node);
+    void visit_numeric(const ast::Immediate& node);
 
     /**
      * @brief Specialized handler for boolean literals.

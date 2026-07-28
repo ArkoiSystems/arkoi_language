@@ -19,17 +19,17 @@ bool is_arithmetic(const Type& type) {
     return std::holds_alternative<Integral>(type) || std::holds_alternative<Floating>(type);
 }
 
-bool requires_target(ast::Node& node) {
-    if (auto* immediate = dynamic_cast<ast::Immediate*>(&node)) {
+bool requires_hint(const ast::Node& node) {
+    if (auto* immediate = dynamic_cast<const ast::Immediate*>(&node)) {
         return immediate->kind() == ast::Immediate::Kind::Numeric;
     }
 
-    if (auto* binary = dynamic_cast<ast::Binary*>(&node)) {
+    if (const auto* binary = dynamic_cast<const ast::Binary*>(&node)) {
         if (binary->is_comparison() || binary->is_logical()) {
             return false;
         }
 
-        return requires_target(*binary->left()) && requires_target(*binary->right());
+        return requires_hint(*binary->left()) && requires_hint(*binary->right());
     }
 
     // Identifiers, calls, explicit casts, and boolean literals establish their
@@ -84,7 +84,7 @@ void TypeResolver::visit(ast::Immediate& node) {
 }
 
 void TypeResolver::visit_numeric(ast::Immediate& node) {
-    // Use _target_type to decide whether the numeric value fits inside of the target type
+    // Use _hint_type to decide whether the numeric value fits inside of the target type
     std::ignore = node;
 }
 
@@ -179,29 +179,29 @@ void TypeResolver::visit(ast::Identifier& node) {
 }
 
 void TypeResolver::visit(ast::Binary& node) {
-    ScopedValue target_restore(_target_type);
+    ScopedValue hint_restore(_hint_type);
 
     Type left = BOOL_TYPE, right = BOOL_TYPE;
     if (node.is_logical()) {
         left = _resolve_type(*node.left(), BOOL_TYPE).value();
         right = _resolve_type(*node.right(), BOOL_TYPE).value();
     } else {
-        const auto left_requires_target = requires_target(*node.left());
-        const auto right_requires_target = requires_target(*node.right());
+        const auto left_required_hint = requires_hint(*node.left());
+        const auto right_requires_hint = requires_hint(*node.right());
 
-        if (left_requires_target && !right_requires_target) {
+        if (left_required_hint && !right_requires_hint) {
             // Resolve the independently typed operand first, then use its type
             // to constrain the literal-dependent operand.
             right = _resolve_type(*node.right(), std::nullopt).value();
             left = _resolve_type(*node.left(), right).value();
-        } else if (!left_requires_target && right_requires_target) {
+        } else if (!left_required_hint && right_requires_hint) {
             left = _resolve_type(*node.left(), std::nullopt).value();
             right = _resolve_type(*node.right(), left).value();
         } else {
             // A comparison's expected type describes its boolean result, never
             // its operands. Arithmetic expressions may inherit a numeric target
             // when neither operand can establish one independently.
-            auto operand_target = target_restore.getSaved();
+            auto operand_target = hint_restore.getSaved();
             if (node.is_comparison() || (operand_target && !is_arithmetic(operand_target.value()))) {
                 operand_target = std::nullopt;
             }
@@ -379,8 +379,8 @@ void TypeResolver::visit(ast::While& node) {
     node.then()->accept(*this);
 }
 
-std::optional<Type> TypeResolver::_resolve_type(ast::Node& operand, const std::optional<Type>& target) {
-    ScopedValue target_restore(_target_type, target);
+std::optional<Type> TypeResolver::_resolve_type(ast::Node& operand, const std::optional<Type>& hint) {
+    ScopedValue hint_restore(_hint_type, hint);
     operand.accept(*this);
     return _current_type;
 }

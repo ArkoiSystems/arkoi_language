@@ -181,7 +181,7 @@ private:
     static std::unique_ptr<ast::Node> _cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to);
 
 private:
-    std::optional<Type> _current_type{ }, _return_type{ }, _target_type{ };
+    std::optional<Type> _current_type{ }, _return_type{ }, _hint_type{ };
     utils::Diagnostics& _diagnostics;
 };
 } // namespace arkoi::sem

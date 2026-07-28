@@ -85,57 +85,60 @@ void Generator::visit(ast::Block& node) {
 
 void Generator::visit(ast::Immediate& node) {
     switch (node.kind()) {
-        case ast::Immediate::Kind::Integer: return visit_integer(node);
-        case ast::Immediate::Kind::Floating: return visit_floating(node);
+        case ast::Immediate::Kind::Numeric: return visit_numeric(node);
         case ast::Immediate::Kind::Boolean: return visit_boolean(node);
     }
 }
 
-void Generator::visit_integer(const ast::Immediate& node) {
-    const auto& number_string = node.value().span().substr();
-
-    const auto sign = !number_string.starts_with('-');
-
-    Immediate immediate;
-    if (number_string.front() == '\'' && number_string.back() == '\'') {
-        immediate = number_string[1];
-    } else if (sign) {
-        const auto value = std::stoll(number_string);
-        if (value > std::numeric_limits<int32_t>::max()) {
-            immediate = static_cast<int64_t>(value);
-        } else {
-            immediate = static_cast<int32_t>(value);
-        }
-    } else {
-        const auto value = std::stoull(number_string);
-        if (value > std::numeric_limits<uint32_t>::max()) {
-            immediate = static_cast<uint64_t>(value);
-        } else {
-            immediate = static_cast<uint32_t>(value);
-        }
-    }
-
-    auto temp = _make_temporary(node.type());
-    _current_block->emplace_back<Assign>(temp, immediate, node.span());
-    _current_operand = temp;
+void Generator::visit_numeric(const ast::Immediate& node) {
+    std::ignore = node;
 }
 
-void Generator::visit_floating(const ast::Immediate& node) {
-    const auto& number_string = node.value().span().substr();
+// void Generator::visit_integer(const ast::Immediate& node) {
+//     const auto& number_string = node.value().span().substr();
 
-    const auto value = std::stold(number_string);
+//     const auto sign = !number_string.starts_with('-');
 
-    Immediate immediate;
-    if (value > std::numeric_limits<float>::max()) {
-        immediate = static_cast<double>(value);
-    } else {
-        immediate = static_cast<float>(value);
-    }
+//     Immediate immediate;
+//     if (number_string.front() == '\'' && number_string.back() == '\'') {
+//         immediate = number_string[1];
+//     } else if (sign) {
+//         const auto value = std::stoll(number_string);
+//         if (value > std::numeric_limits<int32_t>::max()) {
+//             immediate = static_cast<int64_t>(value);
+//         } else {
+//             immediate = static_cast<int32_t>(value);
+//         }
+//     } else {
+//         const auto value = std::stoull(number_string);
+//         if (value > std::numeric_limits<uint32_t>::max()) {
+//             immediate = static_cast<uint64_t>(value);
+//         } else {
+//             immediate = static_cast<uint32_t>(value);
+//         }
+//     }
 
-    auto temp = _make_temporary(node.type());
-    _current_block->emplace_back<Assign>(temp, immediate, node.span());
-    _current_operand = temp;
-}
+//     auto temp = _make_temporary(node.type());
+//     _current_block->emplace_back<Assign>(temp, immediate, node.span());
+//     _current_operand = temp;
+// }
+
+// void Generator::visit_floating(const ast::Immediate& node) {
+//     const auto& number_string = node.value().span().substr();
+
+//     const auto value = std::stold(number_string);
+
+//     Immediate immediate;
+//     if (value > std::numeric_limits<float>::max()) {
+//         immediate = static_cast<double>(value);
+//     } else {
+//         immediate = static_cast<float>(value);
+//     }
+
+//     auto temp = _make_temporary(node.type());
+//     _current_block->emplace_back<Assign>(temp, immediate, node.span());
+//     _current_operand = temp;
+// }
 
 void Generator::visit_boolean(const ast::Immediate& node) {
     auto temp = _make_temporary(node.type());
