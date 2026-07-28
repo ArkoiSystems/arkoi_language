@@ -2,41 +2,17 @@
 
 #include <optional>
 #include <stdexcept>
-#include <tuple>
 #include <utility>
 
 #include "arkoi_language/ast/nodes.hpp"
 #include "arkoi_language/utils/utils.hpp"
+#include "arkoi_language/sem/numeric_literal.hpp"
 
 using namespace arkoi::sem;
 using namespace arkoi;
 
-static constinit Integral BOOL_PROMOTED_INT_TYPE = { Size::DWORD, false };
+static constinit Integral BOOL_PROMOTED_INT_TYPE = { Size::DWORD, true };
 static constinit Boolean BOOL_TYPE = { };
-
-namespace {
-bool is_arithmetic(const Type& type) {
-    return std::holds_alternative<Integral>(type) || std::holds_alternative<Floating>(type);
-}
-
-bool requires_hint(const ast::Node& node) {
-    if (auto* immediate = dynamic_cast<const ast::Immediate*>(&node)) {
-        return immediate->kind() == ast::Immediate::Kind::Numeric;
-    }
-
-    if (const auto* binary = dynamic_cast<const ast::Binary*>(&node)) {
-        if (binary->is_comparison() || binary->is_logical()) {
-            return false;
-        }
-
-        return requires_hint(*binary->left()) && requires_hint(*binary->right());
-    }
-
-    // Identifiers, calls, explicit casts, and boolean literals establish their
-    // own result type.
-    return false;
-}
-}
 
 void TypeResolver::visit(ast::Program& node) {
     for (const auto& statement : node.statements()) {
@@ -84,8 +60,24 @@ void TypeResolver::visit(ast::Immediate& node) {
 }
 
 void TypeResolver::visit_numeric(ast::Immediate& node) {
-    // Use _hint_type to decide whether the numeric value fits inside of the target type
-    std::ignore = node;
+    const auto parsed = parse_numeric(node);
+
+    // This will be the fallback whenever the type hint can't be used
+    auto type = infer_smallest_numeric_type(parsed);
+
+    // We can only use type hints that are arithmetic (int, floats, etc.) thus we
+    // disregard non-arithmetic type hints
+    if (_hint_type.has_value() && _hint_type.value().is_arithmetic()) {
+        type = _hint_type.value();
+    }
+
+    // Stop whenever the parsed literal doesn't fit in the resolved type
+    if (!fits_numeric_type(parsed, type)) {
+        throw std::runtime_error("Numeric literal cannot be represented by the resolved type.");
+    }
+
+    node.set_type(type);
+    _current_type = type;
 }
 
 // void TypeResolver::visit_integer(ast::Immediate& node) {
@@ -126,12 +118,7 @@ void TypeResolver::visit(ast::Variable& node) {
     auto& variable_symbol = std::get<Variable>(*node.name().symbol());
     variable_symbol.set_type(var_type);
 
-    const auto resolved_expr = _resolve_type(*node.expression(), var_type);
-    if (!resolved_expr.has_value()) {
-        throw std::runtime_error("Couldn't resolve the type for this variable.");
-    }
-
-    const auto expr_type = resolved_expr.value();
+    const auto expr_type = _resolve_type(*node.expression(), var_type);
     if (expr_type == var_type) {
         return;
     }
@@ -148,12 +135,7 @@ void TypeResolver::visit(ast::Return& node) {
     const auto& ret_type = _return_type.value();
     node.set_type(ret_type);
 
-    const auto resolved_expr = _resolve_type(*node.expression(), ret_type);
-    if (!resolved_expr.has_value()) {
-        throw std::runtime_error("Couldn't resolve the type for this return.");
-    }
-
-    const auto expr_type = resolved_expr.value();
+    const auto expr_type = _resolve_type(*node.expression(), ret_type);
     if (expr_type == ret_type) {
         return;
     }
@@ -179,35 +161,30 @@ void TypeResolver::visit(ast::Identifier& node) {
 }
 
 void TypeResolver::visit(ast::Binary& node) {
-    ScopedValue hint_restore(_hint_type);
-
     Type left = BOOL_TYPE, right = BOOL_TYPE;
     if (node.is_logical()) {
-        left = _resolve_type(*node.left(), BOOL_TYPE).value();
-        right = _resolve_type(*node.right(), BOOL_TYPE).value();
+        left = _resolve_type(*node.left(), BOOL_TYPE);
+        right = _resolve_type(*node.right(), BOOL_TYPE);
     } else {
-        const auto left_required_hint = requires_hint(*node.left());
-        const auto right_requires_hint = requires_hint(*node.right());
+        const auto left_required_hint = _requires_type_hint(*node.left());
+        const auto right_requires_hint = _requires_type_hint(*node.right());
 
         if (left_required_hint && !right_requires_hint) {
-            // Resolve the independently typed operand first, then use its type
-            // to constrain the literal-dependent operand.
-            right = _resolve_type(*node.right(), std::nullopt).value();
-            left = _resolve_type(*node.left(), right).value();
+            right = _resolve_type(*node.right(), std::nullopt);
+            left = _resolve_type(*node.left(), right);
         } else if (!left_required_hint && right_requires_hint) {
-            left = _resolve_type(*node.left(), std::nullopt).value();
-            right = _resolve_type(*node.right(), left).value();
+            left = _resolve_type(*node.left(), std::nullopt);
+            right = _resolve_type(*node.right(), left);
         } else {
-            // A comparison's expected type describes its boolean result, never
-            // its operands. Arithmetic expressions may inherit a numeric target
-            // when neither operand can establish one independently.
-            auto operand_target = hint_restore.getSaved();
-            if (node.is_comparison() || (operand_target && !is_arithmetic(operand_target.value()))) {
-                operand_target = std::nullopt;
+            auto target_type = _hint_type;
+
+            // A comparisons expected type describes its boolean result, never its operands
+            if (node.is_comparison()) {
+                target_type = std::nullopt;
             }
 
-            left = _resolve_type(*node.left(), operand_target).value();
-            right = _resolve_type(*node.right(), operand_target).value();
+            left = _resolve_type(*node.left(), target_type);
+            right = _resolve_type(*node.right(), target_type);
         }
     }
 
@@ -256,13 +233,9 @@ void TypeResolver::visit(ast::Binary& node) {
 void TypeResolver::visit(ast::Cast& node) {
     const auto& to_type = node.to();
 
-    const auto resolved_expr = _resolve_type(*node.expression(), to_type);
-    if (!resolved_expr.has_value()) {
-        throw std::runtime_error("Couldn't resolve the expression type for this cast.");
-    }
-
-    const auto expr_type = resolved_expr.value();
+    const auto expr_type = _resolve_type(*node.expression(), to_type);
     node.set_from(expr_type);
+
     _current_type = to_type;
 
     if (!_can_implicit_convert(expr_type, to_type)) {
@@ -271,19 +244,9 @@ void TypeResolver::visit(ast::Cast& node) {
 }
 
 void TypeResolver::visit(ast::Assign& node) {
-    const auto resolved_assignee = _resolve_type(node.name(), std::nullopt);
-    if (!resolved_assignee.has_value()) {
-        throw std::runtime_error("Couldn't resolve the assignee type for this assign.");
-    }
+    const auto assignee_type = _resolve_type(node.name(), std::nullopt);
+    const auto expr_type = _resolve_type(*node.expression(), assignee_type);
 
-    const auto assignee_type = resolved_assignee.value();
-
-    const auto resolved_expr = _resolve_type(*node.expression(), assignee_type);
-    if (!resolved_expr.has_value()) {
-        throw std::runtime_error("Couldn't resolve the expression type for this assign.");
-    }
-
-    const auto expr_type = resolved_expr.value();
     if (assignee_type == expr_type) {
         return;
     }
@@ -297,12 +260,7 @@ void TypeResolver::visit(ast::Assign& node) {
 }
 
 void TypeResolver::visit(ast::Call& node) {
-    const auto resolved_return = _resolve_type(node.name(), std::nullopt);
-    if (!resolved_return.has_value()) {
-        throw std::runtime_error("Couldn't resolve the type for this call.");
-    }
-
-    const auto return_type = resolved_return.value();
+    const auto return_type = _resolve_type(node.name(), std::nullopt);
 
     const auto& function = std::get<Function>(*node.name().symbol());
     if(function.return_type() != return_type) {
@@ -314,15 +272,11 @@ void TypeResolver::visit(ast::Call& node) {
     }
 
     for (size_t index = 0; index < node.arguments().size(); index++) {
-        const auto& param_type = function.parameters()[index]->type();
         auto& argument = node.arguments()[index];
 
-        auto resolved_arg = _resolve_type(*argument, param_type);
-        if (!resolved_arg.has_value()) {
-            throw std::runtime_error("Couldn't resolve the arguments type for this function call.");
-        }
+        const auto& param_type = function.parameters()[index]->type();
+        const auto arg_type = _resolve_type(*argument, param_type);
 
-        const auto arg_type = resolved_arg.value();
         if (arg_type == param_type) {
             continue;
         }
@@ -340,12 +294,8 @@ void TypeResolver::visit(ast::Call& node) {
 }
 
 void TypeResolver::visit(ast::If& node) {
-    const auto resolved_cond = _resolve_type(*node.condition(), BOOL_TYPE);
-    if (!resolved_cond.has_value()) {
-        throw std::runtime_error("Couldn't resolve the condition type for this if.");
-    }
+    const auto cond_type = _resolve_type(*node.condition(), BOOL_TYPE);
 
-    const auto& cond_type = resolved_cond.value();
     if (!_can_implicit_convert(cond_type, BOOL_TYPE)) {
         throw std::runtime_error("If statement has a wrong condition type.");
     }
@@ -361,12 +311,8 @@ void TypeResolver::visit(ast::If& node) {
 }
 
 void TypeResolver::visit(ast::While& node) {
-    const auto resolved_cond = _resolve_type(*node.condition(), BOOL_TYPE);
-    if (!resolved_cond.has_value()) {
-        throw std::runtime_error("Couldn't resolve the condition type for this while.");
-    }
+    const auto cond_type = _resolve_type(*node.condition(), BOOL_TYPE);
 
-    const auto& cond_type = resolved_cond.value();
     if (!_can_implicit_convert(cond_type, BOOL_TYPE)) {
         throw std::runtime_error("While statement has a wrong condition type.");
     }
@@ -379,10 +325,17 @@ void TypeResolver::visit(ast::While& node) {
     node.then()->accept(*this);
 }
 
-std::optional<Type> TypeResolver::_resolve_type(ast::Node& operand, const std::optional<Type>& hint) {
+Type TypeResolver::_resolve_type(ast::Node& operand, const std::optional<Type>& hint) {
+    ScopedValue type_restore(_current_type, std::nullopt);
     ScopedValue hint_restore(_hint_type, hint);
+
     operand.accept(*this);
-    return _current_type;
+
+    if (!_current_type.has_value()) {
+        throw std::runtime_error("Couldn't resolve the type for this node.");
+    }
+
+    return _current_type.value();
 }
 
 // https://en.cppreference.com/w/cpp/language/usual_arithmetic_conversions
@@ -427,8 +380,10 @@ Type TypeResolver::_arithmetic_conversion(const Type& left_type, const Type& rig
 
     // Given the types T1 and T2 as the promoted op (under the rules of integral promotions) of the operands, the
     // following rules are applied to determine C:
-    if (t1.size() < Size::DWORD) t1 = Integral(Size::DWORD, t1.sign());
-    if (t2.size() < Size::DWORD) t2 = Integral(Size::DWORD, t2.sign());
+    // s32 can represent every Arkoi integer type narrower than 32 bits, so
+    // both signed and unsigned narrow integers promote to s32.
+    if (t1.size() < Size::DWORD) t1 = Integral(Size::DWORD, true);
+    if (t2.size() < Size::DWORD) t2 = Integral(Size::DWORD, true);
 
     // 1. If T1 and T2 are the same type, C is that op.
     if (t1 == t2) return t1;
@@ -490,7 +445,25 @@ bool TypeResolver::_can_implicit_convert(const Type& from, const Type& destinati
 }
 
 std::unique_ptr<ast::Node> TypeResolver::_cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to) {
-    return std::make_unique<ast::Cast>(std::move(node), from, to, node->span());
+    const auto span = node->span();
+    return std::make_unique<ast::Cast>(std::move(node), from, to, span);
+}
+
+bool TypeResolver::_requires_type_hint(const ast::Node& node) {
+    if (auto* immediate = dynamic_cast<const ast::Immediate*>(&node)) {
+        return immediate->kind() == ast::Immediate::Kind::Numeric;
+    }
+
+    if (const auto* binary = dynamic_cast<const ast::Binary*>(&node)) {
+        if (binary->is_comparison() || binary->is_logical()) {
+            return false;
+        }
+
+        return _requires_type_hint(*binary->left()) && _requires_type_hint(*binary->right());
+    }
+
+    // Identifiers, calls, explicit casts, and boolean literals establish their own result type.
+    return false;
 }
 
 //==============================================================================

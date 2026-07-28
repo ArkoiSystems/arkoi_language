@@ -150,6 +150,13 @@ struct Type final : std::variant<Integral, Floating, Boolean> {
      * @return The `Size` of the active type variant.
      */
     [[nodiscard]] Size size() const;
+
+    /**
+     * @brief Returns whether the underlying type is arithmetic (Integral, Floating) or not.
+     * 
+     * @return Whether the underlying type is arithmetic.
+     */
+    [[nodiscard]] bool is_arithmetic() const;
 };
 
 /**

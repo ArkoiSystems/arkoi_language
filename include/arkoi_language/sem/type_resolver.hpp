@@ -148,9 +148,10 @@ private:
      * 
      * @param operand The node to resolve the type for
      * @param target An optional target type hint for internal type resolution
-     * @return std::optional<Type> std::nullopt if no type could be resolved, otherwise a resolved `Type`
+     * @return The resolved `Type` for the given node 
+     * @throws
      */
-    std::optional<Type> _resolve_type(ast::Node& operand, const std::optional<Type>& target);
+    Type _resolve_type(ast::Node& operand, const std::optional<Type>& target);
 
     /**
      * @brief Determines the common result type for an operation between two types.
@@ -179,6 +180,20 @@ private:
      * @return A unique pointer to the new `ast::Cast` node.
      */
     static std::unique_ptr<ast::Node> _cast(std::unique_ptr<ast::Node>& node, const Type& from, const Type& to);
+
+    /**
+     * @brief Determines whether an expression needs an external type hint to
+     * resolve its numeric literals.
+     *
+     * Numeric immediates require a hint because they do not establish a type by
+     * themselves. An arithmetic binary expression requires a hint only when
+     * both operands also require one. Comparisons, logical expressions, and
+     * expressions with an inherent result type can resolve without a hint.
+     *
+     * @param node The expression to inspect.
+     * @return Returns if the expression cannot establish a type without a hint.
+     */
+    static bool _requires_type_hint(const ast::Node& node);
 
 private:
     std::optional<Type> _current_type{ }, _return_type{ }, _hint_type{ };
