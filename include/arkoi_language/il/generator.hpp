@@ -24,9 +24,9 @@ public:
     /**
      * @brief Returns the compilation module being populated.
      *
-     * @return A reference to the internal `Module`.
+     * @return A reference to the internal `Module`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& module() { return _module; }
+    [[nodiscard]] auto& module(this auto& self) { return self._module; }
 
 private:
     /**

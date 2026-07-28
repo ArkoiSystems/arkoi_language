@@ -53,16 +53,16 @@ public:
     /**
      * @brief Returns the semantic type of the stored data.
      *
-     * @return The `sem::Type` of this memory operand.
+     * @return The `sem::Type` of this memory operand, const-qualified when this object is const..
      */
-    [[nodiscard]] sem::Type type() const { return _type; }
+    [[nodiscard]] sem::Type type(this auto& self) { return self._type; }
 
     /**
      * @brief Returns the unique name of this memory location.
      *
-     * @return A reference to the `std::string` name.
+     * @return A reference to the `std::string` name, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() const { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::string _name;
@@ -118,9 +118,9 @@ public:
     /**
      * @brief Returns the semantic type of the variable.
      *
-     * @return The `sem::Type` of this variable.
+     * @return The `sem::Type` of this variable, const-qualified when this object is const.
      */
-    [[nodiscard]] sem::Type type() const { return _type; }
+    [[nodiscard]] sem::Type type(this auto& self) { return self._type; }
 
     /**
      * @brief Sets the SSA version of the variable.
@@ -132,16 +132,16 @@ public:
     /**
      * @brief Returns the SSA version of the variable.
      *
-     * @return The `size_t` version.
+     * @return The `size_t` version, const-qualified when this object is const.
      */
-    [[nodiscard]] auto version() const { return _version; }
+    [[nodiscard]] auto version(this auto& self) { return self._version; }
 
     /**
      * @brief Returns the source-level name of the variable.
      *
-     * @return A constant reference to the name string.
+     * @return A reference to the name string, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() const { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::string _name;

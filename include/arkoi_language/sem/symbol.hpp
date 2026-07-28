@@ -38,10 +38,10 @@ public:
     /**
      * @brief Returns the semantic type of the variable.
      *
-     * @return A constant reference to the `Type`.
+     * @return A reference to the `Type`, const-qualified when this object is const.
      * @throws std::bad_optional_access if the type has not been set.
      */
-    [[nodiscard]] auto& type() const { return _type.value(); }
+    [[nodiscard]] auto& type(this auto& self) { return self._type.value(); }
 
     /**
      * @brief Sets the semantic type of the variable.
@@ -53,9 +53,9 @@ public:
     /**
      * @brief Returns the name of the variable.
      *
-     * @return A constant reference to the name token.
+     * @return A reference to the name token, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() const { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::optional<Type> _type{ };
@@ -81,9 +81,9 @@ public:
     /**
      * @brief Returns the symbols representing the function's parameters.
      *
-     * @return A constant reference to the vector of parameter-shared pointers.
+     * @return A reference to the vector of parameter-shared pointers, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& parameters() const { return _parameters; }
+    [[nodiscard]] auto& parameters(this auto& self) { return self._parameters; }
 
     /**
      * @brief Sets the parameter symbols for this function.
@@ -95,17 +95,17 @@ public:
     /**
      * @brief Returns the name of the function.
      *
-     * @return A constant reference to the name token.
+     * @return A reference to the name token, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() const { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
     /**
      * @brief Returns the semantic return type of the function.
      *
-     * @return A constant reference to the `Type`.
+     * @return A reference to the `Type`, const-qualified when this object is const.
      * @throws std::bad_optional_access if the return type has not been set.
      */
-    [[nodiscard]] auto& return_type() const { return _return_type.value(); }
+    [[nodiscard]] auto& return_type(this auto& self) { return self._return_type.value(); }
 
     /**
      * @brief Sets the semantic return type of the function.

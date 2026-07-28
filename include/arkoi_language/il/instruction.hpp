@@ -67,9 +67,9 @@ public:
     /**
      * @brief Returns the target label of the jump.
      *
-     * @return A constant reference to the label string.
+     * @return A reference to the label string, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& label() const { return _label; }
+    [[nodiscard]] auto& label(this auto& self) { return self._label; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -139,23 +139,23 @@ public:
     /**
      * @brief Returns the condition operand.
      *
-     * @return A reference to the `Operand`.
+     * @return A reference to the `Operand`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& condition() { return _condition; }
+    [[nodiscard]] auto& condition(this auto& self) { return self._condition; }
 
     /**
      * @brief Returns the label for the true branch.
      *
-     * @return A constant reference to the `branch` label.
+     * @return A reference to the `branch` label, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& branch() const { return _branch; }
+    [[nodiscard]] auto& branch(this auto& self) { return self._branch; }
 
     /**
      * @brief Returns the label for the false branch (fallthrough).
      *
-     * @return A constant reference to the `next` label.
+     * @return A reference to the `next` label, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& next() const { return _next; }
+    [[nodiscard]] auto& next(this auto& self) { return self._next; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -228,23 +228,23 @@ public:
     /**
      * @brief Returns the list of argument operands.
      *
-     * @return A reference to the argument vector.
+     * @return A reference to the argument vector, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& arguments() { return _arguments; }
+    [[nodiscard]] auto& arguments(this auto& self) { return self._arguments; }
 
     /**
      * @brief Returns the result variable.
      *
-     * @return A constant reference to the `_result` variable.
+     * @return A reference to the `_result` variable, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() const { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
     /**
      * @brief Returns the name of the function being called.
      *
-     * @return A constant reference to the function name string.
+     * @return A reference to the function name string, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() const { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -313,9 +313,9 @@ public:
     /**
      * @brief Returns the operand being returned.
      *
-     * @return A reference to the `_value` operand.
+     * @return A reference to the `_value` operand, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& value() { return _value; }
+    [[nodiscard]] auto& value(this auto& self) { return self._value; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -405,37 +405,37 @@ public:
     /**
      * @brief Returns the result variable.
      *
-     * @return A constant reference to the `_result` variable.
+     * @return A reference to the `_result` variable, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() const { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
     /**
      * @brief Returns the right operand.
      *
-     * @return A reference to the `_right` operand.
+     * @return A reference to the `_right` operand, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& right() { return _right; }
+    [[nodiscard]] auto& right(this auto& self) { return self._right; }
 
     /**
      * @brief Returns the left operand.
      *
-     * @return A reference to the `_left` operand.
+     * @return A reference to the `_left` operand, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& left() { return _left; }
+    [[nodiscard]] auto& left(this auto& self) { return self._left; }
 
     /**
      * @brief Returns the type of the operands.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& op_type() const { return _op_type; }
+    [[nodiscard]] auto& op_type(this auto& self) { return self._op_type; }
 
     /**
      * @brief Returns the operator.
      *
-     * @return A constant reference to the `Operator`.
+     * @return A reference to the `Operator`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& op() const { return _op; }
+    [[nodiscard]] auto& op(this auto& self) { return self._op; }
 
     /**
      * @brief Converts an AST binary operator to its IL equivalent.
@@ -512,23 +512,23 @@ public:
     /**
      * @brief Returns the source operand.
      *
-     * @return A reference to the `_source` operand.
+     * @return A reference to the `_source` operand, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& source() { return _source; }
+    [[nodiscard]] auto& source(this auto& self) { return self._source; }
 
     /**
      * @brief Returns the target result variable.
      *
-     * @return A constant reference to the `_result` variable.
+     * @return A reference to the `_result` variable, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() const { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
     /**
      * @brief Returns the original type of the source operand.
      *
-     * @return A constant reference to the `_from` type.
+     * @return A reference to the `_from` type, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& from() const { return _from; }
+    [[nodiscard]] auto& from(this auto& self) { return self._from; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -597,9 +597,9 @@ public:
     /**
      * @brief Returns the allocated memory location.
      *
-     * @return A constant reference to the `_result` memory location.
+     * @return A reference to the `_result` memory location, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() const { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -666,16 +666,16 @@ public:
     /**
      * @brief Returns the target variable.
      *
-     * @return A constant reference to the `_result` variable.
+     * @return A reference to the `_result` variable, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() const { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
     /**
      * @brief Returns the source memory location.
      *
-     * @return A constant reference to the `_source` memory location.
+     * @return A reference to the `_source` memory location, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& source() const { return _source; }
+    [[nodiscard]] auto& source(this auto& self) { return self._source; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -745,16 +745,16 @@ public:
     /**
      * @brief Returns the target memory location.
      *
-     * @return A constant reference to the `_result` memory location.
+     * @return A reference to the `_result` memory location, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() const { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
     /**
      * @brief Returns the source operand.
      *
-     * @return A reference to the `_source` operand.
+     * @return A reference to the `_source` operand, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& source() { return _source; }
+    [[nodiscard]] auto& source(this auto& self) { return self._source; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -810,16 +810,16 @@ public:
     /**
      * @brief Returns the result operand.
      *
-     * @return A reference to the `_result` variable.
+     * @return A reference to the `_result` variable, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
     /**
      * @brief Returns the source operand.
      *
-     * @return A reference to the `_source` operand.
+     * @return A reference to the `_source` operand, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& source() { return _source; }
+    [[nodiscard]] auto& source(this auto& self) { return self._source; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -895,16 +895,16 @@ public:
     /**
      * @brief Returns the result variable.
      *
-     * @return A reference to the `_result` variable.
+     * @return A reference to the `_result` variable, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
     /**
      * @brief Returns the map of incoming values.
      *
-     * @return A reference to the `_incoming` map.
+     * @return A reference to the `_incoming` map, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& incoming() { return _incoming; }
+    [[nodiscard]] auto& incoming(this auto& self) { return self._incoming; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;
@@ -962,8 +962,10 @@ public:
 
     /**
      * @brief Returns the result variable.
+     *
+     * @return A reference to the result variable, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& result() const { return _result; }
+    [[nodiscard]] auto& result(this auto& self) { return self._result; }
 
     /**
      * @brief Sets the given operand as current value.
@@ -974,8 +976,10 @@ public:
 
     /**
      * @brief Returns the assigned value.
+     *
+     * @return A reference to the assigned value, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& value() { return _value; }
+    [[nodiscard]] auto& value(this auto& self) { return self._value; }
 
 private:
     std::optional<pretty_diagnostics::Span> _span;

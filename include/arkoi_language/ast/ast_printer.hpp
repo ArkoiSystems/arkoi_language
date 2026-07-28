@@ -150,9 +150,9 @@ public:
     /**
      * @brief Returns the output stream containing the formatted tree.
      *
-     * @return A constant reference to the internal `std::stringstream`.
+     * @return A reference to the internal `std::stringstream`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& output() const { return _output; }
+    [[nodiscard]] auto& output(this auto& self) { return self._output; }
 
 private:
     std::stringstream& _output;

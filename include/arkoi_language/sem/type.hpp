@@ -53,9 +53,9 @@ public:
     /**
      * @brief Returns whether the type is signed.
      *
-     * @return True if signed, false otherwise.
+     * @return True if signed, false otherwise, const-qualified when this object is const.
      */
-    [[nodiscard]] auto sign() const { return _sign; }
+    [[nodiscard]] auto sign(this auto& self) { return self._sign; }
 
 private:
     Size _size;
