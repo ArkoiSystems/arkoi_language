@@ -60,6 +60,18 @@ private:
     void visit_boolean(const ast::Immediate& node);
 
     /**
+     * @brief Generates an operand for an expression in an isolated result scope.
+     *
+     * The current operand is cleared before visiting the expression and restored
+     * afterwards. An expression visitor that fails to produce a result therefore
+     * raises an error instead of leaking a previous operand into the IL.
+     *
+     * @param node The expression node to generate.
+     * @return The operand produced by the expression.
+     */
+    [[nodiscard]] Operand _generate_operand(ast::Node& node);
+
+    /**
      * @brief Processes a variable declaration, emitting `Alloca` if needed.
      */
     void visit(ast::Variable& node) override;
@@ -143,7 +155,7 @@ private:
     size_t _temp_index{ }, _label_index{ };
     Function* _current_function{ };
     BasicBlock* _current_block{ };
-    Operand _current_operand{ };
+    std::optional<Operand> _current_operand{ };
     Module _module;
 };
 } // namespace arkoi::il

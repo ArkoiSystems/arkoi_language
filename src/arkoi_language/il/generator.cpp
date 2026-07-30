@@ -4,10 +4,54 @@
 #include <limits>
 
 #include "arkoi_language/ast/nodes.hpp"
+#include "arkoi_language/sem/numeric_literal.hpp"
 #include "arkoi_language/utils/utils.hpp"
 
 using namespace arkoi::il;
 using namespace arkoi;
+
+namespace {
+int64_t signed_value(const sem::ResolvedInteger& value) {
+    if (!value.negative) {
+        return static_cast<int64_t>(value.magnitude);
+    }
+
+    if (value.magnitude == (uint64_t{ 1 } << 63)) {
+        return std::numeric_limits<int64_t>::min();
+    }
+
+    return -static_cast<int64_t>(value.magnitude);
+}
+
+Immediate make_integral_immediate(const sem::ResolvedInteger& value, const sem::Integral& type) {
+    if (type.sign()) {
+        const auto converted = signed_value(value);
+        switch (type.size()) {
+            case Size::BYTE: return static_cast<int32_t>(static_cast<int8_t>(converted));
+            case Size::WORD: return static_cast<int32_t>(static_cast<int16_t>(converted));
+            case Size::DWORD: return static_cast<int32_t>(converted);
+            case Size::QWORD: return static_cast<int64_t>(converted);
+        }
+    } else {
+        switch (type.size()) {
+            case Size::BYTE: return static_cast<uint32_t>(static_cast<uint8_t>(value.magnitude));
+            case Size::WORD: return static_cast<uint32_t>(static_cast<uint16_t>(value.magnitude));
+            case Size::DWORD: return static_cast<uint32_t>(value.magnitude);
+            case Size::QWORD: return static_cast<uint64_t>(value.magnitude);
+        }
+    }
+
+    std::unreachable();
+}
+
+Immediate make_floating_immediate(const long double value, const sem::Floating& type) {
+    switch (type.size()) {
+        case Size::DWORD: return static_cast<float>(value);
+        case Size::QWORD: return static_cast<double>(value);
+        default: throw std::logic_error("Invalid floating-point literal type.");
+    }
+}
+} // namespace
 
 void Generator::visit(ast::Program& node) {
     for (const auto& item : node.statements()) {
@@ -91,7 +135,48 @@ void Generator::visit(ast::Immediate& node) {
 }
 
 void Generator::visit_numeric(const ast::Immediate& node) {
-    std::ignore = node;
+    const auto parsed = sem::parse_numeric(node);
+    const auto immediate = std::visit(
+        match{
+            [&](const sem::ResolvedInteger& value) -> Immediate {
+                return std::visit(
+                    match{
+                        [&](const sem::Integral& type) {
+                            return make_integral_immediate(value, type);
+                        },
+                        [&](const sem::Floating& type) {
+                            const auto converted = value.negative
+                                ? -static_cast<long double>(value.magnitude)
+                                : static_cast<long double>(value.magnitude);
+                            return make_floating_immediate(converted, type);
+                        },
+                        [](const sem::Boolean&) -> Immediate {
+                            throw std::logic_error("Numeric literal resolved to a boolean type.");
+                        },
+                    },
+                    node.type()
+                );
+            },
+            [&](const sem::ResolvedFloating& value) -> Immediate {
+                return std::visit(
+                    match{
+                        [&](const sem::Floating& type) {
+                            return make_floating_immediate(value.value, type);
+                        },
+                        [](const auto&) -> Immediate {
+                            throw std::logic_error("Floating-point literal resolved to a non-floating type.");
+                        },
+                    },
+                    node.type()
+                );
+            },
+        },
+        parsed
+    );
+
+    auto temp = _make_temporary(node.type());
+    _current_block->emplace_back<Assign>(temp, immediate, node.span());
+    _current_operand = temp;
 }
 
 // void Generator::visit_integer(const ast::Immediate& node) {
@@ -147,24 +232,28 @@ void Generator::visit_boolean(const ast::Immediate& node) {
     _current_operand = temp;
 }
 
+Operand Generator::_generate_operand(ast::Node& node) {
+    ScopedValue operand_restore(_current_operand, std::nullopt);
+
+    node.accept(*this);
+    if (!_current_operand.has_value()) {
+        throw std::logic_error("Expression visitor did not produce an operand.");
+    }
+
+    return _current_operand.value();
+}
+
 void Generator::visit(ast::Variable& node) {
     auto temp = _make_memory(node.type());
     _allocas.emplace(node.name().symbol(), temp);
     _current_block->emplace_back<Alloca>(temp, node.span());
 
-    // This will set _current_operand
-    node.expression()->accept(*this);
-    auto expression = _current_operand;
-
-    _current_block->emplace_back<Store>(temp, _current_operand, node.span());
-
-    _current_operand = temp;
+    const auto expression = _generate_operand(*node.expression());
+    _current_block->emplace_back<Store>(temp, expression, node.span());
 }
 
 void Generator::visit(ast::Return& node) {
-    // This will set _current_operand
-    node.expression()->accept(*this);
-    auto expression = _current_operand;
+    const auto expression = _generate_operand(*node.expression());
 
     // Populate the current basic block with instructions
     _current_block->emplace_back<Store>(*_return_temp, expression, node.span());
@@ -199,13 +288,8 @@ void Generator::visit(ast::Binary& node) {
         return visit_or(node);
     }
 
-    // This will set _current_operand
-    node.left()->accept(*this);
-    auto left = _current_operand;
-
-    // This will set _current_operand
-    node.right()->accept(*this);
-    auto right = _current_operand;
+    const auto left = _generate_operand(*node.left());
+    const auto right = _generate_operand(*node.right());
 
     auto type = Binary::node_to_instruction(node.op());
     auto result = _make_temporary(node.result_type());
@@ -230,9 +314,7 @@ void Generator::visit_and(ast::Binary& node) {
         _current_block->emplace_back<Alloca>(result, node.span());
         _current_block->emplace_back<Store>(result, false, node.span());
 
-        // This will set _current_operand
-        node.left()->accept(*this);
-        auto left = _current_operand;
+        const auto left = _generate_operand(*node.left());
 
         _current_block->emplace_back<If>(left, merge_label, right_label, node.span());
         _current_block->set_branch(right_block);
@@ -242,9 +324,7 @@ void Generator::visit_and(ast::Binary& node) {
     { // Right eval block if the condition is true.
         _current_block = right_block;
 
-        // This will set _current_operand
-        node.right()->accept(*this);
-        auto right = _current_operand;
+        const auto right = _generate_operand(*node.right());
 
         _current_block->emplace_back<If>(right, merge_label, true_label, node.span());
         _current_block->set_branch(true_block);
@@ -283,9 +363,7 @@ void Generator::visit_or(ast::Binary& node) {
         _current_block->emplace_back<Alloca>(result, node.span());
         _current_block->emplace_back<Store>(result, false, node.span());
 
-        // This will set _current_operand
-        node.left()->accept(*this);
-        auto left = _current_operand;
+        const auto left = _generate_operand(*node.left());
 
         _current_block->emplace_back<If>(left, right_label, true_label, node.span());
         _current_block->set_branch(true_block);
@@ -295,9 +373,7 @@ void Generator::visit_or(ast::Binary& node) {
     { // Right eval block if the condition is true.
         _current_block = right_block;
 
-        // This will set _current_operand
-        node.right()->accept(*this);
-        auto right = _current_operand;
+        const auto right = _generate_operand(*node.right());
 
         _current_block->emplace_back<If>(right, merge_label, true_label, node.span());
         _current_block->set_branch(true_block);
@@ -321,9 +397,7 @@ void Generator::visit_or(ast::Binary& node) {
 }
 
 void Generator::visit(ast::Cast& node) {
-    // This will set _current_operand
-    node.expression()->accept(*this);
-    auto expression = _current_operand;
+    const auto expression = _generate_operand(*node.expression());
 
     auto result = _make_temporary(node.to());
     _current_operand = result;
@@ -332,9 +406,7 @@ void Generator::visit(ast::Cast& node) {
 }
 
 void Generator::visit(ast::Assign& node) {
-    // This will set _current_operand
-    node.expression()->accept(*this);
-    auto expression = _current_operand;
+    const auto expression = _generate_operand(*node.expression());
 
     auto alloca_temp = _allocas.at(node.name().symbol());
     _current_block->emplace_back<Store>(alloca_temp, expression, node.span());
@@ -348,9 +420,7 @@ void Generator::visit(ast::Call& node) {
         const auto& parameter = function.parameters()[index];
         const auto& argument = node.arguments()[index];
 
-        // This will set _current_operand
-        argument->accept(*this);
-        auto expression = _current_operand;
+        const auto expression = _generate_operand(*argument);
 
         auto result = _make_temporary(parameter->type());
         _current_block->emplace_back<Argument>(result, expression, node.span());
@@ -379,9 +449,7 @@ void Generator::visit(ast::If& node) {
     auto* after_block = _current_function->emplace_back(after_label);
 
     { // Entrance block
-        // This will set _current_operand
-        node.condition()->accept(*this);
-        auto condition = _current_operand;
+        const auto condition = _generate_operand(*node.condition());
 
         _current_block->emplace_back<If>(condition, next_label, branch_label, node.condition()->span());
 
@@ -442,9 +510,7 @@ void Generator::visit(ast::While& node) {
         _current_block->set_next(condition_block);
         _current_block = condition_block;
 
-        // This will set _current_operand
-        node.condition()->accept(*this);
-        auto condition = _current_operand;
+        const auto condition = _generate_operand(*node.condition());
 
         _current_block->emplace_back<If>(condition, after_label, loop_label, node.condition()->span());
 
