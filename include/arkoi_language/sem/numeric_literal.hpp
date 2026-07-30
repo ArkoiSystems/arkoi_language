@@ -7,6 +7,14 @@
 #include "arkoi_language/sem/type.hpp"
 
 namespace arkoi::sem {
+
+enum class NumericBase : std::uint8_t {
+    Binary  = 2,
+    Octal   = 8,
+    Decimal = 10,
+    Hex     = 16,
+};
+
 /**
  * @brief Represents the exact magnitude and sign of an integral literal.
  *
@@ -15,6 +23,7 @@ namespace arkoi::sem {
  */
 struct ResolvedInteger {
     uint64_t magnitude; ///< Absolute value of the literal.
+    NumericBase base;   ///< The base (dec, hex, oct, bin) of the literal.
     bool negative;      ///< Whether the source literal has a negative sign.
 };
 

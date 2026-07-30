@@ -165,6 +165,7 @@ private:
      */
     [[nodiscard]] static size_t _leading_spaces(const std::string& line);
 
+public:
     /**
      * @brief Checks if a character is a decimal digit (0-9).
      *
@@ -172,7 +173,7 @@ private:
      *
      * @return True if a digit, false otherwise.
      */
-    [[nodiscard]] static bool _is_digit(char input);
+    [[nodiscard]] static bool is_dec(char input);
 
     /**
      * @brief Checks if a character can start a valid identifier.
@@ -181,7 +182,7 @@ private:
      *
      * @return True if a valid starting character, false otherwise.
      */
-    [[nodiscard]] static bool _is_ident_start(char input);
+    [[nodiscard]] static bool is_ident_start(char input);
 
     /**
      * @brief Checks if a character can be part of an identifier body.
@@ -190,7 +191,7 @@ private:
      *
      * @return True if a valid inner character, false otherwise.
      */
-    [[nodiscard]] static bool _is_ident_inner(char input);
+    [[nodiscard]] static bool is_ident_inner(char input);
 
     /**
      * @brief Checks if a character is in the standard ASCII range.
@@ -199,7 +200,7 @@ private:
      *
      * @return True if ASCII, false otherwise.
      */
-    [[nodiscard]] static bool _is_ascii(char input);
+    [[nodiscard]] static bool is_ascii(char input);
 
     /**
      * @brief Checks if a character is a space or tab.
@@ -208,7 +209,7 @@ private:
      *
      * @return True if space, false otherwise.
      */
-    [[nodiscard]] static bool _is_space(char input);
+    [[nodiscard]] static bool is_space(char input);
 
     /**
      * @brief Checks if a character is a valid hexadecimal digit.
@@ -217,7 +218,7 @@ private:
      *
      * @return True if a hex digit, false otherwise.
      */
-    [[nodiscard]] static bool _is_hex(char input);
+    [[nodiscard]] static bool is_hex(char input);
 
     /**
      * @brief Checks if a character is a valid hexadecimal marker.
@@ -226,7 +227,7 @@ private:
      *
      * @return True if a hex marker, false otherwise.
      */
-    [[nodiscard]] static bool _is_hex_marker(char input);
+    [[nodiscard]] static bool is_hex_marker(char input);
 
     /**
      * @brief Checks if a character is a hexadecimal exponent marker ('p' or 'P').
@@ -235,7 +236,7 @@ private:
      *
      * @return True if a hex exponent marker, false otherwise.
      */
-    [[nodiscard]] static bool _is_hex_expo(char input);
+    [[nodiscard]] static bool is_hex_expo_marker(char input);
 
     /**
      * @brief Checks if a character is a valid binary digit.
@@ -244,7 +245,7 @@ private:
      *
      * @return True if a binary digit, false otherwise.
      */
-    [[nodiscard]] static bool _is_bin(char input);
+    [[nodiscard]] static bool is_bin(char input);
 
     /**
      * @brief Checks if a character is a valid binary marker.
@@ -253,7 +254,7 @@ private:
      *
      * @return True if a binary marker, false otherwise.
      */
-    [[nodiscard]] static bool _is_bin_marker(char input);
+    [[nodiscard]] static bool is_bin_marker(char input);
 
     /**
      * @brief Checks if a character is a valid octal digit.
@@ -262,7 +263,7 @@ private:
      *
      * @return True if a octal digit, false otherwise.
      */
-    [[nodiscard]] static bool _is_oct(char input);
+    [[nodiscard]] static bool is_oct(char input);
 
     /**
      * @brief Checks if a character is a valid octal marker.
@@ -271,7 +272,7 @@ private:
      *
      * @return True if a octal marker, false otherwise.
      */
-    [[nodiscard]] static bool _is_oct_marker(char input);
+    [[nodiscard]] static bool is_oct_marker(char input);
 
     /**
      * @brief Checks if a character is a decimal exponent marker ('e' or 'E').
@@ -280,7 +281,7 @@ private:
      *
      * @return True if an exponent marker, false otherwise.
      */
-    [[nodiscard]] static bool _is_expo(char input);
+    [[nodiscard]] static bool is_expo_marker(char input);
 
     /**
      * @brief Checks if a character is a sign ('+' or '-').
@@ -289,7 +290,7 @@ private:
      *
      * @return True if a sign character, false otherwise.
      */
-    [[nodiscard]] static bool _is_decimal_sign(char input);
+    [[nodiscard]] static bool is_sign(char input);
 
 private:
     std::shared_ptr<pretty_diagnostics::Source> _source;
