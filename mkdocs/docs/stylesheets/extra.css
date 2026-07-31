@@ -1,0 +1,78 @@
+:root {
+  --arkoi-rule-color: var(--md-default-fg-color--lightest);
+}
+
+.md-grid {
+  max-width: 92rem;
+}
+
+.md-typeset {
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.md-typeset h1 {
+  color: var(--md-default-fg-color);
+  font-weight: 720;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.8em;
+}
+
+.md-typeset h2 {
+  border-bottom: 1px solid var(--arkoi-rule-color);
+  font-weight: 680;
+  letter-spacing: -0.015em;
+  padding-bottom: 0.3em;
+}
+
+.md-typeset h3 {
+  font-weight: 650;
+}
+
+.md-typeset table:not([class]) {
+  display: table;
+  width: 100%;
+}
+
+.md-typeset table:not([class]) th {
+  white-space: nowrap;
+}
+
+.md-typeset table:not([class]) td {
+  vertical-align: top;
+}
+
+.md-typeset code {
+  border-radius: 0.25rem;
+}
+
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid.cards > ol > li {
+  border-color: var(--arkoi-rule-color);
+  border-radius: 0.65rem;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 0.45rem;
+}
+
+.md-typeset .spec-meta {
+  font-size: 0.76rem;
+  margin: -0.25rem 0 1.25rem;
+}
+
+.md-typeset .spec-meta th {
+  width: 10rem;
+}
+
+@media screen and (max-width: 44.984375em) {
+  .md-typeset {
+    font-size: 0.78rem;
+  }
+
+  .md-typeset table:not([class]) {
+    display: block;
+    overflow-x: auto;
+  }
+}

@@ -1,6 +1,6 @@
-# Examples
+# Current Compiler Examples
 
-This repository includes example programs that demonstrate the language.
+These repository programs demonstrate the subset implemented by the current compiler. For target-language examples and rules, use the [Arkoi 1.0.0 specification](../language-specification/1.0.0/index.md).
 
 ## Hello world
 

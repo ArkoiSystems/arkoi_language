@@ -36,4 +36,4 @@ ctest --test-dir build --output-on-failure
 
 ## Next
 
-Read the [overview](overview.md) to understand the language design, then move to the [syntax reference](syntax.md) for the exact forms.
+Read the [current compiler overview](overview.md), learn the [CLI](cli.md), or browse the [repository examples](examples.md). For the target language design, use the [Arkoi 1.0.0 specification](../language-specification/1.0.0/index.md).

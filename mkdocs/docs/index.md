@@ -1,39 +1,35 @@
-# Arkoi Language Guide
+# Arkoi
 
-Arkoi is a systems language with a compact syntax, explicit typing, and a compiler-oriented workflow. This site is organized as a practical guide: start with the basics, then move into the language rules, examples, and CLI usage.
+Arkoi is a statically typed systems language with explicit ownership, recoverable failures, deterministic resource cleanup, static interfaces, and direct C interoperability.
 
-## Read this first
+<div class="grid cards" markdown>
 
-1. [Installation](getting-started/installation.md)
-2. [Overview](getting-started/overview.md)
-3. [Grammar](getting-started/grammar.md)
-4. [Language rules](getting-started/rules.md)
-5. [Syntax reference](getting-started/syntax.md)
-6. [Functions](getting-started/functions.md)
-7. [Types](getting-started/types.md)
-8. [Control flow](getting-started/control-flow.md)
-9. [Examples](getting-started/examples.md)
-10. [CLI usage](getting-started/cli.md)
+-   **Arkoi 1.0.0 language**
 
-## What Arkoi is
+    ---
 
-Arkoi centers on:
+    Read the complete target-language documentation, organized by concept with compact rule tables and linked examples.
 
-- Explicit function definitions
-- Typed variables and typed parameters
-- Primitive arithmetic and boolean expressions
-- Structured control flow with `if`, `else`, `while`, and `return`
-- A direct compile-to-native toolchain
+    [Open the 1.0.0 specification →](language-specification/1.0.0/index.md)
 
-## What this guide covers
+-   **Current compiler**
 
-- How to build and run the compiler
-- The grammar and language rules
-- The current language shape and syntax rules
-- The main type forms and expression rules
-- The existing control-flow constructs
-- Working examples that match the repository’s programs and tests
+    ---
 
-## Scope
+    Build and use the compiler that exists today. Its implemented language subset is smaller than the Arkoi 1.0.0 target.
 
-This guide documents the language. Features that are not part of the language are called out as future work instead of being described as supported behavior.
+    [Use the current compiler →](getting-started/overview.md)
+
+</div>
+
+## Documentation map
+
+| Area | Use it for |
+| --- | --- |
+| [Arkoi 1.0.0 specification](language-specification/1.0.0/index.md) | Language syntax, semantics, ownership, interfaces, modules, and C interoperability |
+| [Current compiler](getting-started/overview.md) | Implemented features, installation, CLI commands, and runnable examples |
+| [Compiler API](arkoi_language/classes.md) | Generated C++ API documentation for compiler contributors |
+
+!!! info "Target versus implementation"
+
+    The 1.0 documentation defines the target language. A documented 1.0 feature may not yet be accepted by the current compiler; implementation pages call out the supported subset separately.

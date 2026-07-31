@@ -1,34 +1,30 @@
-# Overview
+# Current Compiler
 
-Arkoi is a systems language built around a direct compilation pipeline. The language is compact so the compiler, syntax, and runtime model stay easy to understand.
+The current compiler implements an early Arkoi subset. Use this section when building or running the repository today; use the [Arkoi 1.0.0 specification](../language-specification/1.0.0/index.md) when designing against the target language.
 
-## Design goals
+!!! warning "Not the complete 1.0.0 language"
 
-- Keep the core language concise and explicit.
-- Make types visible in the source instead of relying on heavy inference.
-- Keep the control flow readable and close to the generated machine-level behavior.
-- Make the compiler pipeline observable with IL, CFG, and assembly output.
+    Modules, interfaces, resources, ownership operations, failure effects, and C interoperability belong to the 1.0.0 target but are not all implemented by the current compiler.
 
-## Paradigm
+## Implemented language subset
 
-Arkoi behaves like a procedural language with selective multi-paradigm traits:
+| Area | Current support |
+| --- | --- |
+| Programs | Top-level `fun` definitions and a `main` entry point |
+| Values | Explicitly typed variables, parameters, and return values |
+| Primitive types | Signed and unsigned integers, floating-point values, and `bool` |
+| Expressions | Arithmetic, comparisons, boolean operations, calls, and grouping |
+| Control flow | `if`, `else if`, `else`, `while`, and `return` |
+| Toolchain | Parsing, intermediate output, control-flow graphs, assembly, and native compilation |
 
-- Functions are the main unit of composition.
-- Typed variables and typed parameters keep data flow explicit.
-- Expressions map directly to compiler stages.
-- Control flow is structured with `if`, `else`, `while`, and `return`.
+The examples and tests in the repository are the authority for this implemented subset. Syntax in the target specification may be accepted only as the compiler evolves toward 1.0.
 
-## What Arkoi does not include
+## Start here
 
-The language does not include the following features:
+1. [Install and build the compiler](installation.md).
+2. [Learn the CLI](cli.md).
+3. [Run the repository examples](examples.md).
 
-- Classes and object systems
-- Modules and imports
-- Generics or templates
-- Pattern matching
-- Automatic garbage collection
-- A large standard library
+## Language design
 
-## Read next
-
-Read the [grammar](grammar.md) for the language shape, then continue to [language rules](rules.md), [functions](functions.md), and [examples](examples.md).
+For the complete language, begin with the [1.0.0 specification overview](../language-specification/1.0.0/index.md) or use its [quick reference](../language-specification/1.0.0/quick-reference.md).
