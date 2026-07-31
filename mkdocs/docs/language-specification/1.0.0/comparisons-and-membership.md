@@ -5,7 +5,7 @@
 This page defines equality, ordering, aggregate comparison hooks, and membership expressions.
 
 !!! abstract "At a glance"
-    Comparison is static and type-directed. Built-in composite types compare their contents, resources require explicit hooks, references and pointers compare addresses, and `in` delegates to the container's `__contains__` hook.
+    Comparison is static and type-directed. Built-in composite types compare their contents, resources require explicit hooks, references transparently compare their referents, raw pointers compare addresses, and `in` delegates to the container's `__contains__` hook.
 
 ## Comparison expressions
 
@@ -29,7 +29,7 @@ Every operator is enabled independently: support for one comparison never implie
 | Fixed array | Element-wise when the element type supports the corresponding operator | Lexicographic from index `0`; only equal-length, compatible array types compare | No |
 | Slice | Viewed contents; length is checked before element equality | Lexicographic contents, then shorter shared prefix first | No |
 | `?T` | Presence first, then `T`'s corresponding operator | `none` precedes every present value, then uses `T`'s corresponding operator | No |
-| `&T`, `&mut T` | Address identity; reference mutability may differ | Unsupported | No |
+| `&T`, `&mut T` | Uses `T`'s corresponding comparison | Uses `T`'s corresponding comparison | Uses `T`'s hooks |
 | Raw pointer | Address identity, including comparison with `null` | Unsupported | No |
 | Enum | Same enum type and logical member discriminant | Unsupported | No |
 
@@ -56,9 +56,16 @@ Optional equality has this truth table:
 
 These optional rules apply to both data and resource optionals.
 
-Reference equality ignores referent values and never calls their hooks. Two references compare equal only when they designate the same address; `&T` and `&mut T` may compare when their referent types match after ignoring mutability. The operation is safe and infallible.
+Comparison operators on reference expressions use the referenced values. Their
+availability, behavior, and possible hooks are those of the common referent
+type. Reference mutability does not affect this read-only operation. Address
+identity remains explicit: compare `address(first_reference)` with
+`address(second_reference)`.
 
-Raw-pointer equality compares stored address values without dereferencing. It is safe, does not require live or related pointees, may compare a pointer with `null`, and never calls pointee hooks. To compare designated values, access them explicitly under the applicable reference or pointer rules.
+Raw-pointer equality compares stored address values without accessing pointees.
+It is safe, does not require live or related pointees, may compare a pointer
+with `null`, and never calls pointee hooks. Comparing pointee values requires
+explicit unsafe dereferencing.
 
 Enum equality is independent of physical storage. Values must have the same enum type and logical member discriminant; equal numeric discriminants from different enum types cannot be compared.
 
@@ -138,7 +145,7 @@ fun Container.__contains__(
     self @&Container,
     item @&Element,
 ) @bool:
-    return self.contains_element(item)
+    return Container.contains_element(self, item)
 ```
 
 Overloads are selected by the exact item-parameter signature under ordinary overload resolution. The receiver is `self @&Container`; aggregate and resource items use read-only references, while freely copyable data may be passed by value. Membership parameters cannot use `@own` or `&mut`, so neither operand is consumed or mutated.
@@ -152,7 +159,7 @@ fun RemoteSet.__contains__(
     self @&RemoteSet,
     item @&Item,
 ) !LookupFail @bool:
-    return self.lookup(item)!
+    return RemoteSet.lookup(self, item)!
 
 present @bool = item in! container
 absent @bool = item not in! container

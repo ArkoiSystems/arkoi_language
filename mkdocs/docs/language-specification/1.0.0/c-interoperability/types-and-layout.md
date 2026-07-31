@@ -47,7 +47,7 @@ Every field must itself have a complete C-compatible representation.
 | Permitted by value | Forbidden by value |
 | --- | --- |
 | C ABI scalar | Resource |
-| Raw pointer to a C ABI pointee | `string` |
+| Raw pointer to a C ABI pointee | `string` or `string_view` |
 | Fixed array of C ABI elements | Reference or slice |
 | `export "C"` enum | Optional or failure value |
 | Complete `export "C"` data | Arkoi ABI scalar |

@@ -8,6 +8,24 @@ These terms have one meaning throughout the Arkoi 1.0.0 specification. Follow ea
 
 A name associated with a typed value or storage location. Binding mutability controls reassignment; it is independent from access through references, pointers, and slices. See [bindings and initialization](bindings-initialization.md).
 
+### Compile-time constant
+
+An addressless typed value declared as `NAME @const T = expression` and fully
+evaluated during compilation. It is not a place and has no storage identity. See
+[constants and module globals](constants-globals.md).
+
+### Module variable
+
+An immutable or mutable module-level binding with stable program-lifetime
+storage. Even an immutable module variable is an addressable place rather than a
+compile-time constant. See [constants and module globals](constants-globals.md).
+
+### String view
+
+A copyable, read-only `string_view` over valid UTF-8 storage. Literal-backed
+views have static lifetime; views of owned strings borrow their source. See
+[strings and string views](types-values.md#strings-and-string-views).
+
 ### Place
 
 An expression that designates storage rather than producing only a temporary value. Bindings, fields, array elements, and supported indexed results can be places. See [resource-valued places](places-replacement.md).
@@ -15,6 +33,12 @@ An expression that designates storage rather than producing only a temporary val
 ### Temporary
 
 A value produced by an expression without a reusable named binding. Its lifetime normally ends after the containing full expression, subject to the specific loop-lifetime rule. See [references and lifetimes](references-lifetimes.md) and [iterator values and lifetimes](iterator-values-and-lifetimes.md).
+
+### Pipeline carrier
+
+The single current value of a [pipeline expression](pipelines.md), designated
+inside each stage by `_`. A returned value replaces it; a no-value stage
+preserves it.
 
 ### Stable addressable place
 
@@ -46,7 +70,9 @@ A parameter declared with `@own T` that receives a resource by value and owns cl
 
 ### Reference
 
-A non-null, non-owning view created from stable storage and checked with Arkoi's limited lexical lifetime analysis. See [references and lifetimes](references-lifetimes.md).
+A fixed, non-null, non-owning alias to stable storage. Its name transparently
+designates the referent, and Arkoi applies limited lexical lifetime analysis.
+See [references and lifetimes](references-lifetimes.md).
 
 ### Raw pointer
 

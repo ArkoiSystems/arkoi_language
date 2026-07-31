@@ -24,7 +24,7 @@ type Operation = fun(
 ) @s32
 
 type Loader = fun(
-    @&string,
+    @string_view,
 ) !LoadFail @File
 
 type RawOperation = unsafe fun(
@@ -93,7 +93,7 @@ A fallible pointer uses ordinary handling:
 
 ```arkoi
 unsafe:
-    file @File = call(loader, &path)!
+    file @File = call(loader, path)!
 ```
 
 A pointer to an `unsafe fun` retains that safety requirement, though every raw

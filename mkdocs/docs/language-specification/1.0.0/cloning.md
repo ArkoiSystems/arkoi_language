@@ -42,7 +42,7 @@ The caller may instead handle the failure:
 ```arkoi
 copy @File = clone(original) handle failure:
     log_failure(failure)
-    yield File.open(&fallback_path)!
+    yield File.open(fallback_path)!
 ```
 
 `clone(...)` is a language built-in with defined operand access, not an ordinary
@@ -78,11 +78,11 @@ owning context directly.
 !!! failure "Compile-time error — cloning a temporary"
 
     ```arkoi
-    copy @File = clone(File.open(&path)!)!
+    copy @File = clone(File.open(path)!)!
     ```
 
 ```arkoi
-copy @File = File.open(&path)!
+copy @File = File.open(path)!
 ```
 
 ## Data is copied, not cloned

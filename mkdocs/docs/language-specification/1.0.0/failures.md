@@ -44,17 +44,18 @@ Every user-defined failure set includes `CoreFail` through a failure-set
 inclusion rule, not through object-oriented inheritance.
 
 `CoreFail.out_of_memory` represents recoverable allocation failure. An
-allocating operation must expose allocation failure through its declared effect
-or handle it internally; allocation never adds an undeclared effect. In
-particular, `clone(value)` exposes exactly its selected clone hook or contained
-clone effect. An infallible clone hook must handle allocation failure itself.
+allocating operation, including `string(view)!`, must expose allocation failure
+through its declared effect or handle it internally; allocation never adds an
+undeclared effect. `clone(value)` exposes exactly its selected clone hook or
+contained clone effect. An infallible clone hook must handle allocation failure
+itself.
 
 ## Declaring and producing effects
 
 The effect follows the parameter list and precedes the return type:
 
 ```arkoi
-fun read_file(path @&string) !IOFail @File:
+fun read_file(path @string_view) !IOFail @File:
     if length(path) == 0:
         fail IOFail.not_found
 
@@ -69,15 +70,19 @@ return remains governed by the function's declared return type.
 Failure propagation is never automatic:
 
 ```arkoi
-file @File = read_file(&path)!
+file @File = read_file(path)!
 ```
 
 A fallible expression must use postfix `!` or be handled locally.
 
+When a call has matching infallible and fallible overloads, directly attached
+propagation or handling selects the fallible overload. The complete selection
+rules are defined under [Calls and overloads](calls-overloads.md#selecting-fallibility).
+
 !!! failure "Compile-time error — unhandled failure effect"
 
     ```arkoi
-    file @File = read_file(&path)
+    file @File = read_file(path)
     ```
 
 Postfix operators resolve one layer at a time. If a fallible expression succeeds

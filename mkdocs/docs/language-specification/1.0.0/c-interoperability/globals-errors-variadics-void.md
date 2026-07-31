@@ -45,7 +45,7 @@ Only C-compatible complete data types can be imported by value:
 | Valid | Invalid |
 | --- | --- |
 | Core C ABI scalar | Resource |
-| Raw pointer to a C-domain pointee | `string`, reference, or slice |
+| Raw pointer to a C-domain pointee | `string`, `string_view`, reference, or slice |
 | `export "C"` enum | Optional or failure value |
 | Complete `export "C"` data or union | Arkoi ABI scalar by value |
 | Fixed array of C elements with a matching complete object type | Ordinary Arkoi aggregate or enum |
@@ -209,7 +209,7 @@ Every tail argument:
 - is evaluated from left to right with the other arguments;
 - has a C-compatible scalar, enum, or raw-pointer representation admitted by the
   target variadic ABI;
-- is not a resource, reference, slice, optional, failure value, or ordinary
+- is not a resource, `string_view`, reference, slice, optional, failure value, or ordinary
   non-C-compatible aggregate; and
 - is not supplied through `move(...)`, `clone(...)`, or another ownership operation.
 
@@ -239,8 +239,9 @@ The compiler validates fixed arguments and each tail argument's ABI compatibilit
 but cannot prove a function-specific relationship such as agreement between a
 `printf` format and its arguments. Violating that convention is undefined behavior.
 
-An Arkoi `string` is not a C string and cannot be passed directly. A C string
-argument needs a raw pointer to valid, null-terminated C-compatible storage:
+Arkoi `string` and `string_view` values are not C strings and cannot be passed
+directly. A C string argument needs a raw pointer to valid, null-terminated
+C-compatible storage:
 
 ```arkoi
 format @*c.char = obtain_c_string_pointer()

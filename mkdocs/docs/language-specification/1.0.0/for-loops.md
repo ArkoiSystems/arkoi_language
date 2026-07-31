@@ -33,7 +33,7 @@ for file @&File in files:
     inspect(file)
 
 for file @&mut File in &mut files:
-    file.flush()!
+    File.flush(file)!
 ```
 
 Mutable access requires a mutable array place, mutable slice, or existing mutable reference. An owned resource binding is valid only when a custom iterator explicitly yields an owned resource value.
@@ -48,14 +48,17 @@ For a named aggregate `T`, source syntax chooses exactly one receiver mode:
 | named resource binding of type `T` | Read-only; never an implicit move | `Iterable` or `FallibleIterable` |
 | `&place` or an expression of type `&T` | Read-only on referent `T` | read-only protocol for `T` |
 | `&mut place` | Mutable | `MutableIterable` or `FallibleMutableIterable` |
-| expression already of type `&mut T` | Mutable on referent `T`; do **not** borrow the reference binding again | mutable protocol for `T` |
+| expression already of type `&mut T` | Mutable on referent `T` | mutable protocol for `T` |
 | `move(named_resource)` | Consuming; source becomes uninitialized | `OwningIterable` or `FallibleOwningIterable` |
 | resource temporary | Consuming automatically | owning protocol |
 | data temporary | Read-only, with loop lifetime extension | read-only protocol |
 
 `&mut place` must designate a stable mutable receiver. A direct mutable binding still selects read-only iteration unless the complete source is explicitly borrowed with `&mut`.
 
-References are transparent only for `for` protocol selection: `&T` and `&mut T` do not themselves implement an iteration interface. Implementing an interface for a reference type is invalid. A reference expression never selects consuming iteration, and `move(reference)` transfers only the reference value, not its referent.
+References transparently expose their referents for `for` protocol selection:
+`&T` and `&mut T` do not themselves implement iteration interfaces.
+Implementing an interface for a reference type is invalid. A reference
+expression never selects consuming iteration.
 
 The source reference expression is evaluated exactly once. The hidden iterator uses its existing receiver-derived access and does not copy the referenced aggregate. The referent must be a named aggregate with the selected canonical protocol, or a built-in array or slice with compiler-defined iteration.
 

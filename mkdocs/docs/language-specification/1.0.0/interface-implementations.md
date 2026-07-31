@@ -135,13 +135,21 @@ fun Account.internal_helper(
     pass
 ```
 
-When visibility permits, an implementing function can be called as an ordinary concrete member:
+When visibility permits, an implementing function can be called through its
+concrete type:
 
 ```arkoi
-hash @u64 = account.hash()
+hash @u64 = Account.hash(&account)
 ```
 
-There is no interface-qualified call path such as `Hashable.Account.hash(&account)`.
+A receiver requirement can instead be selected through its declaring interface:
+
+```arkoi
+hash @u64 = Hashable.hash(&account)
+```
+
+The receiver's concrete type selects the implementation statically; the
+interface never becomes a runtime value.
 
 ## Transparent aliases
 

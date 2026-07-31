@@ -52,7 +52,7 @@ the destination immediately.
 resource. It returns the previous optional and writes `none`:
 
 ```arkoi
-current @mut ?File = File.open(&path)!
+current @mut ?File = File.open(path)!
 taken @?File = take(&mut current)
 ```
 
@@ -80,7 +80,7 @@ taken @?T = replace(&mut optional, none)
 old_count @u32 = replace(&mut count, 42)
 old_file @File = replace(
     &mut file,
-    File.open(&new_path)!,
+    File.open(new_path)!,
 )
 ```
 
@@ -134,14 +134,14 @@ A mutable resource binding or place supports construct-first,
 drop-and-replace assignment:
 
 ```arkoi
-file @mut File = File.open(&first_path)!
-file = File.open(&second_path)!
+file @mut File = File.open(first_path)!
+file = File.open(second_path)!
 
 files @mut [2]File = [
-    File.open(&first_path)!,
-    File.open(&second_path)!,
+    File.open(first_path)!,
+    File.open(second_path)!,
 ]
-files[0] = File.open(&replacement_path)!
+files[0] = File.open(replacement_path)!
 ```
 
 Direct assignment drops the old resource only after the replacement is ready,
@@ -152,12 +152,12 @@ assignment](assignment-and-result-use.md#resource-replacement).
 A named replacement resource still requires `move(...)`:
 
 ```arkoi
-replacement @File = File.open(&replacement_path)!
+replacement @File = File.open(replacement_path)!
 files[0] = move(replacement)
 
-user.file = File.open(&path)!
+user.file = File.open(path)!
 files[index]! = move(replacement)
-mutable_files[index]! = File.open(&path)!
+mutable_files[index]! = File.open(path)!
 ```
 
 Direct assignment drops the old value. `replace(...)` differs because it

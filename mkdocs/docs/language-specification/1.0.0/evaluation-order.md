@@ -5,7 +5,10 @@
 This page defines when subexpressions run. Assignment has additional destination-first rules on its own page.
 
 !!! abstract "At a glance"
-    Arkoi evaluates written lists and binary operands from left to right. Method receivers come first, boolean operators short-circuit, and evaluation stops immediately when an earlier operation fails or leaves control flow.
+    Arkoi evaluates written lists and binary operands from left to right. Receiver
+    calls use ordinary argument order, boolean operators short-circuit, and
+    evaluation stops immediately when an earlier operation fails or leaves
+    control flow.
 
 ## Lists, calls, and initializers
 
@@ -31,16 +34,24 @@ copy_file(
 
 Here `check_overwrite()` runs before `load_source()`, which runs before `load_destination()`.
 
-For a method call, Arkoi evaluates the receiver before explicit arguments:
+The receiver of a method call is its explicit first argument, so it follows the
+same written order:
 
 ```arkoi
-get_file().write(
+File.write(
+    get_file_reference(),
     load_first_buffer(),
     load_second_buffer(),
 )!
 ```
 
-The left-to-right written-order rule also covers named aggregate field initializers, array elements, and built-ins including `replace(...)`, `swap(...)`, `convert(...)`, `truncate(...)`, and `bitcast(...)`.
+The left-to-right written-order rule also covers positional and named aggregate
+construction arguments, array elements, and built-ins including
+`replace(...)`, `swap(...)`, `convert(...)`, `truncate(...)`, and `bitcast(...)`.
+
+A [pipeline](pipelines.md) evaluates its initial expression once and then each
+stage once from left to right. Expressions inside the current stage retain their
+ordinary written order.
 
 ## Operators and postfix chains
 
@@ -67,12 +78,13 @@ field @Field = load_items()![index]!.field
 
 If an earlier expression fails, traps, returns, or otherwise leaves control flow, no later expression in that sequence is evaluated. Temporary resources already constructed are cleaned up under the ordinary deterministic cleanup rules.
 
-Assignment first resolves and validates its destination; see [Assignment and result use](assignment-and-result-use.md). Index and slice arguments inherit these left-to-right rules after their receiver.
+Assignment first resolves and validates its destination; see [Assignment and result use](assignment-and-result-use.md). Index and slice expressions evaluate their base before their arguments.
 
 ## Related topics
 
 - [Assignment and result use](assignment-and-result-use.md)
 - [Calls and overloads](calls-overloads.md)
+- [Pipeline expressions](pipelines.md)
 - [Failure handling](failures.md)
 - [Ownership and moves](ownership-moves.md)
 - [Indexing](indexing.md)

@@ -26,6 +26,13 @@ The `@` introduces the type annotation. `mut` applies to the binding, so an
 immutable binding may be initialized or assigned exactly once, while a mutable
 binding may later be reassigned.
 
+Reference bindings are fixed aliases and cannot use binding-level `mut`;
+`&mut T` instead grants mutable access to the referent.
+
+The related `NAME @const T = expression` form declares an addressless
+compile-time value rather than a runtime storage binding. Its complete rules are
+under [Constants and module globals](constants-globals.md).
+
 ```arkoi
 result @u32
 

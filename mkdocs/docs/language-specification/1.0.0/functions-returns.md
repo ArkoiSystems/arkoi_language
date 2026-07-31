@@ -31,16 +31,17 @@ fun increment_copy(value @mut u32) @u32:
 ```
 
 Caller-visible mutation requires mutable access, commonly a mutable reference.
-Safe unary `*` dereferences a reference:
+A reference parameter transparently designates its referent:
 
 ```arkoi
 fun increment(value @&mut u32):
-    *value = *value + 1
+    value = value + 1
 ```
 
 Binding-level parameter mutability is not part of function type identity and
 does not distinguish overloads. Reference mutability and resource ownership
-modes do; see [Calls and overloads](calls-overloads.md).
+modes, as well as infallible versus fallible mode, do; see [Calls and
+overloads](calls-overloads.md).
 
 ## Return forms
 

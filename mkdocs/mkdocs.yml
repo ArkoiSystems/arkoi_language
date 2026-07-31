@@ -77,6 +77,7 @@ nav:
           - Unsafe execution: language-specification/1.0.0/unsafe.md
       - Expressions and control:
           - Expressions and numeric operations: language-specification/1.0.0/expressions-and-numeric-operations.md
+          - Pipeline expressions: language-specification/1.0.0/pipelines.md
           - Comparisons and membership: language-specification/1.0.0/comparisons-and-membership.md
           - Operator hooks: language-specification/1.0.0/operator-hooks.md
           - Evaluation order: language-specification/1.0.0/evaluation-order.md

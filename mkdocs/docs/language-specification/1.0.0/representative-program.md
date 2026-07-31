@@ -8,8 +8,8 @@ implementation.
 
 !!! abstract "At a glance"
 
-    `File` owns a native handle, borrowed methods inspect or mutate it, an owning
-    parameter consumes it, and `__drop__` performs deterministic cleanup.
+    `File` owns a native handle, explicit receiver arguments inspect, mutate, or
+    consume it, and `__drop__` performs deterministic cleanup.
 
 ## Assumptions
 
@@ -32,7 +32,7 @@ failure IOFail:
 pub resource File:
     handle @u64
 
-pub fun File.open(path @&string) !IOFail @File:
+pub fun File.open(path @string_view) !IOFail @File:
     handle @u64 = open_native_file(path)!
 
     return File(
@@ -45,22 +45,22 @@ pub fun File.size(self @&File) @usize:
 pub fun File.flush(self @&mut File) !IOFail:
     flush_native_file(self.handle)!
 
-pub fun File.into_buffer(file @own File) !IOFail @Buffer:
-    buffer @Buffer = read_entire_file(&file)!
+pub fun File.into_buffer(self @own File) !IOFail @Buffer:
+    buffer @Buffer = read_entire_file(&self)!
     return move(buffer)
 
 fun File.__drop__(self @&mut File):
     close_native_file(self.handle)
 
 fun inspect(file @&File):
-    print(file.size())
+    print(File.size(file))
 
 fun main() !IOFail:
-    path @string = "input.txt"
-    file @mut File = File.open(&path)!
+    path @const string_view = "input.txt"
+    file @mut File = File.open(path)!
 
     inspect(&file)
-    file.flush()!
+    File.flush(&mut file)!
 
     buffer @Buffer = File.into_buffer(move(file))!
     process_buffer(&buffer)
@@ -72,6 +72,7 @@ fun main() !IOFail:
 | --- | --- |
 | `module example.file_demo` | Gives the source file its explicit module identity. |
 | `failure IOFail` and postfix `!` | Define and propagate the operation's failure effect. |
+| `@const string_view` | Keeps literal text in allocation-free static storage. |
 | `resource File` | Makes the native handle a non-copyable, deterministically cleaned-up value. |
 | `File.open` | Acts as an associated constructor that returns a new `File`. |
 | `&File` / `&mut File` | Borrow the file for read-only inspection or mutation. |

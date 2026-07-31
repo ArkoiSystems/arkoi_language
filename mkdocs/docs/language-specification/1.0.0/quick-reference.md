@@ -8,11 +8,13 @@ Use this page to recall Arkoi syntax. Each row links to the canonical page that 
 | --- | --- | --- |
 | Immutable binding | `name @T = value` | [Bindings and initialization](bindings-initialization.md) |
 | Mutable binding | `name @mut T = value` | [Bindings and initialization](bindings-initialization.md) |
-| Constant | `const NAME @T = value` | [Constants and globals](constants-globals.md) |
+| Constant | `NAME @const T = value` | [Constants and globals](constants-globals.md) |
 | Function | `fun name(parameters) @Return:` | [Functions and returns](functions-returns.md) |
 | Fallible function | `fun name(parameters) !Failure @Return:` | [Failures](failures.md) |
+| Method | `fun Type.name(self @&Type, ...)` | [Methods and visibility](methods-visibility.md) |
 | Data aggregate | `data Name:` | [Aggregates and enums](aggregates-enums.md) |
 | Resource aggregate | `resource Name:` | [Resource lifecycle](resource-lifecycle.md) |
+| Aggregate construction | `Name(positional, field = value)` | [Aggregates and enums](aggregates-enums.md) |
 | Module | `module qualified.name` | [Modules and imports](modules-and-imports.md) |
 | Interface | `interface Name:` | [Static interfaces](interfaces-overview.md) |
 
@@ -21,6 +23,8 @@ Use this page to recall Arkoi syntax. Each row links to the canonical page that 
 | Notation | Meaning | Complete rules |
 | --- | --- | --- |
 | `T` | Value of type `T` | [Types and values](types-values.md) |
+| `string` | Owned UTF-8 resource | [Types and values](types-values.md#strings-and-string-views) |
+| `string_view` | Read-only UTF-8 data view | [Types and values](types-values.md#strings-and-string-views) |
 | `?T` | Optional `T` | [Optional values](types-values.md#optional-values) |
 | `&T` | Read-only, non-null reference | [References and lifetimes](references-lifetimes.md) |
 | `&mut T` | Mutable, non-null reference | [References and lifetimes](references-lifetimes.md) |
@@ -32,6 +36,9 @@ Use this page to recall Arkoi syntax. Each row links to the canonical page that 
 | `fun(...) @R` | Named function type | [Function pointers](function-pointers.md) |
 
 Binding-level `mut`, referent mutability, slice element mutability, and raw-pointer pointee mutability are independent.
+
+String literals have type `string_view`. Convert an owned string with
+`string_view(value)` and create an owned copy with `string(view)!`.
 
 ## Ownership and access
 
@@ -45,6 +52,9 @@ Binding-level `mut`, referent mutability, slice element mutability, and raw-poin
 | `readonly(value)` | Remove one layer of mutable access | [Read-only conversion](access-reduction.md) |
 | `&place` / `&mut place` | Create a read-only or mutable reference | [References and lifetimes](references-lifetimes.md) |
 | `address(place)` | Obtain a raw pointer to stable storage | [Raw pointers](raw-pointers.md) |
+| `Type.name(&value, ...)` | Read-only receiver call | [Methods and visibility](methods-visibility.md) |
+| `Type.name(&mut value, ...)` | Mutable receiver call | [Methods and visibility](methods-visibility.md) |
+| `Type.name(move(value), ...)` | Owning receiver call | [Methods and visibility](methods-visibility.md) |
 
 ## Optionals and failures
 
@@ -65,6 +75,7 @@ Binding-level `mut`, referent mutability, slice element mutability, and raw-poin
 | `if` / `elif` / `else` | [Control flow](control-flow.md) |
 | `while condition:` | [Control flow](control-flow.md) |
 | `loop:` | [Control flow](control-flow.md) |
+| `initial |> Function(&_)` | [Pipeline expressions](pipelines.md) |
 | `for item in source:` / `for! item in source:` | [For loops](for-loops.md) |
 | `container[index]!` | [Indexing](indexing.md) |
 | `container[start..end]!` | [Slicing](slicing.md) |

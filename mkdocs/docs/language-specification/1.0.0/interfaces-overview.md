@@ -45,7 +45,7 @@ iterator @Iterator  # Compile-time error
 Only concrete values can be stored, passed, or returned:
 
 ```arkoi
-iterator @AccountIterator = collection.iterate()
+iterator @AccountIterator = AccountCollection.iterate(&collection)
 ```
 
 Interfaces introduce no interface-valued variables, trait objects, virtual tables, runtime casts, implementation lookup, dynamic dispatch, or indirect calls. Requirement calls resolve statically to concrete functions during compilation.
@@ -54,7 +54,8 @@ They likewise cannot be embedded in aggregates or composed into references, poin
 
 ## Where interface names are valid
 
-An interface name may appear only where the grammar expects an interface declaration identity:
+An interface name may identify a declaration relationship or qualify a receiver
+requirement call:
 
 ```arkoi
 implements Interface for Type
@@ -64,6 +65,13 @@ implements Interface for Type
 interface Child extends Parent:
     pass
 ```
+
+```arkoi
+item @?Item = Iterator.next(&mut iterator)
+```
+
+The requirement call uses the explicit receiver's concrete type to select a
+known implementation at compile time.
 
 It is not a general type expression and cannot be used as a variable, constant, field, parameter, return, associated-type binding, element, optional-content, reference, pointer, or slice type.
 

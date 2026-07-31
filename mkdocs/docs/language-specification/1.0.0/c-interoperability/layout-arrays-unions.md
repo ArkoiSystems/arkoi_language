@@ -123,7 +123,7 @@ follow the active target C ABI.
 | Permitted | Forbidden |
 | --- | --- |
 | C ABI scalar | Resource |
-| Raw pointer to C ABI data | Reference, slice, or string |
+| Raw pointer to C ABI data | Reference, slice, `string`, or `string_view` |
 | Raw pointer to a C ABI function type | Optional or failure value |
 | Fixed array of C ABI elements | Ordinary Arkoi-layout aggregate |
 | Complete `export "C"` data or union | Incomplete opaque C type by value |

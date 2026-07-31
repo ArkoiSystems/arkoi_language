@@ -19,7 +19,7 @@ implements FallibleIterator for FileLoader:
 fun FileLoader.__next__(
     self @&mut FileLoader,
 ) !IOFail @?File:
-    return self.load_next()!
+    return FileLoader.load_next(self)!
 ```
 
 For `for! file @File in loader`, each present value transfers ownership to the fresh loop binding. The item is cleaned up at the end of that iteration unless the body transfers it:
@@ -52,7 +52,7 @@ matches @mut ReferenceCollection = create_collection()
 
 for item @&Item in source:
     if matches_filter(item):
-        matches.append(item)
+        ReferenceCollection.append(&mut matches, item)
 ```
 
 The compiler applies only its limited lexical checks and may reject obvious invalidation, such as moving a directly known source while a visibly derived reference is live. It does not automatically expire a yielded reference at iteration end or before the next `__next__`.
@@ -69,7 +69,8 @@ Arkoi deliberately does not perform Rust-style borrow or lifetime analysis for i
 
 ## Mutable loop bindings
 
-`@mut` makes each iteration's fresh local binding mutable:
+`@mut` makes each iteration's fresh local binding mutable when its type permits
+binding mutability:
 
 ```arkoi
 for value @mut u32 in numbers:
@@ -80,16 +81,12 @@ For a copyable data item, this changes only the local copy, not the collection. 
 
 ```arkoi
 for value @&mut u32 in &mut numbers:
-    *value += 1
+    value += 1
 ```
 
-Binding and referent mutability are independent:
-
-```arkoi
-for value @mut &mut u32 in &mut numbers:
-    value = choose_another_reference()
-    *value += 1
-```
+The reference remains bound to the yielded element for that iteration.
+`&mut u32` permits writing the element directly; reference loop bindings cannot
+use binding-level `mut`.
 
 An owned resource item may also use a mutable owning binding:
 

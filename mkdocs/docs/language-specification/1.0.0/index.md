@@ -37,7 +37,8 @@
 
     ---
 
-    Numeric behavior, comparisons, evaluation order, control flow, iteration, indexing, and static interfaces.
+    Numeric behavior, pipelines, comparisons, evaluation order, control flow,
+    iteration, indexing, and static interfaces.
 
     [Explore expressions →](expressions-and-numeric-operations.md)
 

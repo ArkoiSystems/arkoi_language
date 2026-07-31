@@ -124,7 +124,7 @@ return value = 3         # Compile-time error
 Named arguments use `name = expression`, but the name denotes a parameter, not a mutable destination:
 
 ```arkoi
-copy_file(source = &source, destination = &destination)!
+copy_file(source = source, destination = destination)!
 ```
 
 ## Using expression results
@@ -141,14 +141,14 @@ A value must be bound, assigned, returned, passed as an argument, used in anothe
 
 ```arkoi
 log_message(&message)
-file.flush()!
+File.flush(&mut file)!
 ```
 
 Use `discard(expression)` to state intentional disposal:
 
 ```arkoi
 discard(calculate_value())
-discard(File.open(&path)!)
+discard(File.open(path)!)
 ```
 
 `discard(...)` evaluates its argument exactly once and produces no value. A data result is ignored; a successfully constructed resource is cleaned up immediately through its normal deterministic cleanup. If evaluation fails, traps, or leaves control flow, no value is discarded and ordinary propagation and cleanup apply.

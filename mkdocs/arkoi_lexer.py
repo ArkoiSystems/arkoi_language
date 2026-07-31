@@ -66,6 +66,7 @@ ARKOI_SCALAR_TYPES = (
     "s64",
     "ssize",
     "string",
+    "string_view",
     "u8",
     "u16",
     "u32",
@@ -141,6 +142,7 @@ OPERATORS = (
     ">=",
     "&&",
     "||",
+    "|>",
     "<<",
     ">>",
     "?.",
@@ -168,10 +170,14 @@ DECIMAL_DIGITS = r"[0-9](?:_?[0-9])*"
 HEX_DIGITS = r"[0-9a-fA-F](?:_?[0-9a-fA-F])*"
 BINARY_DIGITS = r"[01](?:_?[01])*"
 OCTAL_DIGITS = r"[0-7](?:_?[0-7])*"
+HEX_SIGNIFICAND = (
+    rf"(?:{HEX_DIGITS}(?:\.(?:{HEX_DIGITS})?)?|\.(?:{HEX_DIGITS}))"
+)
 
 FLOAT_RE = (
     rf"(?<![\w.])(?:"
-    rf"{DECIMAL_DIGITS}\.{DECIMAL_DIGITS}(?:[eE][+-]?{DECIMAL_DIGITS})?"
+    rf"0[xX]{HEX_SIGNIFICAND}[pP][+-]?{DECIMAL_DIGITS}"
+    rf"|{DECIMAL_DIGITS}\.{DECIMAL_DIGITS}(?:[eE][+-]?{DECIMAL_DIGITS})?"
     rf"|{DECIMAL_DIGITS}[eE][+-]?{DECIMAL_DIGITS}"
     rf")(?![\w.])"
 )
@@ -227,6 +233,7 @@ class ArkoiLexer(RegexLexer):
             ),
             (OPERATOR_RE, Operator),
             (r"[()[\]{},:;.\\]", Punctuation),
+            (r"(?<![A-Za-z0-9_])_(?![A-Za-z0-9_])", Name.Builtin.Pseudo),
             (r"[A-Za-z_][A-Za-z0-9_]*", Name),
             (r".", Text),
         ]

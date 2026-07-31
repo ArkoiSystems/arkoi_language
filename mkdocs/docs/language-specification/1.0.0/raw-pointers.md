@@ -54,11 +54,11 @@ unsafe:
     *mutable_pointer = 42
 ```
 
-Unary `*` is safe for a reference but unsafe for a raw pointer.
+Unary `*` applies only to raw pointers and requires an unsafe context.
 
-### Fields and methods
+### Field access
 
-Raw pointers never dereference implicitly through dot syntax:
+Raw pointers never dereference implicitly for field access:
 
 ```arkoi
 unsafe:
@@ -68,6 +68,8 @@ unsafe:
 
 Arkoi has no separate `->` operator. Values and references use
 `reference.field`; raw pointers use visibly unsafe `(*pointer).field`.
+Method receivers remain explicit arguments and must have the declared reference
+or ownership type.
 
 ## Element-based arithmetic
 

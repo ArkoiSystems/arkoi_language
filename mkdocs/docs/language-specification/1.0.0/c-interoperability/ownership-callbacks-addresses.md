@@ -162,8 +162,8 @@ The operand must be a stable place with storage. This includes:
 - a local binding or module-level variable;
 - an aggregate field;
 - a fixed-array element selected with a valid index;
-- a dereferenced reference or raw pointer when the resulting place is otherwise
-  valid; and
+- a place designated by a reference, or by a dereferenced raw pointer, when the
+  resulting place is otherwise valid; and
 - any other place form explicitly defined as addressable.
 
 ```arkoi
@@ -177,13 +177,21 @@ values @mut [4]u8 = [0, 0, 0, 0]
 first @*mut u8 = address(values[0])
 ```
 
-Literals, temporaries, computed expressions without stable storage, moved or
-uninitialized bindings, non-place property-like operations, and direct function
-results are not addressable. Store a function result first if its address is needed.
+Constants, literals, temporaries, computed expressions without stable storage,
+moved or uninitialized bindings, non-place property-like operations, and direct
+function results are not addressable. A field or element selected from a
+composite constant is also a value without storage. Store a function result in
+a binding first if its address is needed.
 
 ```arkoi
 pointer @*c.int = address(calculate())
 # Compile-time error: a temporary function result is not an addressable place
+```
+
+```arkoi
+WIDTH @const usize = 4
+pointer @*usize = address(WIDTH)
+# Compile-time error: a constant has no storage address
 ```
 
 Taking the address is safe. Dereferencing, pointer arithmetic, raw-pointer indexing,

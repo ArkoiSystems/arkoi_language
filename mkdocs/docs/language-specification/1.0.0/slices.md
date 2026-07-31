@@ -174,11 +174,13 @@ globals](constants-globals.md).
 
 ## Raw-pointer boundary
 
-A slice exposes its element pointer only in unsafe context:
+The unsafe built-in `pointer(slice)` returns a raw pointer to the slice's first
+element. It preserves the slice's element-access mode and is available only in
+an unsafe context:
 
 ```arkoi
 unsafe:
-    pointer @*Item = items.pointer()
+    pointer @*Item = pointer(items)
 ```
 
 Constructing a slice from a raw pointer and length is also unsafe. The

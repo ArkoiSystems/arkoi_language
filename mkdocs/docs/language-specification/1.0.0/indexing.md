@@ -16,13 +16,13 @@ fun Container.__index__(
     self @&Container,
     index @usize,
 ) !CoreFail @&Element:
-    return self.find(index)!
+    return Container.find(self, index)!
 
 fun Container.__index_mut__(
     self @&mut Container,
     index @usize,
 ) !CoreFail @&mut Element:
-    return self.find_mut(index)!
+    return Container.find_mut(self, index)!
 ```
 
 Read-only contexts select `__index__`:
@@ -95,7 +95,7 @@ fun Tensor.__index__(
     row @usize,
     column @usize,
 ) !CoreFail @&Element:
-    return self.find(row, column)!
+    return Tensor.find(self, row, column)!
 
 fun Tensor.__index_mut__(
     self @&mut Tensor,
@@ -103,7 +103,7 @@ fun Tensor.__index_mut__(
     y @usize,
     z @usize,
 ) !CoreFail @&mut Element:
-    return self.find_mut(x, y, z)!
+    return Tensor.find_mut(self, x, y, z)!
 ```
 
 Selection considers:
@@ -139,7 +139,7 @@ fun Table.__index__(
     self @&Table,
     index @usize,
 ) @&Element:
-    return self.find(index)
+    return Table.find(self, index)
 
 element @&Element = table[index]
 invalid @&Element = table[index]!  # Compile-time error

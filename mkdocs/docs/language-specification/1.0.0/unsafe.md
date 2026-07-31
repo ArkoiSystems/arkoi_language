@@ -59,7 +59,7 @@ fun read_first(items @[]u8) !CoreFail @u8:
         fail CoreFail.out_of_range
 
     unsafe:
-        pointer @*u8 = items.pointer()
+        pointer @*u8 = pointer(items)
         return *pointer
 ```
 

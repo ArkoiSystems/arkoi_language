@@ -58,12 +58,20 @@ Every concrete method, associated function, or hook uses ordinary `pub` rules. E
 implements Parseable for Configuration
 
 pub fun Configuration.parse(
-    source @&string,
+    source @string_view,
 ) !ParseFail @Configuration:
     return parse_configuration(source)!
 ```
 
 A public definition is directly callable wherever its owner and signature are accessible. A private definition is not directly callable from another module, even though it may establish conformance.
+
+A receiver requirement exposed by a visible interface may be called through the
+interface qualifier. That call is checked against the interface contract and
+does not make the private concrete definition directly accessible:
+
+```arkoi
+Writer.write(&mut file, data = content)
+```
 
 A private reserved hook may enable public language syntax without exposing a direct hook call:
 
@@ -78,7 +86,8 @@ fun Buffer.__length__(
 size @usize = length(buffer)
 ```
 
-Outside the module, `length(buffer)` may be valid while a direct `buffer.__length__()` call fails visibility checking.
+Outside the module, `length(buffer)` may be valid while a direct
+`Buffer.__length__(&buffer)` call fails visibility checking.
 
 ### Cross-module implementations
 

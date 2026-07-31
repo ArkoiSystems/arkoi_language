@@ -105,7 +105,11 @@ interface Combined extends First, Second:
     pass  # Compile-time error: inherited named-argument APIs conflict
 ```
 
-The merge rule covers instance methods, associated functions, hooks, and every overload. Same-identity declarations also conflict when return type, failure effect, safety, or another non-overload-distinguishing property differs.
+The merge rule covers instance methods, associated functions, hooks, and every
+overload. Same-identity declarations also conflict when return type, exact
+failure-set type within the fallible mode, safety, or another
+non-overload-distinguishing property differs. Infallible and fallible
+declarations have different identities and remain separate requirements.
 
 Unrelated inherited associated types with the same name conflict and must be renamed in their declaring interfaces. A child has no projection or disambiguation syntax.
 

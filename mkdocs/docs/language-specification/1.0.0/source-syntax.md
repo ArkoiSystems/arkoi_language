@@ -16,7 +16,7 @@ parentheses or brackets for multiline expressions.
 ## Blocks and comments
 
 ```arkoi
-fun greet(name @&string):
+fun greet(name @string_view):
     # The function body is a lexical scope.
     print(name)
 ```
@@ -112,10 +112,10 @@ item @T = matrix[
 ]
 ```
 
-The rule covers parameters, positional and named arguments, array elements,
-aggregate fields, multiple indices, and parent interfaces in an `extends`
-clause. A trailing comma adds no item, does not affect overload identity or
-evaluation order, and has no runtime meaning.
+The rule covers parameters, positional and named call or aggregate-construction
+arguments, array elements, multiple indices, and parent interfaces in an
+`extends` clause. A trailing comma adds no item, does not affect overload
+identity or evaluation order, and has no runtime meaning.
 
 !!! failure "Compile-time errors — malformed comma lists"
 

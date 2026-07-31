@@ -64,7 +64,7 @@ pub fun render():
 ```arkoi
 module graphics.rendering
 
-const WIDTH @usize = 100
+WIDTH @const usize = 100
 import graphics.color
 # Compile-time error: an import follows another module-level declaration
 ```
@@ -88,7 +88,7 @@ import graphics.color
 import system.files
 
 selected @graphics.color.Color = graphics.color.Color.red
-file @system.files.File = system.files.File.open(&path)!
+file @system.files.File = system.files.File.open(path)!
 ```
 
 The absolute name resolves to the same module from every importing location. Arkoi
@@ -117,7 +117,7 @@ import graphics.color as color
 import system.files as files
 
 selected @color.Color = color.Color.red
-file @files.File = files.File.open(&path)!
+file @files.File = files.File.open(path)!
 ```
 
 The alias changes only local qualification; it does not change the imported module's

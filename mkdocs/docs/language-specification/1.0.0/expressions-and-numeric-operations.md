@@ -9,7 +9,7 @@ This page defines Arkoi's boolean expressions, numeric conversions, integer arit
 
 ## Boolean expressions
 
-`bool` has the values `true` and `false`. Conditions and boolean operands must already have type `bool`; numbers, pointers, strings, and optionals do not convert to booleans.
+`bool` has the values `true` and `false`. Conditions and boolean operands must already have type `bool`; numbers, pointers, text values, and optionals do not convert to booleans.
 
 The boolean operators are keywords:
 

@@ -17,14 +17,14 @@ fun Container.__slice__(
     start @?usize,
     end @?usize,
 ) !CoreFail @&ContainerView:
-    return self.view_ref(start, end)!
+    return Container.view_ref(self, start, end)!
 
 fun Container.__slice_mut__(
     self @&mut Container,
     start @?usize,
     end @?usize,
 ) !CoreFail @&mut MutableContainerView:
-    return self.mutable_view_ref(start, end)!
+    return Container.mutable_view_ref(self, start, end)!
 ```
 
 Slicing is distinct from indexing:

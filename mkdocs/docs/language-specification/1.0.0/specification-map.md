@@ -48,6 +48,7 @@ The v150 source specification is organized as 16 long chapters. This documentati
 | 9.1–9.5 | [Expressions and numeric operations](expressions-and-numeric-operations.md) |
 | 9.6–9.18, 9.21 | [Comparisons and membership](comparisons-and-membership.md) |
 | 9.19–9.20 | [Operator hooks](operator-hooks.md) |
+| 9.22; 10.1 pipeline evaluation | [Pipeline expressions](pipelines.md) |
 | 10.1–10.2 | [Evaluation order](evaluation-order.md) |
 | 10.3–10.7 | [Assignment and result use](assignment-and-result-use.md) |
 | 11.1–11.2, 11.4 | [Control flow](control-flow.md) |

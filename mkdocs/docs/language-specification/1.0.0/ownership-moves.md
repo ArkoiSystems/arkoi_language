@@ -18,7 +18,7 @@ without allocating or copying and makes the source uninitialized.
 ## Moving a resource
 
 ```arkoi
-first @string = "Arkoi"
+first @string = string("Arkoi")!
 second @string = move(first)
 ```
 
@@ -30,15 +30,15 @@ and drops a resource only on paths where it is initialized.
 !!! failure "Compile-time error — use after move"
 
     ```arkoi
-    first @string = "Arkoi"
+    first @string = string("Arkoi")!
     second @string = move(first)
-    print_string(&first)
+    print_string(string_view(first))
     ```
 
 ### Data copies; it does not move
 
-Numbers, Booleans, characters, references, raw pointers, slices, failures, and
-data aggregates copy through normal value operations:
+Numbers, Booleans, characters, string views, references, raw pointers, slices,
+failures, and data aggregates copy through normal value operations:
 
 ```arkoi
 second @u32 = first
@@ -57,10 +57,10 @@ view_copy @[]u32 = view
 A mutable resource binding can be initialized again after a move:
 
 ```arkoi
-file @mut File = File.open(&first_path)!
+file @mut File = File.open(first_path)!
 consume(move(file))
 
-file = File.open(&second_path)!
+file = File.open(second_path)!
 ```
 
 No old value remains, so this is initialization rather than drop-and-replace.
@@ -70,9 +70,9 @@ binding was already initialized once and cannot be initialized again.
 !!! failure "Compile-time error — reinitializing an immutable binding"
 
     ```arkoi
-    file @File = File.open(&first_path)!
+    file @File = File.open(first_path)!
     consume(move(file))
-    file = File.open(&second_path)!
+    file = File.open(second_path)!
     ```
 
 ## What `move` accepts
@@ -159,7 +159,7 @@ Wrapping a temporary in `move(...)` is redundant and invalid.
 !!! failure "Compile-time error — moving a temporary"
 
     ```arkoi
-    consume(move(File.open(&path)!))
+    consume(move(File.open(path)!))
     ```
 
 ## Returning resources
@@ -168,7 +168,7 @@ Returning a named resource binding transfers ownership and therefore requires
 `move(...)`:
 
 ```arkoi
-fun create_file(path @&string) !IOFail @File:
+fun create_file(path @string_view) !IOFail @File:
     file @File = File.open(path)!
     return move(file)
 ```
@@ -176,7 +176,7 @@ fun create_file(path @&string) !IOFail @File:
 !!! failure "Compile-time error — named resource return without move"
 
     ```arkoi
-    fun invalid(path @&string) !IOFail @File:
+    fun invalid(path @string_view) !IOFail @File:
         file @File = File.open(path)!
         return file
     ```
@@ -185,7 +185,7 @@ An owning parameter follows the same rule. A temporary resource expression can
 be returned directly:
 
 ```arkoi
-fun create_file(path @&string) !IOFail @File:
+fun create_file(path @string_view) !IOFail @File:
     return File.open(path)!
 ```
 

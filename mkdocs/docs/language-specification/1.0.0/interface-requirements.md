@@ -31,7 +31,7 @@ fun Version.greater(
     self @&Version,
     other @&Version,
 ) @bool:
-    return other.less(self)
+    return Version.less(other, self)
 ```
 
 Shared executable logic belongs in ordinary helper functions called by such definitions. Interfaces never contribute code or default implementations.
@@ -50,7 +50,7 @@ interface Factory:
 
 interface Consumable:
     fun consume(
-        value @own Self,
+        self @own Self,
     )
 ```
 
@@ -65,7 +65,7 @@ An associated-function requirement has no `self` parameter:
 ```arkoi
 interface Parseable:
     fun parse(
-        source @&string,
+        source @string_view,
     ) !ParseFail @Self
 ```
 
@@ -75,7 +75,7 @@ It belongs to the concrete implementing type and is defined externally:
 implements Parseable for Configuration
 
 fun Configuration.parse(
-    source @&string,
+    source @string_view,
 ) !ParseFail @Configuration:
     return parse_configuration(source)!
 ```
@@ -85,10 +85,12 @@ Associated requirements may use `Self` and associated types where valid, partici
 Call through the concrete type:
 
 ```arkoi
-configuration @Configuration = Configuration.parse(&text)!
+configuration @Configuration = Configuration.parse(text)!
 ```
 
-`Parseable.parse(...)` is invalid because an interface name is not a dispatch or namespace target. Resolution is direct and static.
+`Parseable.parse(...)` is invalid because an associated requirement has no
+receiver from which to select a concrete implementation. Resolution through
+`Configuration.parse(...)` is direct and static.
 
 ### Reserved hooks
 
@@ -120,7 +122,7 @@ Interfaces likewise cannot declare associated constants, and implementation bloc
 
 ```arkoi
 interface FixedCapacity:
-    const CAPACITY @usize  # Compile-time error
+    CAPACITY @const usize  # Compile-time error
 ```
 
 Require an associated function such as `capacity() @usize` instead. Ordinary module and local constants remain available inside concrete implementations.
@@ -135,8 +137,9 @@ The compiler first substitutes `Self` and all associated types, then compares a 
 | Parameter count | Yes | Exactly | Must be the same, otherwise it is a distinct overload | Positional shape |
 | Ordered parameter types | Yes | Exactly | Must be the same, otherwise it is a distinct overload | Types checked by position |
 | Ownership and reference mutability, including receiver mode | Yes | Exactly | Must be the same, otherwise it is a distinct overload | Types checked by position |
+| Fallibility mode: no effect or declared effect | Yes | Exactly | Different modes are distinct overloads | Selects ordinary or failure-aware call syntax |
 | Return type, including no return | No | Exactly | Must be the same | None |
-| Failure effect, including no effect | No | Exactly | Must be the same | None |
+| Exact failure-set type within fallible mode | No | Exactly | Must be the same | None |
 | Safety (`unsafe` or safe) | No | Exactly | Must be the same | Determines required call context |
 | Associated-type substitutions within any type above | Through the substituted parameter identity | Exactly | Substituted results must agree | None |
 | Parameter names | No | **Not required to match** | Must match position by position, unless both paths share the same originating declaration | Names accepted depend on the visible signature |
@@ -168,13 +171,18 @@ fun Buffer.reset(
     pass
 ```
 
-A fallible and infallible reset cannot share a definition. Neither can requirements that disagree in return, safety, receiver, ownership, type, or arity.
+A fallible and infallible reset cannot share one definition; they may coexist as
+distinct overloads implemented by two definitions. Requirements that disagree
+in return, safety, receiver, ownership, type, or arity likewise cannot share a
+definition.
 
 If same-named requirements are not exact matches and cannot coexist as an ordinary overload set, the concrete type's combined implementation set is invalid.
 
 ## Overload sets
 
-Within one interface or across unrelated implemented interfaces, same-named declarations may coexist when their identities differ by parameter count, ordered parameter types, ownership, or reference mutability:
+Within one interface or across unrelated implemented interfaces, same-named
+declarations may coexist when their identities differ by parameter count,
+ordered parameter types, ownership, reference mutability, or fallibility mode:
 
 ```arkoi
 interface Formatter:
@@ -191,7 +199,11 @@ interface Formatter:
 
 Each overload is an independent requirement, and the concrete type must provide all of them. Providing only a subset is a compile-time error.
 
-Return type, failure effect, visibility, safety, and parameter names do not distinguish overloads. Same-identity requirements that differ only in one of those properties are conflicting rather than overloads, unless they are exact compatible requirements allowed to share one definition.
+Return type, exact failure-set type within the fallible mode, visibility,
+safety, and parameter names do not distinguish overloads. Same-identity
+requirements that differ only in one of those properties are conflicting rather
+than overloads, unless they are exact compatible requirements allowed to share
+one definition.
 
 Calls use ordinary exact overload rules. Interfaces add no best-match ranking, conversion-based selection, return-based selection, dynamic dispatch, or runtime overload metadata.
 
@@ -220,11 +232,12 @@ Names are excluded from function identity, overload identity, concrete conforman
 They still define source-level named-argument APIs:
 
 - a direct concrete call validates the concrete definition's names;
-- a call type-checked against an interface requirement validates the requirement's names, then maps arguments by position to the statically selected concrete definition.
+- an interface-qualified receiver call validates the requirement's names, then
+  maps arguments by position to the statically selected concrete definition.
 
 ```arkoi
-file.write(bytes = content)
-value.write(data = content)  # In a context checked against Writer
+File.write(&mut file, bytes = content)
+Writer.write(&mut file, data = content)
 ```
 
 Using `data =` in a direct concrete call above is invalid. This rule requires no runtime name metadata, adapter, wrapper, or dynamic dispatch.
@@ -250,7 +263,7 @@ Calling the concrete operation still requires an unsafe context:
 
 ```arkoi
 unsafe:
-    device.read_raw(pointer, length)
+    RawReadable.read_raw(&device, pointer, length)
 ```
 
 Conformance neither weakens the safety contract nor adds runtime checks.

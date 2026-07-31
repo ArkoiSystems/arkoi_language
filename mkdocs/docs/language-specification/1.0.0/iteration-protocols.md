@@ -15,7 +15,7 @@ The bundled core library provides these compiler-recognized interfaces:
 | --- | --- | --- | --- |
 | Read-only | `Iterable` | `FallibleIterable` | `__iterate__(self @&Self)` |
 | Mutable | `MutableIterable` | `FallibleMutableIterable` | `__iterate_mut__(self @&mut Self)` |
-| Consuming | `OwningIterable` | `FallibleOwningIterable` | `__into_iterator__(value @own Self)` |
+| Consuming | `OwningIterable` | `FallibleOwningIterable` | `__into_iterator__(self @own Self)` |
 
 Advancement uses one of:
 
@@ -71,13 +71,13 @@ interface OwningIterable:
     type Iterator
 
     fun __into_iterator__(
-        value @own Self,
+        self @own Self,
     ) @Iterator
 ```
 
 Each fallible creation interface has the same shape as its receiver-mode counterpart, adds `type Failure`, and declares `!Failure` on its hook. Thus `FallibleIterable` uses `__iterate__`, `FallibleMutableIterable` uses `__iterate_mut__`, and `FallibleOwningIterable` uses `__into_iterator__`.
 
-Concrete hooks remain ordinary external methods or associated functions:
+Concrete hooks remain ordinary external methods:
 
 ```arkoi
 implements Iterable for AccountCollection:
@@ -95,20 +95,21 @@ fun AccountCollection.__iterate__(
 fun AccountIterator.__next__(
     self @&mut AccountIterator,
 ) @?&Account:
-    return self.take_next()
+    return AccountIterator.take_next(self)
 ```
 
-`__into_iterator__` is an associated function because Arkoi has no consuming `self @own Type` method receiver.
+`__into_iterator__` uses an owning receiver because consuming iteration takes
+ownership of its resource iterable.
 
 ## Loop execution
 
 Conceptually, read-only iteration behaves as:
 
 ```arkoi
-iterator @mut AccountIterator = accounts.__iterate__()
+iterator @mut AccountIterator = AccountCollection.__iterate__(&accounts)
 
 loop:
-    next @?&Account = iterator.__next__()
+    next @?&Account = AccountIterator.__next__(&mut iterator)
 
     if next == none:
         break

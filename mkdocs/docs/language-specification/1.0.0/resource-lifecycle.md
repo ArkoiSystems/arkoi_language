@@ -20,7 +20,7 @@ Arkoi has no initialization hook. A resource type exposes ordinary, possibly
 fallible associated functions:
 
 ```arkoi
-pub fun File.open(path @&string) !IOFail @File:
+pub fun File.open(path @string_view) !IOFail @File:
     handle @u64 = open_handle(path)!
     return File(handle = handle)
 ```

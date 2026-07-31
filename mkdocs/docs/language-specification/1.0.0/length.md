@@ -34,7 +34,7 @@ count @usize = length(container)
 
 `length(...)` evaluates its argument exactly once and then invokes the hook.
 
-Built-in arrays, slices, and strings retain compiler-defined infallible length behavior rather than using a user hook. A type with neither built-in behavior nor a valid `__length__` cannot be passed to `length(...)`.
+Built-in arrays, slices, `string`, and `string_view` retain compiler-defined infallible length behavior rather than using a user hook. A type with neither built-in behavior nor a valid `__length__` cannot be passed to `length(...)`.
 
 ## Related topics
 

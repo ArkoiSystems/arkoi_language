@@ -90,7 +90,7 @@ Outside interface contracts, a bare associated-type name is not in scope. An `im
 fun BufferIterator.next(
     self @&mut BufferIterator,
 ) @?&Byte:
-    return self.take_next()
+    return BufferIterator.take_next(self)
 ```
 
 `Item`, `Self.Item`, and interface-qualified associated-type projection syntax are all invalid in concrete definitions. Arkoi provides no source-level projection syntax.

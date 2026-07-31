@@ -32,7 +32,7 @@ This document defines the accepted syntax and semantics of Arkoi. Statements mar
 Arkoi uses indentation to define blocks. A colon begins a block.
 
 ```arkoi
-fun greet(name @&string):
+fun greet(name @string_view):
     print(name)
 ```
 
@@ -183,7 +183,7 @@ This applies wherever Arkoi uses a comma-separated list, including:
 - Function, method, hook, and associated-function parameters.
 - Positional and named call arguments.
 - Array literal elements.
-- Aggregate-construction field initializers.
+- Positional and named aggregate-construction arguments.
 - Multiple index expressions.
 - Parent interfaces in an `extends` clause.
 
@@ -319,6 +319,9 @@ count = 20
 
 The `mut` keyword applies to the binding, meaning that the binding may be reassigned.
 
+Reference bindings are fixed aliases and do not permit binding-level `mut`.
+Mutability inside `&mut T` controls access to the referent instead.
+
 #### Delayed initialization
 
 Both immutable and mutable bindings may be declared without an initializer.
@@ -345,15 +348,22 @@ if condition:
 
 ### 2.2 Compile-Time Constants
 
-Compile-time constants use `const` with an explicit type.
+Compile-time constants use the `const` binding modifier after `@` and require
+an explicit type and initializer.
 
 ```arkoi
-const WIDTH @usize = 4
-const MAX_RETRIES @u32 = 5
-const PI @f64 = 3.141592653589793
+name @const Type = expression
 ```
 
-A constant initializer is evaluated completely at compile time.
+```arkoi
+WIDTH @const usize = 4
+MAX_RETRIES @const u32 = 5
+PI @const f64 = 3.141592653589793
+```
+
+A constant initializer is evaluated completely at compile time. A constant is
+an addressless value declaration: it has no storage location or runtime object
+identity.
 
 Constants:
 
@@ -363,11 +373,13 @@ Constants:
 - May use other constants and permitted compile-time operations.
 - May be used in array lengths, global initializers, and ordinary expressions.
 - Must not depend on runtime values or operations.
-- Cannot contain resources, references, raw pointers, slices, or other values whose meaning depends on runtime storage or lifetime.
+- Cannot contain resources, references, raw pointers, slices, or other values whose meaning depends on runtime storage or lifetime. A `string_view` backed entirely by string-literal storage is permitted.
+- Is not a place and therefore cannot be assigned, borrowed with `&` or `&mut`,
+  or passed to `address(...)`.
 
 ```arkoi
-const BUFFER_SIZE @usize = 1024
-const TOTAL_SIZE @usize = BUFFER_SIZE * 4
+BUFFER_SIZE @const usize = 1024
+TOTAL_SIZE @const usize = BUFFER_SIZE * 4
 
 buffer @[TOTAL_SIZE]u8
 ```
@@ -376,10 +388,15 @@ A runtime-dependent initializer is a compile-time error.
 
 ```arkoi
 size @usize = read_size()!
-const BUFFER_SIZE @usize = size  # Compile-time error
+BUFFER_SIZE @const usize = size  # Compile-time error
 ```
 
 The result of a constant expression must be representable by its declared type.
+
+Using a constant in an ordinary runtime expression produces its value. It does
+not materialize addressable constant storage. This also applies to composite
+constant values: an element such as `VALUES[0]` is a value, not a place backed
+by the constant declaration.
 
 ### 2.3 Constant Scope and Visibility
 
@@ -388,24 +405,25 @@ Constants may be declared at module scope or inside a lexical block.
 Module constants are private by default.
 
 ```arkoi
-const DEFAULT_SIZE @usize = 1024
+DEFAULT_SIZE @const usize = 1024
 ```
 
-A public module constant uses `pub const`.
+A public module constant places `pub` before the binding name.
 
 ```arkoi
-pub const DEFAULT_SIZE @usize = 1024
+pub DEFAULT_SIZE @const usize = 1024
 ```
 
 Local constants are visible only within their lexical block.
 
 ```arkoi
 fun process():
-    const CHUNK_SIZE @usize = 64
+    CHUNK_SIZE @const usize = 64
     # ...
 ```
 
-Constants cannot be declared `mut`.
+The `const` modifier is mutually exclusive with `mut` and `own`. Constants
+cannot use delayed initialization.
 
 All constants, including local constants, require compile-time-only initializers.
 
@@ -422,23 +440,24 @@ Constant expressions may contain:
 - Arithmetic, bitwise, comparison, and boolean operators.
 - Explicit numeric operations such as `convert(...)`, `truncate(...)`, and safe numeric `bitcast(...)`.
 - Optional, fixed-size array, and data-aggregate construction when every contained value is constant.
+- `string_view` values backed entirely by string literals.
 - Field access and compile-time-valid array indexing.
 
 ```arkoi
-const WIDTH @usize = 4
-const AREA @usize = WIDTH * 8
-const ENABLED @bool = WIDTH > 2
-const MASK @u32 = 0xff00 | 0x00ff
+WIDTH @const usize = 4
+AREA @const usize = WIDTH * 8
+ENABLED @const bool = WIDTH > 2
+MASK @const u32 = 0xff00 | 0x00ff
 ```
 
 ```arkoi
-const ORIGIN @Point = Point(
+ORIGIN @const Point = Point(
     x = 0.0,
     y = 0.0,
 )
 
-const VALUES @[3]u32 = [10, 20, 30]
-const SECOND @u32 = VALUES[1]
+VALUES @const [3]u32 = [10, 20, 30]
+SECOND @const u32 = VALUES[1]
 ```
 
 Constant expressions cannot contain:
@@ -447,7 +466,7 @@ Constant expressions cannot contain:
 - Resource construction or resource values.
 - Runtime state.
 - Allocation or I/O.
-- References, raw pointers, or slices.
+- References, raw pointers, slices, or non-static `string_view` values.
 - Unsafe operations.
 - Failure propagation or failure handlers.
 
@@ -476,10 +495,13 @@ Module-level variables are private by default. A public module-level variable us
 pub counter @mut u32 = 0
 ```
 
-Module-level variable initializers must be constant expressions.
+Module-level variable initializers must be static initializer expressions. A
+static initializer is a constant expression, extended only with references to
+the initial values of other module-level data variables as described in
+Section 2.6.
 
 ```arkoi
-const INITIAL_COUNT @u32 = 10
+INITIAL_COUNT @const u32 = 10
 counter @mut u32 = INITIAL_COUNT
 ```
 
@@ -490,10 +512,17 @@ version @u32 = 1
 counter @mut u32 = 0
 ```
 
+Unlike a constant, a module-level variable has stable program-lifetime storage
+and is an addressable place. This remains true for an immutable module variable:
+immutability prevents reassignment, but does not remove its address or storage
+identity. Reading a module variable in ordinary code loads its stored value; its
+name is not a constant expression merely because its initializer was evaluated
+at compile time.
+
 A module-level variable must have a data type; a resource-typed module variable is a compile-time error.
 
 ```arkoi
-global_file @File = File.open(&path)!  # Compile-time error
+global_file @File = File.open(path)!  # Compile-time error
 ```
 
 This avoids runtime initialization order, startup failure, global cleanup order, and long-lived borrowing problems.
@@ -504,22 +533,25 @@ Local variables are not subject to the constant-initializer restriction.
 
 ### 2.6 Acyclic Initializer Dependencies
 
-Dependencies among compile-time constants and module-level data-variable initializers must be acyclic.
+Dependencies among compile-time constants and module-level static initializers must be acyclic.
 
 Order-independent module declarations may refer to declarations that appear later in the source file.
 
 ```arkoi
-const WIDTH @usize = HEIGHT * 2
-const HEIGHT @usize = 4
+WIDTH @const usize = HEIGHT * 2
+HEIGHT @const usize = 4
 ```
 
-The compiler evaluates constants and module-level initializers in dependency order rather than textual order.
+The compiler evaluates constants and module-level static initializers in
+dependency order rather than textual order. A reference to a module variable
+within another static initializer denotes that declaration's initial value; it
+does not perform a runtime load.
 
 A direct or indirect dependency cycle is a compile-time error.
 
 ```arkoi
-const FIRST @usize = SECOND + 1
-const SECOND @usize = FIRST + 1
+FIRST @const usize = SECOND + 1
+SECOND @const usize = FIRST + 1
 ```
 
 ```arkoi
@@ -529,7 +561,7 @@ second @u32 = first
 
 The compiler reports the declarations participating in the cycle.
 
-Function calls cannot occur in constant or module-level data initializers, so function-call recursion is unrelated to this initializer dependency graph.
+Function calls cannot occur in constant or module-level static initializers, so function-call recursion is unrelated to this initializer dependency graph.
 
 ## 3. Types and Values
 
@@ -542,10 +574,12 @@ Arkoi deliberately combines keywords, symbols, and explicit operations.
 ```arkoi
 value @mut u32
 file @own File
+limit @const usize = 100
 ```
 
 - `mut` means a binding may be reassigned.
 - `own` means a resource parameter receives ownership.
+- `const` declares an addressless value evaluated at compile time.
 
 #### Symbols construct compound types
 
@@ -580,6 +614,7 @@ Built-in data types include:
 - Numeric types.
 - `bool`.
 - `char`.
+- `string_view`.
 - Raw pointers to C ABI types.
 - References.
 - Failure values.
@@ -627,7 +662,7 @@ A resource declaration may represent semantic ownership even when its fields app
 
 - `?T` is a resource when `T` is a resource; otherwise it is data.
 - An array of `T` is a resource when `T` is a resource; otherwise it is data.
-- References and raw pointers are non-owning data values even when they point to resources.
+- References, raw pointers, and `string_view` are non-owning data values.
 
 ---
 
@@ -703,16 +738,25 @@ Underscores may appear only between valid digits.
 
 Floating literals remain compile-time values until assigned to `f32` or `f64`.
 
-Supported forms include decimal and scientific notation.
+Supported forms include decimal, scientific, and hexadecimal notation.
 
 ```arkoi
 1.5
 1e10
 2.5e-4
 1_000.25
+0x1p0
+0x1.8p1
+0x1p-4
 ```
 
-Hexadecimal floating literals are not included in Arkoi.
+A hexadecimal floating literal starts with `0x` or `0X`. Its significand uses
+hexadecimal digits and may contain a radix point, with at least one hexadecimal
+digit in total. A `p` or `P` exponent is mandatory; its decimal exponent digits
+specify a power of two.
+
+Underscores may separate digits within the significand or exponent. They cannot
+touch the radix prefix, radix point, exponent marker, or exponent sign.
 
 #### Character literals
 
@@ -740,64 +784,86 @@ Supported escapes:
 
 ---
 
-### 3.5 Strings
+### 3.5 Strings and String Views
 
-Arkoi has one built-in string type:
-
-```arkoi
-string
-```
-
-Strings contain valid UTF-8.
-
-String literals have type `string`.
-
-The exact in-memory representation is intentionally unspecified. An implementation may use static storage, heap storage, small-string optimization, or other strategies.
-
-Borrowed string access uses normal references:
+Arkoi has two built-in UTF-8 text types:
 
 ```arkoi
-&string
-&mut string
+string       # Owning resource.
+string_view  # Read-only, non-owning data view.
 ```
 
-A separate `str` type is not part of Arkoi.
+Both types contain valid UTF-8. Their in-memory representations are
+unspecified. A `string` owns its text storage and follows the ordinary resource
+rules. A `string_view` copies normally and conceptually identifies immutable
+UTF-8 storage together with its byte length.
 
-`string` is a resource type.
-
-The infallible built-in `length(...)` function returns the number of bytes in the string's UTF-8 encoding. It does not return the number of Unicode scalar values or user-perceived characters.
+String literals have type `string_view`. Their encoded bytes reside in
+immutable compiler-managed storage for the complete program lifetime, so they
+require no runtime allocation or cleanup.
 
 ```arkoi
-text @string = "é"
-byte_count @usize = length(text)  # 2
+TITLE @const string_view = "Arkoi"
 ```
 
-#### UTF-8 Byte View
+A `string_view` constant is valid only when all of its backing storage derives
+from string literals. Copying such a constant copies the view value; the
+constant declaration itself remains addressless.
 
-The infallible built-in `bytes(...)` function returns a zero-copy, read-only slice over a string's UTF-8 bytes.
+`@mut string_view` makes the view binding reassignable; it does not make the
+viewed UTF-8 bytes mutable.
+
+#### Converting Between Text Types
+
+The built-in `string_view(...)` conversion creates a zero-copy view over an
+initialized `string` place.
 
 ```arkoi
-text @string = "Hé"
-encoded @[]u8 = bytes(text)
+owned @string = load_text()!
+view @string_view = string_view(owned)
 ```
 
-Conceptually, the returned slice contains:
+The view borrows the string's storage. It cannot outlive the string, and safe
+code cannot move, replace, or drop that string while the view remains live.
+The conversion is infallible and does not copy encoded bytes.
 
-```text
-[0x48, 0xC3, 0xA9]
+The built-in `string(...)` conversion copies a view's bytes into an independent
+owned string.
+
+```arkoi
+owned_copy @string = string(TITLE)!
 ```
 
-`bytes(...)` does not allocate or copy the encoded data. The returned slice borrows the string's existing storage and follows the normal slice lifetime rules. The slice cannot outlive its source string, and safe code cannot move, replace, or otherwise invalidate the string while the byte slice remains live.
+This conversion may allocate and therefore has the `CoreFail.out_of_memory`
+effect. The resulting string has no lifetime dependency on the source view.
+There is no implicit conversion in either direction.
 
-The byte view is read-only. Safe code cannot obtain a `[]mut u8` view of a string because arbitrary byte mutation could violate the invariant that every `string` contains valid UTF-8.
+Read-only text parameters normally accept `string_view` by value. A caller with
+an owned string passes `string_view(owned)` explicitly. An operation that takes
+ownership accepts `@own string` under the ordinary resource rules.
 
-A string is accessed through `bytes(...)`; indexing a string directly is a compile-time error:
+#### Text Length and Bytes
+
+The infallible built-ins `length(...)` and `bytes(...)` accept both text types.
+`length(...)` returns the number of UTF-8 bytes, not the number of Unicode scalar
+values or user-perceived characters. `bytes(...)` returns a zero-copy,
+read-only `[]u8` over the same encoded storage.
+
+```arkoi
+text @const string_view = "Hé"
+byte_count @usize = length(text)       # 3
+encoded @[]u8 = bytes(text)            # [0x48, 0xC3, 0xA9]
+```
+
+The byte slice inherits the source view's lifetime. For an owned string, it
+borrows that string under the same rules as `string_view(...)`. Safe code cannot
+obtain mutable byte access because arbitrary mutation could violate UTF-8.
+
+Neither text type supports direct indexing.
 
 ```arkoi
 value = text[index]  # Compile-time error
 ```
-
-Arkoi provides only the explicit UTF-8 byte view through `bytes(...)`.
 
 ---
 
@@ -806,7 +872,7 @@ Arkoi provides only the explicit UTF-8 byte view through `bytes(...)`.
 Optional types use `?T`. The absent value is `none`.
 
 ```arkoi
-user @?User = none
+profile @?Profile = find_profile()
 ```
 
 Optionals are distinct from nullable raw pointers and are the ordinary representation for optional data.
@@ -816,13 +882,13 @@ Optional values are narrowed only through explicit optional operations.
 #### Safe member access
 
 ```arkoi
-name @?string = user?.name
+name @?string_view = profile?.display_name
 ```
 
 #### Defaulting
 
 ```arkoi
-name @string = optional_name ?? fallback_name
+name @string_view = optional_name ?? "anonymous"
 ```
 
 The fallback expression is evaluated lazily.
@@ -1130,10 +1196,8 @@ This changes only the local parameter binding. Caller-visible mutation requires 
 
 ```arkoi
 fun increment(value @&mut u32):
-    value.* = value.* + 1
+    value = value + 1
 ```
-
-The exact dereference expression syntax remains to be finalized.
 
 ---
 
@@ -1216,24 +1280,25 @@ fun run_forever() @u32:
 
 Arkoi supports compile-time overloading for functions, methods, associated functions, and reserved hooks.
 
-Multiple declarations may share the same complete name when their ordered parameter signatures differ.
+Multiple declarations may share the same complete name when their overload identities differ.
 
 ```arkoi
 fun parse(value @u32) @Node:
     # ...
 
-fun parse(value @&string) @Node:
+fun parse(value @string_view) @Node:
     # ...
 ```
 
-Calls select an overload from the statically known argument types.
+Calls select an overload from the statically known argument types and, when
+needed, the call's explicit fallibility syntax.
 
 ```arkoi
 number @u32 = 10
-text @string = "10"
+text @const string_view = "10"
 
 number_node @Node = parse(number)
-text_node @Node = parse(&text)
+text_node @Node = parse(text)
 ```
 
 The overload identity consists of:
@@ -1242,6 +1307,7 @@ The overload identity consists of:
 - The number of parameters.
 - The ordered parameter types.
 - Parameter ownership and reference mutability modes.
+- The fallibility mode: no failure effect or a declared failure effect.
 
 For methods, the receiver parameter is part of the overload identity.
 
@@ -1249,7 +1315,7 @@ The following do not distinguish overloads:
 
 - Parameter names.
 - Return type.
-- Failure effect.
+- The exact failure-set type within the fallible mode.
 - Visibility.
 - Function-body behavior.
 
@@ -1263,14 +1329,29 @@ fun convert_value(value @u32) @f64:
     # Compile-time error: return type does not distinguish an overload
 ```
 
-These also conflict:
+One infallible and one fallible definition may share the same parameter
+signature:
 
 ```arkoi
-fun load(path @&string) @File:
+fun load(path @string_view) @File:
     # ...
 
-fun load(source @&string) !IOFail @File:
-    # Compile-time error: parameter names and failure effects do not distinguish overloads
+fun load(path @string_view) !IOFail @File:
+    # ...
+
+file @File = load(path)
+fallible_file @File = load(path)!
+```
+
+Two fallible definitions with the same parameter signature conflict even when
+their declared failure sets differ:
+
+```arkoi
+fun load(path @string_view) !IOFail @File:
+    # ...
+
+fun load(path @string_view) !ParseFail @File:
+    # Compile-time error: exact failure-set types do not distinguish overloads.
 ```
 
 Overload resolution follows these steps:
@@ -1279,8 +1360,33 @@ Overload resolution follows these steps:
 2. Collect only declarations visible at the call site.
 3. Match positional and named arguments to each candidate's parameters.
 4. Reject candidates with incompatible argument counts, argument names, or argument types.
-5. Select the single remaining candidate.
-6. Report a compile-time error if no candidate or more than one candidate remains.
+5. When both fallibility modes remain, select the fallible mode for a call
+   directly followed by postfix `!` or `handle failure`; otherwise select the
+   infallible mode.
+6. Select the single remaining candidate.
+7. Report a compile-time error if no candidate or more than one candidate remains.
+
+Fallibility selection is local to the call expression. The enclosing
+function's failure effect, an expected return type, or a handler around a larger
+containing expression does not select an overload.
+
+When both modes exist, a directly attached postfix `!` selects the fallible
+overload and consumes its failure layer before any optional layer. For a
+fallible overload returning `?T`, one `!` produces `?T` and two produce `T`.
+Calling the infallible overload and unwrapping its optional result requires the
+unmarked result to be stored first.
+
+```arkoi
+maybe @?Item = find(key)    # Infallible overload.
+item @Item = maybe!         # Unwraps the optional.
+
+fallible_maybe @?Item = find(key)!  # Fallible overload; propagates failure.
+fallible_item @Item = find(key)!!   # Also unwraps the optional.
+```
+
+If argument matching leaves only one fallibility mode, that overload is
+selected and its result must still satisfy the ordinary propagation, handling,
+or optional-unwrapping rules.
 
 Parameter names participate in matching named call arguments, but do not make otherwise identical declarations distinct.
 
@@ -1353,7 +1459,8 @@ fun Vector.scale(self @&Vector, scalar @f64) @Vector:
     # ...
 ```
 
-Reserved operator hooks also use this overload mechanism. A type may define several hooks in one operator family when their operand signatures differ.
+Reserved operator hooks also use this overload mechanism. A type may define
+several hooks in one operator family when their overload identities differ.
 
 ```arkoi
 fun Vector.__mul__(self @&Vector, scalar @f64) @Vector:
@@ -1365,6 +1472,10 @@ fun Vector.__mul__(self @&Vector, other @&Vector) @f64:
 
 Operator syntax first chooses the normal or reverse hook family according to the operator-resolution rules, then applies the same exact overload selection described here.
 
+For a compiler-generated hook call, the corresponding language operation
+defines how its infallible or fallible spelling selects the hook's fallibility
+mode. Hook-specific contracts may restrict a hook to one mode.
+
 Overload sets remain compile-time name-resolution structures rather than values. A specific overload may be selected and converted into a function pointer only through the explicit `address(...)` operation with sufficient function-pointer type context.
 
 ### 4.5 Named Function Arguments
@@ -1373,8 +1484,8 @@ Function calls may use positional arguments, named arguments, or a mixture of bo
 
 ```arkoi
 fun copy_file(
-    source @&string,
-    destination @&string,
+    source @string_view,
+    destination @string_view,
     overwrite @bool,
 ) !IOFail:
     # ...
@@ -1383,15 +1494,15 @@ fun copy_file(
 A call may be entirely positional:
 
 ```arkoi
-copy_file(&source, &destination, true)!
+copy_file(source, destination, true)!
 ```
 
 A call may use named arguments:
 
 ```arkoi
 copy_file(
-    source = &source,
-    destination = &destination,
+    source = source,
+    destination = destination,
     overwrite = true,
 )!
 ```
@@ -1400,8 +1511,8 @@ When positional and named arguments are mixed, all positional arguments must app
 
 ```arkoi
 copy_file(
-    &source,
-    destination = &destination,
+    source,
+    destination = destination,
     overwrite = true,
 )!
 ```
@@ -1426,8 +1537,8 @@ Parameter names are part of a function's source-level API because callers may us
 
 ```arkoi
 copy_file(
-    source = &source,
-    destination = &destination,
+    source = source,
+    destination = destination,
     overwrite = true,
 )!
 ```
@@ -1480,7 +1591,7 @@ A function type may include the same signature properties as an ordinary Arkoi f
 
 ```arkoi
 type Loader = fun(
-    @&string,
+    @string_view,
 ) !LoadFail @File
 
 type RawOperation = unsafe fun(
@@ -1563,7 +1674,7 @@ A fallible native function pointer uses ordinary failure handling and propagatio
 unsafe:
     file @File = call(
         loader,
-        &path,
+        path,
     )!
 ```
 
@@ -1739,7 +1850,7 @@ second @string = move(first)
 
 `move(value)` transfers ownership without allocation. The source binding becomes uninitialized.
 
-`move(...)` is valid only for resource values. Data values—including numbers, booleans, characters, references, raw pointers, slices, failures, and data aggregates—are copied normally and cannot be passed to `move(...)`.
+`move(...)` is valid only for resource values. Data values—including numbers, booleans, characters, `string_view`, references, raw pointers, slices, failures, and data aggregates—are copied normally and cannot be passed to `move(...)`.
 
 ```arkoi
 second @u32 = first
@@ -1754,11 +1865,11 @@ Using a moved resource binding before reinitialization is a compile-time error.
 A mutable resource binding may be reinitialized after it has been moved:
 
 ```arkoi
-file @mut File = File.open(&first_path)!
+file @mut File = File.open(first_path)!
 consume(move(file))
 
 # file is uninitialized here.
-file = File.open(&second_path)!
+file = File.open(second_path)!
 ```
 
 Because no old value remains after the move, this assignment performs initialization rather than drop-and-replace. The newly initialized value becomes eligible for automatic cleanup again.
@@ -1766,10 +1877,10 @@ Because no old value remains after the move, this assignment performs initializa
 An immutable resource binding cannot be reinitialized after it has been moved. It was already initialized once, so another assignment would violate immutable-binding semantics.
 
 ```arkoi
-file @File = File.open(&first_path)!
+file @File = File.open(first_path)!
 consume(move(file))
 
-file = File.open(&second_path)!  # Compile-time error.
+file = File.open(second_path)!  # Compile-time error.
 ```
 
 Definite-initialization analysis tracks mutable resource bindings across moves and reinitializations. A resource may be used or dropped only on paths where it is definitely initialized.
@@ -1777,7 +1888,7 @@ Definite-initialization analysis tracks mutable resource bindings across moves a
 `move(...)` accepts only a whole named resource binding, including an ownership-taking resource parameter.
 
 ```arkoi
-file @File = File.open(&path)!
+file @File = File.open(path)!
 other @File = move(file)
 
 fun forward(file @own File) @File:
@@ -1794,10 +1905,10 @@ first @File = move(files[0])   # Compile-time error.
 A temporary resource enters an owning context directly and must not be wrapped in `move(...)`.
 
 ```arkoi
-consume(File.open(&path)!)
-return File.open(&path)!
+consume(File.open(path)!)
+return File.open(path)!
 
-consume(move(File.open(&path)!))  # Compile-time error: redundant move.
+consume(move(File.open(path)!))  # Compile-time error: redundant move.
 ```
 
 #### Clone
@@ -1857,7 +1968,7 @@ Returning a named resource binding transfers ownership and therefore requires an
 
 ```arkoi
 fun create_file() !IOFail @File:
-    file @File = File.open(&path)!
+    file @File = File.open(path)!
     return move(file)
 ```
 
@@ -1878,7 +1989,7 @@ A temporary resource expression may be returned directly because there is no reu
 
 ```arkoi
 fun create_file() !IOFail @File:
-    return File.open(&path)!
+    return File.open(path)!
 ```
 
 Data values and non-owning references are returned normally.
@@ -1914,7 +2025,7 @@ copy @File = clone(original)!
 
 copy @File = clone(original) handle failure:
     log_failure(failure)
-    yield File.open(&fallback_path)!
+    yield File.open(fallback_path)!
 ```
 
 Every resource is movable. Only resources with a valid clone hook are cloneable. The compiler does not assume that cloning is fallible merely because the value is a resource.
@@ -1944,13 +2055,13 @@ The original resource remains initialized and owned by its existing binding or c
 Cloning a temporary resource expression is rejected as redundant:
 
 ```arkoi
-copy @File = clone(File.open(&path)!)!  # Compile-time error.
+copy @File = clone(File.open(path)!)!  # Compile-time error.
 ```
 
 The temporary can enter the destination owning context directly:
 
 ```arkoi
-copy @File = File.open(&path)!
+copy @File = File.open(path)!
 ```
 
 Therefore:
@@ -2026,7 +2137,7 @@ This keeps resource aggregates either fully initialized or fully uninitialized.
 The built-in `take(...)` operation applies to mutable optional places of type `?T`, regardless of whether `T` is data or resource. It returns the previous optional value and replaces the source with `none`.
 
 ```arkoi
-current @mut ?File = File.open(&path)!
+current @mut ?File = File.open(path)!
 taken @?File = take(&mut current)
 ```
 
@@ -2052,7 +2163,7 @@ The built-in `replace(...)` operation swaps the value stored in a mutable place 
 
 ```arkoi
 old_count @u32 = replace(&mut count, 42)
-old_file @File = replace(&mut file, File.open(&new_path)!)
+old_file @File = replace(&mut file, File.open(new_path)!)
 ```
 
 A named replacement resource still requires explicit ownership transfer:
@@ -2081,8 +2192,8 @@ Both places must have the same type and must permit mutation. `swap(...)` may ta
 For resources, ownership of the two values is exchanged without cloning, dropping, or leaving either place uninitialized. No `move(...)` marker is required because neither value leaves the two supplied places.
 
 ```arkoi
-first @mut File = File.open(&first_path)!
-second @mut File = File.open(&second_path)!
+first @mut File = File.open(first_path)!
+second @mut File = File.open(second_path)!
 
 swap(&mut first, &mut second)
 ```
@@ -2102,39 +2213,43 @@ Distinct places may be swapped normally, including places reached through aliasi
 
 ### 5.2 Aggregate Construction
 
-Aggregates use named-field construction.
+Aggregate construction accepts positional arguments, named arguments, or
+positional arguments followed by named arguments.
 
 ```arkoi
 data Point:
     x @f32
     y @f32
 
-point @Point = Point(
-    x = 10.0,
+positional @Point = Point(10.0, 20.0)
+
+mixed @Point = Point(
+    10.0,
     y = 20.0,
 )
-```
 
-Aggregate construction uses named fields exclusively.
-
-```arkoi
-point @Point = Point(10.0, 20.0)  # Compile-time error.
+named @Point = Point(
+    y = 20.0,
+    x = 10.0,
+)
 ```
 
 Construction rules:
 
+- Positional arguments initialize fields in declaration order.
+- After the first named argument, every remaining argument must be named.
+- A named argument may initialize any remaining accessible field.
 - Every field must be initialized exactly once.
 - Missing fields are errors.
 - Unknown fields are errors.
 - Duplicate fields are errors.
 - Field values must match declared types.
-- Constructor field order does not have to match declaration order.
+- Argument expressions are evaluated from left to right in written order.
+- Declaration order is part of the source API for positional construction.
 
 ```arkoi
-point @Point = Point(
-    y = 20.0,
-    x = 10.0,
-)
+duplicate @Point = Point(10.0, x = 20.0)  # Compile-time error.
+invalid @Point = Point(x = 10.0, 20.0)    # Compile-time error.
 ```
 
 #### Resource fields
@@ -2153,7 +2268,7 @@ Temporary resources may initialize fields directly.
 ```arkoi
 user @User = User(
     name = load_name()!,
-    file = File.open(&path)!,
+    file = File.open(path)!,
 )
 ```
 
@@ -2232,7 +2347,7 @@ Resource construction uses ordinary associated functions rather than an initiali
 Constructors are ordinary associated functions that return fully initialized values.
 
 ```arkoi
-pub fun File.open(path @&string) !IOFail @File:
+pub fun File.open(path @string_view) !IOFail @File:
     # Construct and return a complete File.
 ```
 
@@ -2249,8 +2364,8 @@ No partially initialized resource is exposed to calling code.
 Mutable resource bindings use construct-first, then drop-and-replace semantics.
 
 ```arkoi
-file @mut File = File.open(&first_path)!
-file = File.open(&second_path)!
+file @mut File = File.open(first_path)!
+file = File.open(second_path)!
 ```
 
 Replacement occurs in this order:
@@ -2289,7 +2404,7 @@ file = move(file)  # Compile-time error.
 
 #### References
 
-References are non-null.
+References are non-null, non-owning aliases to stable storage.
 
 ```arkoi
 &T       # Read-only reference
@@ -2298,13 +2413,51 @@ References are non-null.
 
 Arkoi enforces basic mutability and lexical lifetime rules but does not provide a complete Rust-style exclusivity or borrow analysis.
 
-Binding mutability and referent mutability are separate.
+A reference binding is initialized once and remains bound to the same referent.
+It may use Arkoi's ordinary delayed initialization, but binding-level `mut` is
+not permitted for a reference type. Referent access is determined by the
+reference type:
 
 ```arkoi
-a @&Item          # Immutable binding, read-only referent
-b @&mut Item      # Immutable binding, mutable referent
-c @mut &Item      # Reassignable binding, read-only referent
-d @mut &mut Item  # Reassignable binding, mutable referent
+view @&Item = &item
+editable @&mut Item = &mut item
+```
+
+A reference name transparently designates its referent in value and place
+expressions. Reading through `&T` or `&mut T` reads the referent. Assignment
+through `&mut T` writes the referent and never changes the reference binding.
+Assignment through `&T` is invalid.
+Fields, methods, indexing, and operators use the same direct syntax as the
+referenced value. References have no dereference operator; unary `*` applies
+only to raw pointers.
+
+```arkoi
+fun increment(value @&mut u32):
+    value = value + 1
+
+fun reset(file @&mut File):
+    file.handle = 0
+```
+
+An assignment whose reference destination is already initialized always writes
+the referent, including when the source is another reference:
+
+```arkoi
+destination @&mut u32 = &mut first
+source @&u32 = &second
+destination = source  # Copies second into first.
+```
+
+In a reference-typed initializer, argument, or return context, an existing
+reference is copied as a reference to the same referent. Borrowing a reference
+name reborrows its referent rather than creating a reference to the reference
+binding. The reference binding is not itself an addressable place. The mutable
+form requires existing mutable access.
+
+```arkoi
+alias @&Item = reference
+inspect(reference)
+another_alias @&Item = &reference
 ```
 
 #### Explicit borrowing at ordinary call sites
@@ -2337,9 +2490,17 @@ References may be created only from stable addressable storage, such as:
 
 - Local bindings.
 - Parameters.
+- Module-level variables.
 - Aggregate fields.
 - Array elements.
 - Allocated storage.
+
+Compile-time constants are addressless values rather than storage. A constant,
+or an element or field selected from a constant, cannot be borrowed.
+
+`string_view(owned_string)` and `bytes(owned_string)` create read-only borrows
+of the string's storage and participate in the same lifetime and invalidation
+checks as other derived views.
 
 Arkoi does not extend the lifetime of temporary values merely because a reference is taken.
 
@@ -2356,7 +2517,7 @@ References derived directly from parameters may be returned when the relationshi
 Arkoi also prevents an owned value from being moved, replaced, or dropped while an obviously live reference or slice derived from that value may still be used.
 
 ```arkoi
-file @File = File.open(&path)!
+file @File = File.open(path)!
 reference @&File = &file
 
 consume(move(file))  # Compile-time error: file is still borrowed.
@@ -2366,7 +2527,7 @@ inspect(reference)
 The operation is valid after the compiler can see that the derived borrow is no longer live:
 
 ```arkoi
-file @File = File.open(&path)!
+file @File = File.open(path)!
 reference @&File = &file
 inspect(reference)
 
@@ -2553,11 +2714,12 @@ mutable_items[index]! = replacement
 
 An out-of-range index produces `CoreFail.out_of_range`. A program may propagate or handle that failure normally. Writing through a slice additionally requires `[]mut T`.
 
-A raw pointer may be obtained from a slice only in an unsafe context:
+The unsafe built-in `pointer(slice)` returns a raw pointer to the slice's first
+element and preserves its element-access mode:
 
 ```arkoi
 unsafe:
-    pointer @*Item = items.pointer()
+    pointer @*Item = pointer(items)
 ```
 
 Constructing a slice from a raw pointer and length is also unsafe because the programmer must guarantee that the range is alive, correctly aligned, contiguous, and contains valid elements.
@@ -2683,7 +2845,7 @@ A fixed-size array owns its elements. Its data-or-resource category follows its 
 
 ##### Collection Length
 
-Arkoi provides the infallible built-in function `length(...)` for fixed-size arrays, slices, and strings. The result type is `usize`.
+Arkoi provides the infallible built-in function `length(...)` for fixed-size arrays, slices, `string`, and `string_view`. The result type is `usize`.
 
 ```arkoi
 array_count @usize = length(values)
@@ -2691,10 +2853,10 @@ slice_count @usize = length(view)
 byte_count @usize = length(text)
 ```
 
-For a fixed-size array `[N]T`, `length(array)` evaluates to the compile-time value `N`. For a slice, it returns the stored element count. For a string, it returns the number of bytes used by the valid UTF-8 encoding, not the number of Unicode scalar values or user-perceived characters.
+For a fixed-size array `[N]T`, `length(array)` evaluates to the compile-time value `N`. For a slice, it returns the stored element count. For `string` and `string_view`, it returns the UTF-8 byte count.
 
 ```arkoi
-text @string = "é"
+text @const string_view = "é"
 bytes @usize = length(text)  # 2 in UTF-8.
 ```
 
@@ -2705,8 +2867,8 @@ bytes @usize = length(text)  # 2 in UTF-8.
 The length `N` in `[N]T` must be a compile-time integer expression. Every fixed-size array therefore has a statically known size and layout.
 
 ```arkoi
-const WIDTH = 4
-const HEIGHT = 3
+WIDTH @const usize = 4
+HEIGHT @const usize = 3
 
 pixels @[WIDTH * HEIGHT]u32
 header @[2 + 6]u8
@@ -2834,26 +2996,26 @@ A mutable resource-valued place may be assigned directly. Direct assignment uses
 
 ```arkoi
 files @mut [2]File = [
-    File.open(&first_path)!,
-    File.open(&second_path)!,
+    File.open(first_path)!,
+    File.open(second_path)!,
 ]
 
-files[0] = File.open(&replacement_path)!
+files[0] = File.open(replacement_path)!
 ```
 
 A named replacement resource requires explicit ownership transfer:
 
 ```arkoi
-replacement @File = File.open(&replacement_path)!
+replacement @File = File.open(replacement_path)!
 files[0] = move(replacement)
 ```
 
 The same rule applies to mutable resource fields and dynamically indexed array or slice elements:
 
 ```arkoi
-user.file = File.open(&path)!
+user.file = File.open(path)!
 files[index]! = move(replacement)
-mutable_files[index]! = File.open(&path)!
+mutable_files[index]! = File.open(path)!
 ```
 
 The operation proceeds in this order:
@@ -3083,68 +3245,83 @@ They use static resolution in Arkoi. Method declarations do not imply inheritanc
 
 #### Allowed method receivers
 
-Methods may use only:
+Methods use one of these receiver forms:
 
 ```arkoi
 self @&Type
 self @&mut Type
+self @own Type
 ```
 
-Ownership-consuming method receivers are not supported in Arkoi.
+The ordinary ownership rules apply to the receiver. An owning receiver is valid
+when the received type is a resource and consumes the explicitly moved value.
 
 ```arkoi
-fun File.consume(self @own File):  # Compile-time error.
-```
-
-An operation that consumes a resource must be an associated function with an explicit owning parameter.
-
-```arkoi
-fun File.into_buffer(file @own File) @Buffer:
+fun File.into_buffer(self @own File) @Buffer:
     # ...
 
 buffer @Buffer = File.into_buffer(move(file))
 ```
 
-#### Implicit receiver borrowing
+#### Explicit receiver calls
 
-Dot-based method syntax may automatically borrow only the receiver.
-
-```arkoi
-size @usize = file.size()
-file.flush()!
-```
-
-These correspond to:
+Methods are called through their declaring type. The receiver is the first
+argument and follows the same explicit borrowing and movement rules as every
+other argument.
 
 ```arkoi
 size @usize = File.size(&file)
 File.flush(&mut file)!
+buffer @Buffer = File.into_buffer(move(file))
 ```
 
-Other arguments must still be borrowed explicitly.
+An existing reference may be passed directly when its type and access match the
+receiver parameter.
+
+```arkoi
+file_ref @&mut File = &mut file
+File.flush(file_ref)!
+```
+
+Fields are selected through a value or reference. Receiver functions are
+qualified by their declaring type or a visible interface requirement.
 
 ```arkoi
 fun File.write(self @&mut File, buffer @&Buffer) !IOFail:
     # ...
 
-file.write(&buffer)!
+File.write(&mut file, &buffer)!
 ```
 
-Arkoi does not automatically borrow `buffer`.
+Every receiver call therefore exposes whether the operation receives read-only
+access, mutable access, or ownership.
+
+An interface receiver requirement may be called through the interface name.
+The concrete implementation is selected statically from the explicit receiver's
+concrete type.
+
+```arkoi
+Writer.write(&mut file, data = bytes)
+```
+
+Interface qualification does not create an interface value or dynamic dispatch.
+An associated-function requirement without `self` is called through a concrete
+implementing type because there is no receiver from which to select an
+implementation.
 
 #### Associated functions
 
 Qualified functions without a `self` parameter are associated functions.
 
 ```arkoi
-fun File.open(path @&string) !IOFail @File:
+fun File.open(path @string_view) !IOFail @File:
     # ...
 ```
 
 They are called through the type name.
 
 ```arkoi
-file @File = File.open(&path)!
+file @File = File.open(path)!
 ```
 
 ---
@@ -3164,7 +3341,7 @@ pub data Point:
 #### Public functions
 
 ```arkoi
-pub fun parse(text @&string) !ParseFail @Data:
+pub fun parse(text @string_view) !ParseFail @Data:
     # ...
 ```
 
@@ -3174,7 +3351,7 @@ pub fun parse(text @&string) !ParseFail @Data:
 pub fun Point.distance(self @&Point, other @&Point) @f64:
     # ...
 
-pub fun File.open(path @&string) !IOFail @File:
+pub fun File.open(path @string_view) !IOFail @File:
     # ...
 ```
 
@@ -3221,7 +3398,9 @@ Public fields remain directly accessible according to normal reference and mutab
 
 #### Construction with private fields
 
-Code without private access cannot use named-field construction for private fields. Public constructor functions must be used instead.
+Code without private access cannot initialize a private field by name or
+position. Because construction initializes every field, an aggregate with any
+inaccessible field must be created through an accessible constructor function.
 
 ---
 
@@ -3262,14 +3441,14 @@ failure CoreFail:
 
 Every user-defined failure set includes `CoreFail` as a failure-set inclusion rule, not through object-oriented inheritance.
 
-`CoreFail.out_of_memory` represents recoverable memory-allocation failure. Operations that allocate, including resource cloning such as `clone(value)!`, may produce this failure. Allocation failure is not an automatic trap; callers may propagate or handle it through Arkoi's normal failure-effect rules.
+`CoreFail.out_of_memory` represents recoverable memory-allocation failure. Operations that allocate, including `string(view)!` and resource cloning such as `clone(value)!`, may produce this failure. Allocation failure is not an automatic trap; callers may propagate or handle it through Arkoi's normal failure-effect rules.
 
 #### Function failure effects
 
 A function's failure effect appears after the parameter list and before the return type.
 
 ```arkoi
-fun read_file(path @&string) !IOFail @File:
+fun read_file(path @string_view) !IOFail @File:
     # ...
 ```
 
@@ -3284,7 +3463,7 @@ fail IOFail.not_found
 Failure propagation is never automatic.
 
 ```arkoi
-file @File = read_file(&path)!
+file @File = read_file(path)!
 ```
 
 The call must use postfix `!` or handle the failure locally.
@@ -3356,7 +3535,7 @@ true
 false
 ```
 
-There is no general truthiness conversion. Numbers, pointers, strings, and optionals do not automatically become booleans.
+There is no general truthiness conversion. Numbers, pointers, text values, and optionals do not automatically become booleans.
 
 Boolean operators are keywords:
 
@@ -3817,25 +3996,24 @@ A resource optional supports `==` only when the contained resource type explicit
 
 Optional types are built-in composite types and cannot define custom `__eq__` or `__ne__` hooks.
 
-### 9.12 Equality for References and Raw Pointers
+### 9.12 Comparisons Through References and Raw-Pointer Equality
 
-References and raw pointers compare by address identity rather than by the values they designate.
-
-Reference equality:
+A reference expression transparently designates its referent for comparison.
+The referent type determines whether each comparison operator is available and
+which built-in rule or comparison hook it uses.
 
 ```arkoi
-same @bool = first_ref == second_ref
-different @bool = first_ref != second_ref
+same_value @bool = first_ref == second_ref
+ordered @bool = first_ref < second_ref
 ```
 
-Two references compare equal only when they designate the same address.
+Reference mutability does not change the referent's read-only comparison
+behavior. To compare whether two references designate the same place, compare
+raw pointers obtained from their referents:
 
-Reference comparison:
-
-- Does not access or compare the referenced values.
-- Does not call the referent type's `__eq__` or `__ne__` hook.
-- Is safe and infallible.
-- Supports comparison between `&T` and `&mut T` when both have the same referent type after ignoring reference mutability.
+```arkoi
+same_place @bool = address(first_ref) == address(second_ref)
+```
 
 Raw-pointer equality:
 
@@ -3853,11 +4031,11 @@ Raw-pointer comparison:
 - Does not require the addresses to designate live or related objects.
 - Does not call comparison hooks on the pointed-to type.
 
-Reference and raw-pointer types cannot define custom `__eq__` or `__ne__` hooks.
+Raw-pointer types cannot define custom `__eq__` or `__ne__` hooks.
 
-Ordering operators such as `<`, `<=`, `>`, and `>=` are not supported for references or raw pointers.
+Ordering operators such as `<`, `<=`, `>`, and `>=` are not supported for raw pointers.
 
-Comparing designated values must be explicit by dereferencing or otherwise accessing them under the rules applicable to the reference or pointer.
+Raw-pointer pointees are compared only after explicit unsafe dereferencing.
 
 ### 9.13 Equality for Enums
 
@@ -4400,6 +4578,71 @@ Membership evaluates the item first and the container second, following Arkoi's 
 
 Membership expressions are distinct from `for item in collection` loop syntax. The loop form does not invoke `__contains__`.
 
+### 9.22 Pipeline Expressions
+
+A pipeline expression carries one current value through an ordered sequence of
+stage expressions.
+
+```arkoi
+packet @Packet = (
+    Buffer.create()
+    |> Buffer.reserve(&mut _, 4096)!
+    |> Buffer.append(&mut _, &header)!
+    |> Buffer.freeze(move(_))
+    |> Packet.from_buffer(move(_))!
+)
+```
+
+The expression before the first `|>` establishes the initial pipeline carrier.
+Each stage contains exactly one unqualified `_` placeholder designating the
+current carrier. The placeholder is valid only within a pipeline stage and is
+not an ordinary identifier, binding, wildcard, or discard operation.
+
+A stage accesses the carrier explicitly:
+
+```arkoi
+File.size(&_)
+File.flush(&mut _)!
+File.into_buffer(move(_))!
+```
+
+The selected function's parameter type must accept that exact access mode.
+Ordinary borrowing, mutability, ownership, overload, visibility, safety, and
+failure-effect rules remain in force.
+
+The result of each stage determines the next carrier:
+
+- When the stage produces a value, that returned value becomes `_`.
+- When the stage produces no value, the existing `_` continues, including any
+  mutation performed through `&mut _`.
+
+A returned value always becomes the next carrier even when the stage also
+mutates the previous carrier.
+
+```arkoi
+bytes_read @usize = (
+    file
+    |> File.read(&mut _, &mut buffer)!
+)
+```
+
+Here `File.read` may modify `file` and `buffer`, but its returned `usize` is the
+pipeline result.
+
+Every stage must leave an initialized carrier. A stage that uses `move(_)` must
+therefore return a replacement value. The pipeline placeholder gives its
+carrier a single stable identity for the pipeline's duration, so `move(_)` may
+consume a resource temporary produced by the initial expression or an earlier
+stage. Beginning with `move(name)` remains necessary when ownership of a named
+resource enters the pipeline itself.
+
+The final carrier is the value of the complete pipeline expression and follows
+the ordinary result-use, movement, reference-lifetime, and cleanup rules.
+
+`|>` has lower precedence than every other expression operator and groups from
+left to right. A multiline pipeline is enclosed in parentheses under Arkoi's
+ordinary line-continuation rule.
+
 ## 10. Evaluation, Assignment, and Result Use
 
 ### 10.1 Evaluation Order
@@ -4433,10 +4676,12 @@ copy_file(
 
 Here, `check_overwrite()` is evaluated first, followed by `load_source()` and then `load_destination()`.
 
-For method calls, the receiver is evaluated first, followed by the explicit arguments from left to right.
+The receiver of a method call is its explicit first argument and therefore uses
+the same left-to-right written order as every other call argument.
 
 ```arkoi
-get_file().write(
+File.write(
+    get_file_reference(),
     load_first_buffer(),
     load_second_buffer(),
 )!
@@ -4444,7 +4689,7 @@ get_file().write(
 
 Evaluation order is:
 
-1. `get_file()`
+1. `get_file_reference()`
 2. `load_first_buffer()`
 3. `load_second_buffer()`
 4. The method call
@@ -4452,9 +4697,15 @@ Evaluation order is:
 The same left-to-right written-order rule applies to:
 
 - Function and method arguments.
-- Named aggregate field initializers.
+- Aggregate-construction arguments.
 - Array literal elements.
 - Built-in operations such as `replace(...)`, `swap(...)`, `convert(...)`, `truncate(...)`, and `bitcast(...)`.
+
+A pipeline evaluates its initial expression exactly once, then evaluates its
+stages once each from left to right. The current carrier already exists when a
+stage begins; expressions within that stage follow their ordinary evaluation
+order. If a stage fails or otherwise leaves control flow, later stages are not
+evaluated and every live resource is cleaned up normally.
 
 If evaluation fails or leaves control flow, later expressions are not evaluated. Already constructed temporary resources are cleaned up according to the ordinary cleanup rules.
 
@@ -4676,7 +4927,7 @@ return value = 3         # Compile-time error
 Named call arguments use `name = expression` syntax but are not assignments.
 
 ```arkoi
-copy_file(source = &source, destination = &destination)!
+copy_file(source = source, destination = destination)!
 ```
 
 The left side of a named argument names a parameter and does not designate a mutable place.
@@ -4695,7 +4946,7 @@ A function or method call that produces no value may appear as a standalone stat
 
 ```arkoi
 log_message(&message)
-file.flush()!
+File.flush(&mut file)!
 ```
 
 A produced value must otherwise be:
@@ -4711,7 +4962,7 @@ Arkoi provides the built-in operation `discard(expression)` for intentional disp
 
 ```arkoi
 discard(calculate_value())
-discard(File.open(&path)!)
+discard(File.open(path)!)
 ```
 
 `discard(...)` evaluates its argument exactly once.
@@ -4846,7 +5097,7 @@ Mutable iteration requires mutable element access:
 
 ```arkoi
 for file @&mut File in mutable_files:
-    file.flush()!
+    File.flush(file)!
 ```
 
 The source must permit mutable element access, such as a mutable fixed-size array binding or a `[]mut T` slice.
@@ -5006,10 +5257,10 @@ The loop binding type must exactly match the `Item` associated type of the selec
 Conceptually, the compiler lowers the loop to direct statically resolved calls:
 
 ```arkoi
-iterator @mut AccountIterator = accounts.__iterate__()
+iterator @mut AccountIterator = AccountCollection.__iterate__(&accounts)
 
 loop:
-    next @?&Account = iterator.__next__()
+    next @?&Account = AccountIterator.__next__(&mut iterator)
 
     if next == none:
         break
@@ -5422,7 +5673,7 @@ matches @mut ReferenceCollection = create_collection()
 
 for item @&Item in source:
     if matches_filter(item):
-        matches.append(item)
+        ReferenceCollection.append(&mut matches, item)
 ```
 
 The references may remain in `matches` after the loop. The programmer and iterator implementation are responsible for ensuring that their referents remain alive and stable.
@@ -5452,7 +5703,7 @@ interface OwningIterable:
     type Iterator
 
     fun __into_iterator__(
-        value @own Self,
+        self @own Self,
     ) @Iterator
 ```
 
@@ -5495,7 +5746,8 @@ Therefore:
 - `for item @Item in &mut collection` selects `MutableIterable`.
 - `for item @Item in move(collection)` selects `OwningIterable`.
 
-`__into_iterator__` is an associated function rather than a method receiver because Arkoi does not support consuming `self @own Type` methods.
+`__into_iterator__` uses an owning receiver because consuming iteration takes
+ownership of its resource iterable.
 
 The `Iterator` associated type must be a named aggregate implementing either `Iterator` or `FallibleIterator`.
 
@@ -5510,11 +5762,11 @@ implements Iterator for FileCollectionIterator:
     type Item = File
 ```
 
-The concrete definition remains an ordinary external associated function.
+The concrete definition remains an ordinary external method.
 
 ```arkoi
 fun FileCollection.__into_iterator__(
-    value @own FileCollection,
+    self @own FileCollection,
 ) @FileCollectionIterator:
     # Transfer the collection's owned state into the iterator
 ```
@@ -5549,7 +5801,7 @@ interface FallibleOwningIterable:
     type Failure
 
     fun __into_iterator__(
-        value @own Self,
+        self @own Self,
     ) !Failure @Iterator
 ```
 
@@ -5589,7 +5841,7 @@ implements FallibleIterator for ArchiveIterator:
 
 ```arkoi
 fun Archive.__into_iterator__(
-    value @own Archive,
+    self @own Archive,
 ) !ArchiveFail @ArchiveIterator:
     # ...
 ```
@@ -5805,10 +6057,10 @@ Conceptually, the compiler stores the temporary in a hidden immutable binding be
 ```arkoi
 hidden_collection @DataCollection = create_data_collection()
 hidden_iterator @mut DataIterator =
-    hidden_collection.__iterate__()
+    DataCollection.__iterate__(&hidden_collection)
 
 loop:
-    next @?&Item = hidden_iterator.__next__()
+    next @?&Item = DataIterator.__next__(&mut hidden_iterator)
 
     if next == none:
         break
@@ -5850,7 +6102,8 @@ Resource temporaries follow the separate consuming-iteration rule. Their ownersh
 
 ### 11.16 Mutable Loop Bindings
 
-A `for` or `for!` loop binding may use Arkoi's ordinary `@mut` binding modifier.
+A `for` or `for!` loop binding may use Arkoi's ordinary `@mut` binding modifier
+when its type permits binding mutability.
 
 ```arkoi
 for value @mut u32 in numbers:
@@ -5871,18 +6124,11 @@ To mutate the actual underlying element, the selected iterator must yield a muta
 
 ```arkoi
 for value @&mut u32 in &mut numbers:
-    *value += 1
+    value += 1
 ```
 
-Here, the loop binding itself is immutable, but its referent is mutable.
-
-Binding mutability and referent mutability remain distinct.
-
-```arkoi
-for value @mut &mut u32 in &mut numbers:
-    # value may be reassigned to another &mut u32
-    # *value may mutate the current referent
-```
+The reference remains bound to the yielded element for that iteration, while
+`&mut u32` permits writing the element directly.
 
 For an owned resource item, `@mut Resource` creates a mutable local owning binding.
 
@@ -5908,7 +6154,7 @@ A new loop binding is created for each iteration, and its scope is the loop body
 A `for` or `for!` loop stops immediately when the selected iterator's `__next__` operation returns `none`.
 
 ```arkoi
-next @?Item = iterator.__next__()
+next @?Item = Iterator.__next__(&mut iterator)
 
 if next == none:
     break
@@ -5927,10 +6173,10 @@ Manual calls made outside the completed loop may return:
 The result is determined by the iterator type's own documented contract.
 
 ```arkoi
-first @?Item = iterator.__next__()
+first @?Item = Iterator.__next__(&mut iterator)
 
 if first == none:
-    later @?Item = iterator.__next__()
+    later @?Item = Iterator.__next__(&mut iterator)
     # The language does not require later to be none
 ```
 
@@ -6083,9 +6329,9 @@ for item @&mut Item in collection:
     modify(item)
 ```
 
-This selects `MutableIterable for Collection` directly.
-
-The programmer does not write `&mut collection`, because that would attempt to borrow the reference binding itself and produce another reference layer rather than select iteration over its referent.
+This selects `MutableIterable for Collection` directly. `&mut collection` is a
+mutable reborrow of the same referent and selects the same mode when a distinct
+reborrow is needed.
 
 The selection rules are:
 
@@ -6093,7 +6339,6 @@ The selection rules are:
 - An expression of type `&T` selects the read-only iteration mode of `T`.
 - An expression of type `&mut T` selects the mutable iteration mode of `T`.
 - A reference expression never selects consuming iteration.
-- `move(reference)` transfers only the reference value and does not consume the referent.
 
 The referenced type must be a named aggregate with the required canonical iteration implementation, or a built-in array or slice with compiler-defined iteration behavior.
 
@@ -6626,7 +6871,7 @@ A malformed declaration using the reserved `__length__` name is a compile-time e
 
 `length(value)` evaluates its argument exactly once and then invokes the hook.
 
-Built-in arrays, slices, and strings retain their compiler-defined infallible `length(...)` behavior and do not use user-defined hooks.
+Built-in arrays, slices, `string`, and `string_view` retain their compiler-defined infallible `length(...)` behavior and do not use user-defined hooks.
 
 Types without built-in length behavior or a valid `__length__` hook cannot be passed to `length(...)`.
 
@@ -6745,7 +6990,7 @@ iterator @Iterator  # Compile-time error
 Only concrete values may be stored, passed, or returned.
 
 ```arkoi
-iterator @AccountIterator = collection.iterate()
+iterator @AccountIterator = AccountCollection.iterate(&collection)
 ```
 
 Interfaces therefore provide no:
@@ -6787,7 +7032,7 @@ interface Comparable:
         self @&Self,
         other @&Self,
     ) @bool:
-        return other.less(self)  # Compile-time error
+        return Comparable.less(other, self)  # Compile-time error
 ```
 
 Every required interface function must have a matching concrete external definition for each implementing type.
@@ -6797,7 +7042,7 @@ fun Version.greater(
     self @&Version,
     other @&Version,
 ) @bool:
-    return other.less(self)
+    return Version.less(other, self)
 ```
 
 Shared implementation logic may be placed in ordinary helper functions and called by the external definitions.
@@ -6903,7 +7148,10 @@ interface Combined extends Left, Right:
 
 `Combined` contains one `reset` requirement.
 
-Inherited declarations conflict when they use the same function identity but require incompatible return types, failure effects, or other non-overload-distinguishing properties. Such a child interface is invalid.
+Inherited declarations conflict when they use the same function identity but
+require incompatible return types, exact failure-set types within the fallible
+mode, or other non-overload-distinguishing properties. Such a child interface
+is invalid.
 
 Associated-type requirements are inherited in the same way.
 
@@ -7217,7 +7465,7 @@ Interfaces may require associated functions that do not take a `self` parameter.
 ```arkoi
 interface Parseable:
     fun parse(
-        source @&string,
+        source @string_view,
     ) !ParseFail @Self
 ```
 
@@ -7227,7 +7475,7 @@ A concrete implementation remains an ordinary external associated-function defin
 implements Parseable for Configuration
 
 fun Configuration.parse(
-    source @&string,
+    source @string_view,
 ) !ParseFail @Configuration:
     # ...
 ```
@@ -7249,13 +7497,14 @@ Associated-function requirements:
 Calls are made through the concrete type.
 
 ```arkoi
-configuration @Configuration = Configuration.parse(&text)!
+configuration @Configuration = Configuration.parse(text)!
 ```
 
-Associated functions cannot be called through the interface name because interfaces are not runtime or namespace-level dispatch targets.
+Associated functions cannot be called through the interface name because they
+provide no receiver from which to select a concrete implementation.
 
 ```arkoi
-configuration @Configuration = Parseable.parse(&text)!  # Compile-time error
+configuration @Configuration = Parseable.parse(text)!  # Compile-time error
 ```
 
 Interface-associated functions use direct static resolution and introduce no dynamic dispatch, implementation lookup, function values, or indirect calls.
@@ -7270,7 +7519,7 @@ The programmer explicitly chooses whether the concrete definition is public by w
 implements Parseable for Configuration
 
 pub fun Configuration.parse(
-    source @&string,
+    source @string_view,
 ) !ParseFail @Configuration:
     # ...
 ```
@@ -7278,7 +7527,7 @@ pub fun Configuration.parse(
 The public definition may be called directly from other modules when the type and function are otherwise accessible.
 
 ```arkoi
-configuration @Configuration = Configuration.parse(&text)!
+configuration @Configuration = Configuration.parse(text)!
 ```
 
 Without `pub`, the concrete definition is private to its defining module.
@@ -7287,7 +7536,7 @@ Without `pub`, the concrete definition is private to its defining module.
 implements Parseable for Configuration
 
 fun Configuration.parse(
-    source @&string,
+    source @string_view,
 ) !ParseFail @Configuration:
     # ...
 ```
@@ -7296,7 +7545,15 @@ Other modules cannot call the private concrete function directly.
 
 ```arkoi
 configuration @Configuration =
-    Configuration.parse(&text)!  # Visibility error outside the defining module
+    Configuration.parse(text)!  # Visibility error outside the defining module
+```
+
+A receiver requirement exposed by a visible interface may be called through the
+interface qualifier. That call is checked against the interface contract and
+does not make the private concrete definition directly accessible.
+
+```arkoi
+Writer.write(&mut file, data = content)
 ```
 
 Concrete-definition visibility is independent from interface conformance:
@@ -7309,7 +7566,7 @@ Concrete-definition visibility is independent from interface conformance:
 
 This does not make the concrete definition directly callable by unrelated external code.
 
-For example, a private reserved hook may enable public language syntax while remaining unavailable as a direct method call.
+For example, a private reserved hook may enable public language syntax while remaining unavailable as a direct concrete hook call.
 
 ```arkoi
 implements Sized for Buffer
@@ -7320,7 +7577,7 @@ fun Buffer.__length__(
     return self.used
 
 size @usize = length(buffer)          # Valid
-size @usize = buffer.__length__()     # Visibility error outside the module
+size @usize = Buffer.__length__(&buffer)  # Visibility error outside the module
 ```
 
 Thus, `pub` controls the concrete callable API, while the interface declaration controls interface-mediated capability.
@@ -7417,7 +7674,7 @@ For example, consuming a resource value requires `@own Self`.
 ```arkoi
 interface Consumable:
     fun consume(
-        value @own Self,
+        self @own Self,
     )
 ```
 
@@ -7445,13 +7702,13 @@ For example:
 ```arkoi
 interface Parseable:
     fun parse(
-        source @&string,
+        source @string_view,
     ) !ParseFail @Self
 
 implements Parseable for Configuration
 
 fun Configuration.parse(
-    source @&string,
+    source @string_view,
 ) !ParseFail @Configuration:
     # ...
 ```
@@ -7519,9 +7776,8 @@ If multiple inherited interfaces introduce unrelated associated types with the s
 
 ### 13.14 Interface-Name Positions
 
-In Arkoi, interface names are not general type expressions.
-
-They may appear only where Arkoi explicitly expects an interface declaration identity.
+In Arkoi, interface names are not general type expressions. They may identify an
+interface declaration relationship or qualify a receiver-requirement call.
 
 The supported uses are:
 
@@ -7532,6 +7788,12 @@ implements Interface for Type
 ```arkoi
 interface Child extends Parent:
 ```
+
+```arkoi
+item @?Item = Iterator.next(&mut iterator)
+```
+
+The receiver's concrete type selects the implementation at compile time.
 
 Interface names cannot be used as variable, constant, field, parameter, return, associated-type binding, array-element, optional-content, reference, pointer, or slice types.
 
@@ -7651,17 +7913,18 @@ fun Account.internal_helper(
 
 The `implements` declarations identify which contracts the type satisfies. The concrete functions themselves remain members of the type's ordinary function namespace.
 
-An implementing function may therefore also be called as an ordinary concrete method when its visibility permits it.
+An implementing function may therefore also be called through its concrete type
+when its visibility permits it.
 
 ```arkoi
-hash @u64 = account.hash()
+hash @u64 = Account.hash(&account)
 ```
 
-A function is not owned by an interface implementation block and is not called through an interface-qualified path.
+A receiver requirement may also be selected through the interface that declares
+it. The receiver's concrete type selects the implementation statically.
 
 ```arkoi
-hash @u64 = Hashable.Account.hash(&account)
-# Compile-time error
+hash @u64 = Hashable.hash(&account)
 ```
 
 This is a style convention only. Module-level order independence remains unchanged.
@@ -7729,14 +7992,14 @@ Interfaces cannot declare or require associated constants.
 
 ```arkoi
 interface FixedCapacity:
-    const CAPACITY @usize  # Compile-time error
+    CAPACITY @const usize  # Compile-time error
 ```
 
 An `implements` declaration cannot bind or define interface constants.
 
 ```arkoi
 implements FixedCapacity for PacketBuffer:
-    const CAPACITY @usize = 4096  # Compile-time error
+    CAPACITY @const usize = 4096  # Compile-time error
 ```
 
 Interfaces may require associated types and functions, but not constant values.
@@ -8008,7 +8271,9 @@ Independent implementations never conflict merely because their associated-type 
 
 ### 13.24 Same-Named Interface Requirements as Overloads
 
-Unrelated interfaces may require functions or methods with the same name when their substituted parameter signatures are validly distinct under Arkoi's ordinary overload rules.
+Unrelated interfaces may require functions or methods with the same name when
+their substituted overload identities are validly distinct under Arkoi's
+ordinary overload rules.
 
 ```arkoi
 interface NumericParser:
@@ -8020,7 +8285,7 @@ interface NumericParser:
 interface TextParser:
     fun parse(
         self @&Self,
-        value @&string,
+        value @string_view,
     )
 ```
 
@@ -8038,7 +8303,7 @@ fun Parser.parse(
 
 fun Parser.parse(
     self @&Parser,
-    value @&string,
+    value @string_view,
 ):
     # ...
 ```
@@ -8051,12 +8316,13 @@ Interface requirements may coexist when their function identities differ by:
 - Ordered parameter types.
 - Ownership modes.
 - Reference mutability modes.
+- Fallibility mode.
 
 They do not form distinct overloads when they differ only by:
 
 - Parameter names.
 - Return type.
-- Failure effect.
+- Exact failure-set type when both requirements are fallible.
 - Visibility.
 
 For example, these requirements conflict:
@@ -8077,7 +8343,7 @@ interface Second:
 
 Return type does not distinguish overloads, so one concrete type cannot implement both requirements unless they are otherwise the same exact requirement, which they are not.
 
-Likewise, differing failure effects do not create overloads.
+An infallible and a fallible requirement form distinct overloads:
 
 ```arkoi
 interface First:
@@ -8091,7 +8357,12 @@ interface Second:
     ) !ResetFail
 ```
 
-These requirements conflict for one implementing type.
+One implementing type may provide both definitions. Each definition satisfies
+only the requirement with the same fallibility mode and exact contract.
+
+Two otherwise identical fallible requirements still conflict when they name
+different failure sets, because the exact failure-set type does not distinguish
+fallible overloads.
 
 All ordinary exact-overload-resolution rules continue to apply to calls. Interfaces do not introduce return-type-based selection, conversion ranking, dynamic dispatch, or interface-specific overload lookup.
 
@@ -8220,13 +8491,13 @@ Calling an unsafe interface-required function remains subject to Arkoi's ordinar
 
 ```arkoi
 unsafe:
-    device.read_raw(pointer, length)
+    UnsafeReadable.read_raw(&device, pointer, length)
 ```
 
 A call from safe code is a compile-time error.
 
 ```arkoi
-device.read_raw(pointer, length)  # Compile-time error outside unsafe context
+UnsafeReadable.read_raw(&device, pointer, length)  # Compile-time error outside unsafe context
 ```
 
 Interface conformance does not weaken, hide, or automatically discharge an unsafe requirement. It only verifies that the concrete type provides a matching unsafe external definition.
@@ -8271,7 +8542,8 @@ Parameter names still form part of the source-level named-argument API of the si
 A direct concrete call uses the concrete definition's parameter names.
 
 ```arkoi
-file.write(
+File.write(
+    &mut file,
     bytes = content,
 )
 ```
@@ -8279,13 +8551,15 @@ file.write(
 Using the interface requirement's name for a direct concrete call is invalid when the concrete definition uses a different name.
 
 ```arkoi
-file.write(
+File.write(
+    &mut file,
     data = content,
 )  # Compile-time error
 ```
 
 ```arkoi
-value.write(
+Writer.write(
+    &mut value,
     data = content,
 )
 ```
@@ -8907,12 +9181,13 @@ They may differ by:
 - Ordered parameter types.
 - Ownership modes.
 - Reference mutability modes.
+- Fallibility mode.
 
 They may not differ only by:
 
 - Parameter names.
 - Return type.
-- Failure effect.
+- Exact failure-set type within the fallible mode.
 - Visibility.
 - Safety.
 
@@ -8937,7 +9212,7 @@ Imported declarations are accessed through their module path.
 
 ```arkoi
 color @graphics.color.Color = graphics.color.Color.red
-file @system.files.File = system.files.File.open(&path)!
+file @system.files.File = system.files.File.open(path)!
 ```
 
 An import may define a local module alias using `as`.
@@ -8947,7 +9222,7 @@ import graphics.color as color
 import system.files as files
 
 value @color.Color = color.Color.red
-file @files.File = files.File.open(&path)!
+file @files.File = files.File.open(path)!
 ```
 
 Imports name complete modules. Individual-declaration and wildcard import forms are compile-time errors.
@@ -9113,7 +9388,7 @@ fun render():
 An import that appears after another module-level declaration is also a compile-time error.
 
 ```arkoi
-const WIDTH @usize = 100
+WIDTH @const usize = 100
 
 import graphics.color  # Compile-time error
 ```
@@ -9621,6 +9896,7 @@ Invalid fields include:
 
 - Resource types.
 - `string`.
+- `string_view`.
 - References.
 - Slices.
 - Optionals.
@@ -9960,6 +10236,7 @@ Invalid imported-global types include:
 
 - Resources.
 - `string`.
+- `string_view`.
 - References.
 - Slices.
 - Optionals.
@@ -10127,7 +10404,7 @@ Variadic-tail arguments:
 - Cannot use named-argument syntax.
 - Are evaluated from left to right with all other arguments.
 - Must have a C-compatible scalar, enum, or raw-pointer representation permitted by the variadic ABI.
-- Cannot be Arkoi resources, references, slices, optionals, failure values, or ordinary non-C-compatible aggregates.
+- Cannot be Arkoi resources, `string_view` values, references, slices, optionals, failure values, or ordinary non-C-compatible aggregates.
 - Cannot be passed using an ownership operation such as `move(...)` or `clone(...)`.
 
 Arkoi applies the target C default argument promotions to every variadic-tail argument before the call.
@@ -10170,7 +10447,9 @@ unsafe:
     ))
 ```
 
-An Arkoi `string` cannot be passed directly as a C string. The caller must provide a raw pointer to valid C-compatible null-terminated storage when the imported function expects a C string.
+Arkoi `string` and `string_view` values cannot be passed directly as C strings.
+The caller must provide a raw pointer to valid C-compatible null-terminated
+storage when an imported function expects a C string.
 
 ```arkoi
 format @*c.char = obtain_c_string_pointer()
@@ -10454,7 +10733,7 @@ The operand must be a stable addressable place, including:
 - A module-level variable.
 - An aggregate field.
 - A fixed-array element selected by a valid index.
-- A dereferenced raw pointer or reference when the resulting place is otherwise valid.
+- A place designated by a reference, or by a dereferenced raw pointer, when the resulting place is otherwise valid.
 - Another place form explicitly defined as addressable.
 
 Examples:
@@ -10476,6 +10755,7 @@ first @*mut u8 = address(values[0])
 
 The operand cannot be:
 
+- A compile-time constant, including a field or element selected from one.
 - A temporary value.
 - A literal.
 - A computed expression without stable storage.
@@ -10486,6 +10766,13 @@ The operand cannot be:
 ```arkoi
 pointer @*c.int = address(calculate())
 # Compile-time error
+```
+
+```arkoi
+WIDTH @const usize = 4
+
+pointer @*usize = address(WIDTH)
+# Compile-time error: WIDTH has no storage address
 ```
 
 Taking an address is itself a safe operation. It does not read or write through the pointer.
@@ -10772,7 +11059,7 @@ The following are not permitted as union fields:
 - Resources.
 - Arkoi references.
 - Slices.
-- Strings.
+- `string` and `string_view`.
 - Optionals.
 - Failure values.
 - Ordinary Arkoi-layout aggregates.
@@ -11036,7 +11323,7 @@ failure IOFail:
 pub resource File:
     handle @u64
 
-pub fun File.open(path @&string) !IOFail @File:
+pub fun File.open(path @string_view) !IOFail @File:
     handle @u64 = open_native_file(path)!
 
     return File(
@@ -11049,22 +11336,22 @@ pub fun File.size(self @&File) @usize:
 pub fun File.flush(self @&mut File) !IOFail:
     flush_native_file(self.handle)!
 
-pub fun File.into_buffer(file @own File) !IOFail @Buffer:
-    buffer @Buffer = read_entire_file(&file)!
+pub fun File.into_buffer(self @own File) !IOFail @Buffer:
+    buffer @Buffer = read_entire_file(&self)!
     return move(buffer)
 
 fun File.__drop__(self @&mut File):
     close_native_file(self.handle)
 
 fun inspect(file @&File):
-    print(file.size())
+    print(File.size(file))
 
 fun main() !IOFail:
-    path @string = "input.txt"
-    file @mut File = File.open(&path)!
+    path @const string_view = "input.txt"
+    file @mut File = File.open(path)!
 
     inspect(&file)
-    file.flush()!
+    File.flush(&mut file)!
 
     buffer @Buffer = File.into_buffer(move(file))!
     process_buffer(&buffer)

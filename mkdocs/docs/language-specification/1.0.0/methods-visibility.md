@@ -9,8 +9,8 @@ that genuinely belong to the type.
 !!! abstract "At a glance"
 
     - Declare `fun Type.name(...)` outside the aggregate.
-    - A method receiver is exactly `self @&Type` or `self @&mut Type`.
-    - Dot syntax may borrow only the receiver; other arguments stay explicit.
+    - A method receiver is `self @&Type`, `self @&mut Type`, or `self @own Type`.
+    - Call methods through the type with the receiver as an explicit first argument.
     - A qualified function without `self` is an associated function.
     - Declarations and fields are private unless marked `pub`.
 
@@ -27,56 +27,67 @@ dispatch. Their receiver must use one of these forms:
 ```arkoi
 self @&Point
 self @&mut Point
+self @own File
 ```
 
-Ownership-consuming receivers are not supported.
-
-!!! failure "Compile-time error — owning receiver"
-
-    ```arkoi
-    fun File.consume(self @own File):
-        pass
-    ```
-
-A consuming operation is an associated function with an explicit owning
-parameter:
+The ordinary type-category and ownership rules apply. In particular, `@own`
+receives a resource and consumes the value explicitly moved by the caller:
 
 ```arkoi
-fun File.into_buffer(file @own File) @Buffer:
-    return buffer_from_file(move(file))
+fun File.into_buffer(self @own File) @Buffer:
+    return buffer_from_file(move(self))
 
 buffer @Buffer = File.into_buffer(move(file))
 ```
 
 `File` and `Buffer` here are illustrative user or library resource types.
 
-## Receiver borrowing
+## Explicit receiver calls
 
-Dot syntax can insert a borrow for the receiver only:
-
-```arkoi
-size @usize = file.size()
-file.flush()!
-```
-
-These correspond to:
+Call a method through its declaring type. Its receiver is the first argument and
+uses the same explicit borrowing or movement syntax as every other argument:
 
 ```arkoi
 size @usize = File.size(&file)
 File.flush(&mut file)!
+buffer @Buffer = File.into_buffer(move(file))
 ```
 
-Other arguments must be borrowed explicitly:
+An existing reference can be passed directly when it has the required type and
+access:
+
+```arkoi
+file_ref @&mut File = &mut file
+File.flush(file_ref)!
+```
+
+All arguments remain explicit:
 
 ```arkoi
 fun File.write(self @&mut File, buffer @&Buffer) !IOFail:
     write_buffer(self, buffer)!
 
-file.write(&buffer)!
+File.write(&mut file, &buffer)!
 ```
 
-References themselves use ordinary field and method access. Only raw pointers
-need explicit unsafe dereference before dot access.
+Fields are selected through a value or reference. Receiver functions are
+qualified by their declaring type or a visible interface requirement. Raw
+pointers require explicit unsafe dereference before field access.
+
+## Interface receiver calls
+
+A visible interface receiver requirement may be called through the interface
+name. The explicit receiver's concrete type selects the implementation entirely
+at compile time:
+
+```arkoi
+Writer.write(&mut file, data = bytes)
+```
+
+This syntax introduces neither interface values nor dynamic dispatch. An
+associated-function requirement without `self` must be called through a
+concrete implementing type because no receiver is available to select the
+implementation.
 
 ## Associated functions
 
@@ -84,10 +95,10 @@ A qualified function without `self` belongs to the type as an associated
 function:
 
 ```arkoi
-fun File.open(path @&string) !IOFail @File:
+fun File.open(path @string_view) !IOFail @File:
     return open_native_file(path)!
 
-file @File = File.open(&path)!
+file @File = File.open(path)!
 ```
 
 Constructors are ordinary associated functions that return complete values;
@@ -103,7 +114,7 @@ pub data Point:
     pub x @f32
     pub y @f32
 
-pub fun parse(text @&string) !ParseFail @Data:
+pub fun parse(text @string_view) !ParseFail @Data:
     return parse_data(text)!
 
 pub fun Point.distance(self @&Point, other @&Point) @f64:
@@ -148,13 +159,15 @@ An unrelated same-module function has no private access.
     ```
 
 Another module cannot gain access merely by declaring a qualified function for
-the type. Code without private access also cannot use named-field construction
-for a private field; it must call an accessible constructor.
+the type. Code without private access cannot initialize a private field by name
+or position. An aggregate with any inaccessible field must be created through
+an accessible constructor.
 
 ## Related topics
 
 - [Aggregates and enums](aggregates-enums.md)
 - [Calls and overloads](calls-overloads.md)
+- [Pipeline expressions](pipelines.md)
 - [Compiler hooks](compiler-hooks.md)
 - [Resource lifecycle](resource-lifecycle.md)
 - [Raw pointers](raw-pointers.md)

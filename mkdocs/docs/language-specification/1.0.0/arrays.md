@@ -50,8 +50,8 @@ compile-time integer rules, then requires a nonnegative result representable as
 `usize`:
 
 ```arkoi
-const WIDTH @usize = 4
-const HEIGHT @usize = 3
+WIDTH @const usize = 4
+HEIGHT @const usize = 3
 
 type Pixels = [WIDTH * HEIGHT]u32
 type Header = [2 + 6]u8

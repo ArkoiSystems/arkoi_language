@@ -10,8 +10,8 @@ construction and membership rules.
 
     - `data` aggregates contain data fields; `resource` aggregates may contain
       data and resources.
-    - Aggregate construction is named-field-only and initializes every field
-      exactly once.
+    - Aggregate construction accepts positional, named, or mixed arguments and
+      initializes every field exactly once.
     - Empty aggregates are valid and use `pass`; empty enums are invalid.
     - Enum members are qualified, payload-free data values.
     - Enum discriminants are logical integers, not a storage-layout promise.
@@ -24,20 +24,34 @@ data Point:
     y @f32
 
 point @Point = Point(
+    10.0,
+    y = 20.0,
+)
+
+other @Point = Point(
     y = 20.0,
     x = 10.0,
 )
 ```
 
-Construction uses named fields exclusively. Declaration order does not constrain
-initializer order, but every field must be supplied exactly once with its exact
-declared type. A missing, unknown, or duplicate field is a compile-time error.
-Partially initialized aggregates are never observable.
+Positional arguments initialize fields in declaration order. After the first
+named argument, every remaining argument must be named. Named arguments may
+initialize the remaining fields in any order.
 
-!!! failure "Compile-time error — positional aggregate construction"
+Every field must be supplied exactly once with its exact declared type. A
+missing, unknown, inaccessible, or duplicate field is a compile-time error.
+Expressions evaluate from left to right in written order, and partially
+initialized aggregates are never observable.
+
+Field declaration order is part of the source API for positional construction.
+Named construction avoids depending on that order and is usually clearer when
+an aggregate has several fields of the same type.
+
+!!! failure "Compile-time errors — invalid argument order or duplication"
 
     ```arkoi
-    point @Point = Point(10.0, 20.0)
+    duplicate @Point = Point(10.0, x = 20.0)
+    invalid @Point = Point(x = 10.0, 20.0)
     ```
 
 ### Resource fields
@@ -48,7 +62,7 @@ aggregate; a temporary resource enters the field directly:
 ```arkoi
 user @User = User(
     name = move(name),
-    file = File.open(&path)!,
+    file = File.open(path)!,
 )
 ```
 
@@ -75,9 +89,9 @@ replacement](places-replacement.md).
     Point(x, y) = point
     ```
 
-Named-field construction must also respect field visibility. Code without
-private access uses a public associated constructor rather than naming private
-fields; see [Methods and visibility](methods-visibility.md).
+Construction must also respect field visibility. Positional syntax cannot
+bypass a private field. Code without access to every field uses a public
+associated constructor; see [Methods and visibility](methods-visibility.md).
 
 ## Empty aggregates
 
