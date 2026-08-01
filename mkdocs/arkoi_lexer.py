@@ -12,6 +12,7 @@ from pygments.token import (
     Text,
 )
 
+__all__ = ["ArkoiLexer"]
 
 KEYWORDS = (
     "and",
