@@ -1,6 +1,21 @@
+---
+title: Arkoi 1.0 quick reference
+description: Compact Arkoi 1.0 syntax tables for declarations, types, literals, operators, ownership, failures, control flow, and C interoperability.
+---
+
 # Quick reference
 
 Use this page to recall Arkoi syntax. Each row links to the canonical page that defines the complete rule and its edge cases.
+
+## Source shape
+
+| Form | Meaning | Complete rules |
+| --- | --- | --- |
+| `# comment` | Comment through the end of the line | [Source syntax](source-syntax.md#blocks-and-comments) |
+| `header:` followed by indentation | Begin a lexical block | [Source syntax](source-syntax.md#blocks-and-comments) |
+| `pass` | Explicitly empty block or no-op statement | [Source syntax](source-syntax.md#empty-blocks-and-pass) |
+| `(multiline expression)` / `[multiline expression]` | Continue an expression across newlines | [Source syntax](source-syntax.md#multiline-expressions) |
+| `item,` | Optional trailing comma in a nonempty list | [Source syntax](source-syntax.md#trailing-commas) |
 
 ## Declarations
 
@@ -39,6 +54,37 @@ Binding-level `mut`, referent mutability, slice element mutability, and raw-poin
 
 String literals have type `string_view`. Convert an owned string with
 `string_view(value)` and create an owned copy with `string(view)!`.
+
+## Literals and conversions
+
+| Form | Meaning | Complete rules |
+| --- | --- | --- |
+| `123`, `0xff`, `0b1010`, `0o755` | Decimal, hexadecimal, binary, and octal integer literals | [Literals](types-values.md#integers) |
+| `1.5`, `1e10`, `0x1.8p1` | Decimal, scientific, and hexadecimal floating literals | [Literals](types-values.md#floating-point) |
+| `'a'`, `'\n'`, `'\x41'`, `'\u{1f600}'` | Character literals and escapes | [Literals](types-values.md#characters) |
+| `"text"` | Static-lifetime `string_view` literal | [Strings and string views](types-values.md#strings-and-string-views) |
+| `convert(value, T)!` | Checked, recoverable numeric conversion | [Numeric conversion](expressions-and-numeric-operations.md#numeric-conversion) |
+| `truncate(value, T)` | Intentionally discard numeric information | [Numeric conversion](expressions-and-numeric-operations.md#numeric-conversion) |
+| `bitcast(value, T)` | Equal-size bit reinterpretation | [Bitcasts](expressions-and-numeric-operations.md#bitcasts) |
+
+Digits may use `_` separators only between valid digits.
+
+## Operators
+
+| Family | Forms | Complete rules |
+| --- | --- | --- |
+| Boolean | `and`, `or`, `not` | [Boolean expressions](expressions-and-numeric-operations.md#boolean-expressions) |
+| Arithmetic | `+`, `-`, `*`, `/`, `%` | [Numeric operations](expressions-and-numeric-operations.md) |
+| Recoverable arithmetic | `+!`, `-!`, `*!`, `/!`, `%!` | [Integer arithmetic modes](expressions-and-numeric-operations.md#integer-arithmetic-modes) |
+| Wrapping arithmetic | `+%`, `-%`, `*%` | [Integer arithmetic modes](expressions-and-numeric-operations.md#integer-arithmetic-modes) |
+| Shift | `<<`, `>>`, `<<!`, `>>!` | [Shifts](expressions-and-numeric-operations.md#shifts) |
+| Comparison | `==`, `!=`, `<`, `<=`, `>`, `>=` | [Comparisons](comparisons-and-membership.md#comparison-expressions) |
+| Membership | `in`, `not in`, `in!`, `not in!` | [Membership](comparisons-and-membership.md#membership) |
+| Pipeline | `value |> Function(&_)` | [Pipeline expressions](pipelines.md) |
+| Assignment | `=`, compound forms such as `+=`, `+!=`, `+%=` | [Assignment and result use](assignment-and-result-use.md) |
+
+`|>` is explicitly lower-precedence than every other expression operator and
+groups left to right. Use parentheses whenever another grouping would be unclear.
 
 ## Ownership and access
 

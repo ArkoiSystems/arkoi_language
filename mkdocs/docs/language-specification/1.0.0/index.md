@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 language reference
+description: The normative target-language reference for Arkoi 1.0 syntax, semantics, ownership, interfaces, modules, and C interoperability.
+---
+
 # Arkoi 1.0.0 Language Specification
 
 <div class="spec-meta" markdown>

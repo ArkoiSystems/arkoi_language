@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 static interfaces
+description: How Arkoi's nominal, compile-time interfaces define requirements without runtime interface values or dynamic dispatch.
+---
+
 # Static interfaces
 
 <!-- spec-sections: 13.1 (model and declaration syntax), 13.14, 13.20 -->

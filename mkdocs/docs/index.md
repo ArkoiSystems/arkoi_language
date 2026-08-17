@@ -1,34 +1,73 @@
+---
+title: Arkoi programming language
+description: Learn Arkoi, try the current compiler, or use the complete Arkoi 1.0 target-language reference.
+---
+
 # Arkoi
 
-Arkoi is a statically typed systems language with explicit ownership, recoverable failures, deterministic resource cleanup, static interfaces, and direct C interoperability.
+Arkoi is a statically typed systems language with explicit ownership, recoverable failures, deterministic resource cleanup, static interfaces, and direct C interoperability. The compiler is experimental; the 1.0 reference describes the language it is growing toward.
+
+<p class="arkoi-status-row">
+  <span class="arkoi-status arkoi-status--current">Compiler 0.1.0</span>
+  <span class="arkoi-status arkoi-status--target">Target language 1.0</span>
+</p>
 
 <div class="grid cards" markdown>
 
--   **Arkoi 1.0.0 language**
+-   **Try the current compiler**
 
     ---
 
-    Read the complete target-language documentation, organized by concept with compact rule tables and linked examples.
+    Build the compiler, run a small program, and inspect the generated pipeline artifacts.
 
-    [Open the 1.0.0 specification →](language-specification/1.0.0/index.md)
+    [Start the quickstart →](getting-started/quickstart.md)
 
--   **Current compiler**
+-   **Learn Arkoi 1.0**
 
     ---
 
-    Build and use the compiler that exists today. Its implemented language subset is smaller than the Arkoi 1.0.0 target.
+    Follow a ten-chapter course from your first module through ownership,
+    failures, interfaces, systems boundaries, and a capstone program.
 
-    [Use the current compiler →](getting-started/overview.md)
+    [Begin the language tour →](learn/index.md)
+
+-   **Use the language reference**
+
+    ---
+
+    Look up exact syntax and semantics, ownership rules, interfaces, modules, and C interoperability.
+
+    [Open the Arkoi 1.0 reference →](language-specification/1.0.0/index.md)
 
 </div>
+
+## Arkoi 1.0 at a glance
+
+This target-language illustration shows typed values, a recoverable failure effect,
+borrowing, and an explicit ownership transfer:
+
+```arkoi
+fun load(path @string_view) !IOFail @Buffer:
+    file @File = File.open(path)!
+    inspect(&file)
+    return File.into_buffer(move(file))!
+```
+
+!!! warning "Target-language example"
+
+    The current compiler implements a smaller and sometimes syntactically different
+    subset. Use the [compatibility guide](getting-started/compatibility.md) before
+    trying 1.0 examples locally.
 
 ## Documentation map
 
 | Area | Use it for |
 | --- | --- |
-| [Arkoi 1.0.0 specification](language-specification/1.0.0/index.md) | Language syntax, semantics, ownership, interfaces, modules, and C interoperability |
+| [Quickstart](getting-started/quickstart.md) | Build the compiler and complete one verified compile-and-run cycle |
+| [Learn Arkoi 1.0](learn/index.md) | Progressive explanations and small target-language illustrations |
+| [Arkoi 1.0 reference](language-specification/1.0.0/index.md) | Language syntax, semantics, ownership, interfaces, modules, and C interoperability |
 | [Current compiler](getting-started/overview.md) | Implemented features, installation, CLI commands, and runnable examples |
-| [Compiler API](arkoi_language/classes.md) | Generated C++ API documentation for compiler contributors |
+| [Compiler development](development/index.md) | Architecture, contributor entry points, and generated C++ API documentation |
 
 !!! info "Target versus implementation"
 

@@ -196,7 +196,18 @@ body {
   line-height: 1.75;
 }
 
-.md-typeset > h1:first-child {
+/* Keep prose comfortable to scan while allowing code and reference tables to
+   use the wider technical reading surface. */
+.md-typeset > p,
+.md-typeset > ul,
+.md-typeset > ol,
+.md-typeset > blockquote,
+.md-typeset > .admonition,
+.md-typeset > details {
+  max-width: 54rem;
+}
+
+.md-typeset > h1:first-of-type {
   color: var(--md-default-fg-color);
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 780;
@@ -206,7 +217,7 @@ body {
   position: relative;
 }
 
-.md-typeset > h1:first-child::after {
+.md-typeset > h1:first-of-type::after {
   background: linear-gradient(90deg, var(--md-primary-fg-color), var(--md-accent-fg-color));
   border-radius: 1rem;
   content: "";
@@ -249,6 +260,15 @@ body {
   text-decoration-color: var(--md-accent-fg-color);
 }
 
+.md-typeset a:focus-visible,
+.md-nav__link:focus-visible,
+.md-tabs__link:focus-visible,
+.md-header__button:focus-visible {
+  border-radius: 0.2rem;
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 0.15rem;
+}
+
 .md-typeset strong {
   color: var(--md-default-fg-color);
   font-weight: 720;
@@ -256,6 +276,34 @@ body {
 
 .md-typeset hr {
   border-bottom-color: var(--arkoi-rule-color);
+}
+
+/* Compact maturity labels used on landing pages. */
+.md-typeset .arkoi-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.md-typeset .arkoi-status {
+  background: var(--arkoi-surface);
+  border: 1px solid var(--arkoi-rule-color);
+  border-radius: 999px;
+  color: var(--md-default-fg-color);
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  padding: 0.25rem 0.65rem;
+}
+
+.md-typeset .arkoi-status--current {
+  border-color: color-mix(in srgb, var(--md-accent-fg-color) 45%, transparent);
+}
+
+.md-typeset .arkoi-status--target {
+  border-color: color-mix(in srgb, var(--md-primary-fg-color) 45%, transparent);
 }
 
 /* Cards */
@@ -291,9 +339,13 @@ body {
 .md-typeset .md-typeset__table {
   display: block;
   margin: 1.25em 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
-.md-typeset table:not([class]) {
+.md-typeset table:not([class]),
+.md-typeset table.wide-table {
   background: var(--arkoi-surface);
   border: 1px solid var(--arkoi-rule-color);
   border-collapse: separate;
@@ -301,11 +353,17 @@ body {
   border-spacing: 0;
   box-shadow: var(--arkoi-shadow-sm);
   display: table;
-  overflow: hidden;
   width: 100%;
 }
 
-.md-typeset table:not([class]) th {
+/* Apply this class only when preserving a wide comparison is more readable
+   than wrapping every cell. Ordinary two-column tables remain mobile-sized. */
+.md-typeset table.wide-table {
+  min-width: 40rem;
+}
+
+.md-typeset table:not([class]) th,
+.md-typeset table.wide-table th {
   background: var(--arkoi-surface-soft);
   color: var(--md-default-fg-color);
   font-size: 0.7rem;
@@ -315,12 +373,14 @@ body {
   white-space: nowrap;
 }
 
-.md-typeset table:not([class]) td {
+.md-typeset table:not([class]) td,
+.md-typeset table.wide-table td {
   border-top-color: var(--arkoi-rule-color);
   vertical-align: top;
 }
 
-.md-typeset table:not([class]) tr:hover td {
+.md-typeset table:not([class]) tr:hover td,
+.md-typeset table.wide-table tr:hover td {
   background-color: var(--md-accent-fg-color--transparent);
 }
 
@@ -492,17 +552,10 @@ body {
     line-height: 1.7;
   }
 
-  .md-typeset > h1:first-child {
+  .md-typeset > h1:first-of-type {
     font-size: 2rem;
   }
 
-  .md-typeset .md-typeset__table {
-    overflow-x: auto;
-  }
-
-  .md-typeset table:not([class]) {
-    min-width: 30rem;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

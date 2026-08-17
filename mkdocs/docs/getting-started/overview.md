@@ -1,30 +1,60 @@
-# Current Compiler
+---
+title: Current compiler overview
+description: Understand the subset, platform, and learning paths available in the Arkoi compiler today.
+---
 
-The current compiler implements an early Arkoi subset. Use this section when building or running the repository today; use the [Arkoi 1.0.0 specification](../language-specification/1.0.0/index.md) when designing against the target language.
+# Current compiler overview
 
-!!! warning "Not the complete 1.0.0 language"
+The repository contains an experimental Arkoi compiler and a separate description
+of the intended Arkoi 1.0 language. This section documents the compiler you can
+build and run today.
 
-    Modules, interfaces, resources, ownership operations, failure effects, and C interoperability belong to the 1.0.0 target but are not all implemented by the current compiler.
+!!! warning "Current implementation, not the complete 1.0 language"
 
-## Implemented language subset
+    Runnable examples in this section are accepted by the current compiler.
+    The [compatibility guide](compatibility.md) deliberately includes labeled
+    target-language examples, and the
+    [Arkoi 1.0 specification](../language-specification/1.0.0/index.md) may use
+    syntax that does not compile yet.
 
-| Area | Current support |
+## What you can do today
+
+The current compiler supports:
+
+- top-level, fixed-arity `fun` definitions;
+- explicitly typed parameters, local variables, and return values;
+- `u8`–`u64`, `s8`–`s64`, `usize`, `ssize`, `f32`, `f64`, and `bool`;
+- arithmetic, comparisons, `&&`, `||`, calls, and grouping;
+- `if`, `else if`, `else`, `while`, assignment, and `return`;
+- IL, control-flow graph, and x86-64 assembly output; and
+- assembly, native linking, and execution on Linux x86-64.
+
+Here is the smallest repository example:
+
+```arkoi
+--8<-- "example/hello_world/hello_world.ark"
+```
+
+Despite its directory name, this program does not print text. Its return value
+becomes the native process exit status.
+
+## Choose a path
+
+| Goal | Start here |
 | --- | --- |
-| Programs | Top-level `fun` definitions and a `main` entry point |
-| Values | Explicitly typed variables, parameters, and return values |
-| Primitive types | Signed and unsigned integers, floating-point values, and `bool` |
-| Expressions | Arithmetic, comparisons, boolean operations, calls, and grouping |
-| Control flow | `if`, `else if`, `else`, `while`, and `return` |
-| Toolchain | Parsing, intermediate output, control-flow graphs, assembly, and native compilation |
+| Build and run one program | [Five-minute quickstart](quickstart.md) |
+| Set up every dependency or run the tests | [Installation and build](installation.md) |
+| Choose stages and output files | [CLI reference](cli.md) |
+| Learn from complete programs | [Current compiler examples](examples.md) |
+| Follow source through IL, CFG, and assembly | [Compiler pipeline tutorial](pipeline.md) |
+| Translate between current and 1.0 syntax | [Current compiler vs. Arkoi 1.0](compatibility.md) |
 
-The examples and tests in the repository are the authority for this implemented subset. Syntax in the target specification may be accepted only as the compiler evolves toward 1.0.
+## Scope and stability
 
-## Start here
+The executable currently produces Linux x86-64 ELF programs and invokes GNU
+`as` and `ld`. The compiler and its accepted subset are evolving, so the
+checked-in examples and tests are the best executable record of current support.
 
-1. [Install and build the compiler](installation.md).
-2. [Learn the CLI](cli.md).
-3. [Run the repository examples](examples.md).
-
-## Language design
-
-For the complete language, begin with the [1.0.0 specification overview](../language-specification/1.0.0/index.md) or use its [quick reference](../language-specification/1.0.0/quick-reference.md).
+For language design work, use the [1.0 specification
+overview](../language-specification/1.0.0/index.md) and its
+[quick reference](../language-specification/1.0.0/quick-reference.md).
