@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 indexing
+description: Arkoi 1.0 target-language rules for built-in and hook-based indexing, mutable access, ownership, and bounds checks.
+---
+
 # Indexing
 
 <!-- spec-sections: 12.1–12.3 -->
@@ -37,7 +42,7 @@ Mutable-place contexts select `__index_mut__`:
 container[index]!.field = value
 element @&mut Element = &mut container[index]!
 container[index]! += amount
-container[index]!.mutating_method()
+Element.mutating_method(&mut container[index]!)
 ```
 
 If the selected mode is unavailable, compilation fails. Mutable indexing requires a stable mutable place; an immutable receiver or temporary cannot supply it.

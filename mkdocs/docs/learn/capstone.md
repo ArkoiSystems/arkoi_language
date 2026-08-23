@@ -13,7 +13,7 @@ report to a consuming function.
 !!! info "Arkoi 1.0 target-language module"
 
     This is a complete illustration of the **Arkoi 1.0 target language**, not a
-    promise of support in today's compiler. Review
+    promise of support in compiler 0.1.0. Review
     [Current compiler vs. Arkoi 1.0](../getting-started/compatibility.md) before
     trying it locally.
 

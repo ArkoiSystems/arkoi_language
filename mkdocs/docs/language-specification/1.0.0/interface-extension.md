@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 interface extension
+description: Arkoi 1.0 target-language rules for extending interfaces, inherited requirements, diamonds, and conformance paths.
+---
+
 # Interface extension
 
 <!-- spec-sections: 13.3, 13.22, 13.28–13.29, 13.37 -->

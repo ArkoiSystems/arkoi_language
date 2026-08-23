@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 control flow
+description: Arkoi 1.0 target-language rules for conditions, loops, break, continue, return, and unreachable control paths.
+---
+
 # Control flow
 
 <!-- spec-sections: 11.1, 11.2, 11.4 -->

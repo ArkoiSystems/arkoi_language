@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 methods and visibility
+description: Arkoi 1.0 target-language rules for receiver functions, method calls, external definitions, access, and visibility.
+---
+
 # Methods and visibility
 
 <!-- spec-sections: 7.1–7.2 -->
@@ -151,7 +156,7 @@ fun File.__drop__(self @&mut File):
 
 An unrelated same-module function has no private access.
 
-!!! failure "Compile-time error — unrelated private-field access"
+!!! danger "Compile-time error — unrelated private-field access"
 
     ```arkoi
     fun debug_file(file @&File):

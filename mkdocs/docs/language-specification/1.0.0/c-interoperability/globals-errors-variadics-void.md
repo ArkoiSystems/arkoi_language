@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 C globals, failures, variadics, and void
+description: Arkoi 1.0 target-language rules for C globals, error conventions, variadic calls, void returns, and discarded results.
+---
+
 # C globals, failures, variadics, and `void`
 
 <!-- spec-sections: 15.9, 15.10, 15.11, 15.12 -->
@@ -305,8 +310,8 @@ Pointers to `c.void` are ordinary nullable raw pointers. Converting between one 
 a typed pointer requires explicit unsafe reinterpretation:
 
 ```arkoi
-typed @*mut c.unsigned_char
-raw @*mut c.void
+typed @*mut c.unsigned_char = null
+raw @*mut c.void = null
 
 unsafe:
     raw = reinterpret(typed, *mut c.void)

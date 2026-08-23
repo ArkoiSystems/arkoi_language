@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 C functions, symbols, and ABI domains
+description: Arkoi 1.0 target-language rules for C function declarations, symbols, ABI domains, calls, and compatible function pointers.
+---
+
 # C functions, symbols, and ABI domains
 
 <!-- spec-sections: 15.1, 15.2, 15.3, 15.4 -->

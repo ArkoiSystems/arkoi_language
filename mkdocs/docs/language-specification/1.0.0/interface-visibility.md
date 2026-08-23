@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 interface visibility
+description: Arkoi 1.0 target-language rules for public contracts, visible definitions, associated types, and module boundaries.
+---
+
 # Interface visibility
 
 <!-- spec-sections: 13.6 (visibility), 13.10–13.11, 13.21, 13.25, 13.30–13.31, 13.34 (accessibility) -->

@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 failures
+description: Arkoi 1.0 target-language rules for recoverable failures, propagation, handlers, failure values, and cleanup.
+---
+
 # Failures
 
 <!-- spec-sections: 8.1 -->
@@ -79,7 +84,7 @@ When a call has matching infallible and fallible overloads, directly attached
 propagation or handling selects the fallible overload. The complete selection
 rules are defined under [Calls and overloads](calls-overloads.md#selecting-fallibility).
 
-!!! failure "Compile-time error — unhandled failure effect"
+!!! danger "Compile-time error — unhandled failure effect"
 
     ```arkoi
     file @File = read_file(path)

@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 calls and overloads
+description: Arkoi 1.0 target-language rules for function calls, arguments, overload sets, candidate selection, and ambiguity.
+---
+
 # Calls and overloads
 
 <!-- spec-sections: 4.4–4.6 -->
@@ -47,7 +52,7 @@ For a method, the receiver is one of those parameters.
 | | Binding-level parameter `@mut` |
 | | Function-body behavior |
 
-!!! failure "Compile-time errors — identical parameter signatures"
+!!! danger "Compile-time errors — identical parameter signatures"
 
     ```arkoi
     fun convert_value(value @u32) @u64:
@@ -151,7 +156,7 @@ small @u16 = 10
 process(convert(small, u32)!)
 ```
 
-!!! failure "Compile-time error — no implicit numeric conversion"
+!!! danger "Compile-time error — no implicit numeric conversion"
 
     ```arkoi
     small @u16 = 10
@@ -160,7 +165,7 @@ process(convert(small, u32)!)
 
 Context-dependent literals can match multiple overloads:
 
-!!! failure "Compile-time error — ambiguous literal"
+!!! danger "Compile-time error — ambiguous literal"
 
     ```arkoi
     fun store(value @u32):
@@ -175,7 +180,7 @@ Context-dependent literals can match multiple overloads:
 Use a typed binding or explicit conversion to select one. Transparent aliases
 preserve identity, so an alias and its target cannot define distinct overloads.
 
-!!! failure "Compile-time error — transparent alias collision"
+!!! danger "Compile-time error — transparent alias collision"
 
     ```arkoi
     type UserId = u64

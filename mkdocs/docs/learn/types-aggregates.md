@@ -14,7 +14,7 @@ small route-reporting example.
     The snippets on this page explain the **target language**. The current
     executable does not necessarily accept them. See
     [Current compiler vs. Arkoi 1.0](../getting-started/compatibility.md) before
-    trying them today.
+    trying them with compiler 0.1.0.
 
 ## Learning goals
 

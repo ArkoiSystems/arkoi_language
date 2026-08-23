@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 pipeline expressions
+description: Arkoi 1.0 target-language rules for pipeline syntax, placeholder insertion, evaluation order, precedence, and failures.
+---
+
 # Pipeline expressions
 
 <!-- spec-sections: 9.22, 10.1 -->

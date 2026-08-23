@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 function pointers
+description: Arkoi 1.0 target-language rules for function-pointer types, compatibility, calls, nullability, and C ABI pointers.
+---
+
 # Function pointers
 
 <!-- spec-sections: 4.7 -->
@@ -36,7 +41,7 @@ A function type describes a signature. It is not itself a storable value and
 cannot be a binding, field, parameter, or return type by value. It may be named
 through a transparent alias and used as a raw pointer referent.
 
-!!! failure "Compile-time error — named function-type parameter"
+!!! danger "Compile-time error — named function-type parameter"
 
     ```arkoi
     type Invalid = fun(
@@ -46,7 +51,7 @@ through a transparent alias and used as a raw pointer referent.
 
 Functions are executable, not writable objects, so `*mut Operation` is invalid.
 
-!!! failure "Compile-time error — mutable function pointer"
+!!! danger "Compile-time error — mutable function pointer"
 
     ```arkoi
     operation @*mut Operation

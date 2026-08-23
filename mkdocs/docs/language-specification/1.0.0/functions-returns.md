@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 functions and returns
+description: Arkoi 1.0 target-language rules for function declarations, parameters, return types, failures, and return statements.
+---
+
 # Functions and returns
 
 <!-- spec-sections: 4.1–4.3, 4.8–4.10 -->
@@ -59,7 +64,7 @@ fun log_value(value @u32):
 
 It cannot return a value.
 
-!!! failure "Compile-time error — value from a value-less function"
+!!! danger "Compile-time error — value from a value-less function"
 
     ```arkoi
     fun invalid():
@@ -75,7 +80,7 @@ fun answer() @u32:
     return 42
 ```
 
-!!! failure "Compile-time error — missing return value"
+!!! danger "Compile-time error — missing return value"
 
     ```arkoi
     fun answer() @u32:
@@ -100,7 +105,7 @@ fun classify(value @s32) @u32:
         return 1
 ```
 
-!!! failure "Compile-time error — incomplete return paths"
+!!! danger "Compile-time error — incomplete return paths"
 
     ```arkoi
     fun classify(value @s32) @u32:
@@ -155,7 +160,7 @@ fun print_values(values @[]u32):
         print_u32(value)
 ```
 
-!!! failure "Compile-time error — Arkoi variadic parameter"
+!!! danger "Compile-time error — Arkoi variadic parameter"
 
     ```arkoi
     fun log(values @...):

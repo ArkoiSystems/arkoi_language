@@ -1,6 +1,6 @@
 ---
 title: Arkoi 1.0 quick reference
-description: Compact Arkoi 1.0 syntax tables for declarations, types, literals, operators, ownership, failures, control flow, and C interoperability.
+description: Compact Arkoi 1.0 target-language syntax tables for declarations, types, literals, operators, ownership, failures, control flow, and C interoperability.
 ---
 
 # Quick reference

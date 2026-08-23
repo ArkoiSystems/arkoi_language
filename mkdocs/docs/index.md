@@ -63,11 +63,11 @@ fun load(path @string_view) !IOFail @Buffer:
 
 | Area | Use it for |
 | --- | --- |
-| [Quickstart](getting-started/quickstart.md) | Build the compiler and complete one verified compile-and-run cycle |
+| [Quickstart](getting-started/quickstart.md) | Invoke compiler 0.1.0 and run one small verified example |
 | [Learn Arkoi 1.0](learn/index.md) | Progressive explanations and small target-language illustrations |
 | [Arkoi 1.0 reference](language-specification/1.0.0/index.md) | Language syntax, semantics, ownership, interfaces, modules, and C interoperability |
-| [Current compiler](getting-started/overview.md) | Implemented features, installation, CLI commands, and runnable examples |
-| [Compiler development](development/index.md) | Architecture, contributor entry points, and generated C++ API documentation |
+| [Current compiler](getting-started/quickstart.md) | Invoke compiler 0.1.0 and run one small verified example |
+| [Compiler development](development/index.md) | Detailed CLI and pipeline behavior, example fixtures, architecture, and generated C++ API documentation |
 
 !!! info "Target versus implementation"
 

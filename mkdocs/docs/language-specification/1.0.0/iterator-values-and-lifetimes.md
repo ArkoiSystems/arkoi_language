@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 iterator values and lifetimes
+description: Arkoi 1.0 target-language rules for iterator result ownership, yielded references, invalidation, and escape lifetimes.
+---
+
 # Iterator values and lifetimes
 
 <!-- spec-sections: 11.9–11.10, 11.16–11.17 -->
@@ -22,6 +27,10 @@ fun FileLoader.__next__(
     return FileLoader.load_next(self)!
 ```
 
+This example assumes that `loader` has an applicable creation-interface
+implementation whose `Item` is `File` and whose `Iterator` is `FileLoader`.
+Only the advancement implementation is shown here.
+
 For `for! file @File in loader`, each present value transfers ownership to the fresh loop binding. The item is cleaned up at the end of that iteration unless the body transfers it:
 
 ```arkoi
@@ -33,11 +42,12 @@ for! file @File in loader:
 
 The iterator implementation must produce a valid owned resource by construction, transfer from its internal state, or another explicit ownership operation. A possibly failing production step uses `FallibleIterator` and `for!`.
 
-```arkoi
-type Item = &File      # Borrowed read-only item
-type Item = &mut File  # Borrowed mutable item
-type Item = File       # Newly owned item
-```
+The possible associated-type bindings below are alternatives, not declarations
+that appear together in one implementation:
+
+- `type Item = &File` for a borrowed read-only item;
+- `type Item = &mut File` for a borrowed mutable item; or
+- `type Item = File` for a newly owned item.
 
 Built-in arrays and slices never implicitly yield owned resource elements. This rule applies only when a custom iterator returns an owned resource.
 

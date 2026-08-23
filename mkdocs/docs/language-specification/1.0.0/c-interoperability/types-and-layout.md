@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 C data types and layout
+description: Arkoi 1.0 target-language rules for C-compatible scalar, pointer, aggregate, enum, union, and layout declarations.
+---
+
 # C data types and layout
 
 <!-- spec-sections: 15.5, 15.6, 15.7, 15.8 -->

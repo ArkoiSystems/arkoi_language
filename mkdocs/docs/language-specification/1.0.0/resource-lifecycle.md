@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 resource lifecycle
+description: Arkoi 1.0 target-language rules for construction, deterministic cleanup, drop hooks, scope exits, and resources in aggregates.
+---
+
 # Resource lifecycle
 
 <!-- spec-sections: 5.3–5.4 -->

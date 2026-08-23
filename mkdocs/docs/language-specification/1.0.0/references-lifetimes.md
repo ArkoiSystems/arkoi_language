@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 references and lifetimes
+description: Arkoi 1.0 target-language rules for shared and mutable references, borrowing, escape checks, and return lifetimes.
+---
+
 # References and lifetimes
 
 <!-- spec-sections: 6.1 (references, borrowing, stable storage, limited lifetime checking) -->
@@ -54,7 +59,7 @@ modify(&mut file)
 
 The target of `&mut` must itself permit mutable access.
 
-!!! failure "Compile-time errors — missing explicit borrow"
+!!! danger "Compile-time errors — missing explicit borrow"
 
     ```arkoi
     inspect(file)
@@ -126,7 +131,7 @@ instead use program-lifetime storage.
 
 Taking a reference does not extend a temporary's lifetime.
 
-!!! failure "Compile-time error — reference to a temporary"
+!!! danger "Compile-time error — reference to a temporary"
 
     ```arkoi
     reference @&Item = &make_item()
@@ -139,7 +144,7 @@ Store the value in a stable binding first when its lifetime must continue.
 Arkoi rejects relationships that are obviously invalid, including returning a
 reference to a local binding:
 
-!!! failure "Compile-time error — local reference escape"
+!!! danger "Compile-time error — local reference escape"
 
     ```arkoi
     fun invalid() @&Item:
@@ -158,7 +163,7 @@ fun identity(item @&Item) @&Item:
 An owned value cannot be moved, replaced, or dropped while an obviously live
 reference or slice derived from it can still be used.
 
-!!! failure "Compile-time error — moving an obviously borrowed value"
+!!! danger "Compile-time error — moving an obviously borrowed value"
 
     ```arkoi
     file @File = File.open(path)!

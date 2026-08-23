@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 raw pointers
+description: Arkoi 1.0 target-language rules for raw-pointer types, creation, arithmetic, dereferencing, nullability, and unsafe use.
+---
+
 # Raw pointers
 
 <!-- spec-sections: 6.1 (raw pointers, dereference, arithmetic, provenance) -->
@@ -97,7 +102,7 @@ unsafe:
 
 Conceptually, `pointer[index]` is `*offset(pointer, index)`.
 
-!!! failure "Compile-time errors — numeric pointer operators"
+!!! danger "Compile-time errors — numeric pointer operators"
 
     ```arkoi
     next @*Item = pointer + 1

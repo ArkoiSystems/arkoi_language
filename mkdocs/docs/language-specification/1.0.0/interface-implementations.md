@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 interface implementations
+description: Arkoi 1.0 target-language rules for nominal conformance, implementation declarations, eligibility, and uniqueness.
+---
+
 # Interface implementations
 
 <!-- spec-sections: 13.1 (implementation syntax), 13.6 (coherence), 13.7, 13.15–13.16, 13.19, 13.35–13.36 -->

@@ -14,7 +14,7 @@ resolved at compile time.
     The files on this page illustrate the **target language**. They are not
     promised to compile with the current executable. See
     [Current compiler vs. Arkoi 1.0](../getting-started/compatibility.md) before
-    trying them today.
+    trying them with compiler 0.1.0.
 
 ## What you will learn
 

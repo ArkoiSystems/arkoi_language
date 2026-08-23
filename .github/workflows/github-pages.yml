@@ -1,18 +1,17 @@
-name: Deploy MkDocs site to GitHub Pages
+name: Build and deploy MkDocs site
 
 on:
   push:
     branches: ["main"]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -21,6 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v6
       - name: Setup Python
         uses: actions/setup-python@v6
@@ -38,13 +38,18 @@ jobs:
       - name: Build MkDocs site
         working-directory: mkdocs
         run: |
-          python -m mkdocs build -d site
+          python -m mkdocs build --strict -d site
       - name: Upload artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:
           path: mkdocs/site
 
   deploy:
+    if: github.event_name != 'pull_request'
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

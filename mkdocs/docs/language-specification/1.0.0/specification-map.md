@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 specification map
+description: Arkoi 1.0 target-language reference map from the source specification sections to their canonical documentation pages.
+---
+
 # Specification map
 
 The v150 source specification is organized as 16 long chapters. This documentation groups the same rules by reader task and gives each repeated rule one canonical home.

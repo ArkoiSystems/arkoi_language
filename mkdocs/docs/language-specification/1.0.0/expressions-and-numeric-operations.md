@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 expressions and numeric operations
+description: Arkoi 1.0 target-language rules for expression results, numeric conversions, arithmetic, overflow, and explicit operations.
+---
+
 # Expressions and numeric operations
 
 <!-- spec-sections: 9.1–9.5 -->

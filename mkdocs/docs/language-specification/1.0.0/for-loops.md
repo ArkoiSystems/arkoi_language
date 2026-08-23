@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 for loops
+description: Arkoi 1.0 target-language rules for built-in and custom for loops, binding forms, ownership, and loop lifetimes.
+---
+
 # For loops
 
 <!-- spec-sections: 11.3, 11.14–11.15, 11.19–11.20 -->

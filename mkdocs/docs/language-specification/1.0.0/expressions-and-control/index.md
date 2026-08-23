@@ -1,6 +1,6 @@
 ---
 title: Arkoi 1.0 expressions and control
-description: A task-oriented guide to Arkoi expressions, evaluation, assignment, control flow, iteration, indexing, slicing, and length.
+description: A task-oriented guide to Arkoi 1.0 target-language expressions, evaluation, assignment, control flow, iteration, indexing, slicing, and length.
 ---
 
 # Expressions and control

@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 iteration protocols
+description: Arkoi 1.0 target-language rules for iterable creation, iterator advancement, canonical interfaces, and conformance.
+---
+
 # Iteration protocols
 
 <!-- spec-sections: 11.5–11.8, 11.11–11.13, 11.18 -->
@@ -103,9 +108,11 @@ ownership of its resource iterable.
 
 ## Loop execution
 
-Conceptually, read-only iteration behaves as:
+Conceptually, read-only iteration behaves as shown by the following compiler
+pseudocode. The block is not Arkoi source: in particular, `next!` represents the
+compiler's extraction of the already-confirmed present optional value.
 
-```arkoi
+```text
 iterator @mut AccountIterator = AccountCollection.__iterate__(&accounts)
 
 loop:

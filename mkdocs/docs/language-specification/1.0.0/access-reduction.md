@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 access reduction
+description: Arkoi 1.0 target-language rules for reducing mutable access to read-only references, pointers, slices, and arrays.
+---
+
 # Access reduction
 
 <!-- spec-sections: 6.2–6.3 -->
@@ -56,7 +61,7 @@ collection @&mut Collection = get_mutable_collection()
 inspect(readonly(collection))
 ```
 
-!!! failure "Compile-time error — implicit access reduction"
+!!! danger "Compile-time error — implicit access reduction"
 
     ```arkoi
     inspect(collection)
@@ -106,7 +111,7 @@ the underlying object permanently immutable.
 - copy, move, or freeze the underlying object; or
 - serve as a general numeric or representation conversion.
 
-!!! failure "Compile-time error — unsupported operand"
+!!! danger "Compile-time error — unsupported operand"
 
     ```arkoi
     value @Data = create_data()

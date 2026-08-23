@@ -16,14 +16,14 @@ syntax when discussing or designing the eventual language.
 
 | Area | Current compiler | Arkoi 1.0 target |
 | --- | --- | --- |
-| Entry point | Introductory examples use a parameterless `main` with a numeric return that becomes the process status; entry-point signature validation is incomplete | Exactly one parameterless, value-less `fun main():` |
-| Function returns | Every function declares a return type and `return` has a value | Functions may be value-less and use bare `return` |
+| Entry point | Introductory examples use a parameterless `main` with a numeric return that becomes the process status; entry-point signature validation is incomplete | Exactly one parameterless `main` without a return type; it may declare a failure effect |
+| Function returns | Every function declares a return type and `return` has a value | Functions may omit a return type and use bare `return` |
 | Reassignment | A typed local such as `count @u32 = 0` can be reassigned | Bindings are immutable by default; use `count @mut u32 = 0` |
 | Conditional chain | `else if condition:` | `elif condition:` |
 | Boolean operators | `&&` and `||`; current conversions also allow boolean/numeric mixtures | `and`, `or`, and `not`, with strict `bool` operands |
 | Control flow | `if`, `else if`, `else`, `while`, and `return` | Also specifies `loop`, `for`, `break`, `continue`, named loops, and failure flow |
 | Values and types | Fixed-width integers, `usize`, `ssize`, floats, and `bool` | Also specifies characters, strings, optionals, aggregates, enums, references, slices, pointers, and more |
-| Conversion | The current subset performs its own implicit conversions and accepts postfix type casts such as `value @u32` | Lossless implicit conversion plus explicit `convert`, `truncate`, and `bitcast` operations |
+| Conversion | Numeric literals may carry a type annotation such as `7 @u32`, and the current subset performs implicit numeric conversions; arbitrary expressions do not accept a general postfix cast | Lossless implicit conversion plus explicit `convert`, `truncate`, and `bitcast` operations |
 | Larger language systems | Not implemented as a complete set | Modules, ownership, resources, interfaces, failures, unsafe code, and C interoperability are specified |
 
 This table highlights learner-facing differences; it is not an exhaustive
@@ -64,7 +64,8 @@ fun main() @s32:
     return 0
 ```
 
-The 1.0 entry point is value-less:
+The 1.0 entry point is parameterless and has no return type. It may also
+declare a failure effect:
 
 ```arkoi
 fun main():

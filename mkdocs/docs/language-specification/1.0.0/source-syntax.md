@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 source syntax
+description: Arkoi 1.0 target-language rules for indentation, blocks, continuation, comments, commas, declarations, and source files.
+---
+
 # Source syntax
 
 <!-- spec-sections: 1.1–1.5 -->
@@ -68,7 +73,7 @@ Each `pass`:
 A comment is not a block item, and a same-level declaration does not fill the
 preceding block.
 
-!!! failure "Compile-time error — missing block body"
+!!! danger "Compile-time error — missing block body"
 
     ```arkoi
     interface ThreadSafe:
@@ -117,7 +122,7 @@ arguments, array elements, multiple indices, and parent interfaces in an
 `extends` clause. A trailing comma adds no item, does not affect overload
 identity or evaluation order, and has no runtime meaning.
 
-!!! failure "Compile-time errors — malformed comma lists"
+!!! danger "Compile-time errors — malformed comma lists"
 
     ```arkoi
     fun duplicated(value @u32,,):
@@ -155,7 +160,7 @@ Outside open `(...)` or `[...]`, a newline ends the declaration or statement
 unless another explicitly defined multiline grammar construct applies. Arkoi
 has no general-purpose continuation character.
 
-!!! failure "Compile-time error — backslash continuation"
+!!! danger "Compile-time error — backslash continuation"
 
     ```arkoi
     result @u32 = left + \

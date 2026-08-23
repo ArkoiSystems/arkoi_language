@@ -14,7 +14,7 @@ receiver is an ordinary first parameter rather than an implicit object.
     Every snippet on this page illustrates the **Arkoi 1.0 target language**.
     The current compiler does not necessarily accept it. Check
     [Current compiler vs. Arkoi 1.0](../getting-started/compatibility.md) before
-    trying these examples with today's executable.
+    trying these examples with compiler 0.1.0.
 
 ## What you will learn
 

@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 constants and module globals
+description: Arkoi 1.0 target-language rules for constant expressions, module globals, initialization, visibility, and ownership.
+---
+
 # Constants and module globals
 
 <!-- spec-sections: 2.2–2.6 -->
@@ -52,7 +57,7 @@ passed to `address(...)`, or used as static slice backing storage.
 This applies recursively to composite constant values: `VALUES[0]` below is a
 value, not an array element place with stable storage.
 
-!!! failure "Compile-time error — an addressless constant"
+!!! danger "Compile-time error — an addressless constant"
 
     ```arkoi
     VALUES @const [3]u32 = [10, 20, 30]
@@ -92,7 +97,7 @@ Compile-time arithmetic has the same semantics as runtime arithmetic. A trap,
 invalid operation, or unrepresentable result during evaluation is a compile-time
 error.
 
-!!! failure "Compile-time error — runtime-dependent constant"
+!!! danger "Compile-time error — runtime-dependent constant"
 
     ```arkoi
     size @usize = read_size()!
@@ -143,7 +148,7 @@ Resource-typed globals are forbidden; create resources inside functions and
 pass them explicitly. `File`, `Socket`, and `Buffer` in examples are
 illustrative user or library resource types, not language built-ins.
 
-!!! failure "Compile-time error — resource global"
+!!! danger "Compile-time error — resource global"
 
     ```arkoi
     global_file @File = File.open(path)!
@@ -175,7 +180,7 @@ declaration's initial value rather than performing a runtime load. The graph
 must be acyclic. Both direct and indirect cycles are rejected, and the
 diagnostic identifies participating declarations.
 
-!!! failure "Compile-time error — initializer cycle"
+!!! danger "Compile-time error — initializer cycle"
 
     ```arkoi
     FIRST @const usize = SECOND + 1

@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 cloning
+description: Arkoi 1.0 target-language rules for explicit cloning, clone hooks, resource copies, and clone failures.
+---
+
 # Cloning
 
 <!-- spec-sections: 5.1 (clone hooks, sources, and composite cloning) -->
@@ -75,7 +80,7 @@ element remains initialized and owned in its existing location.
 Cloning a fresh temporary is redundant because the temporary can enter the new
 owning context directly.
 
-!!! failure "Compile-time error — cloning a temporary"
+!!! danger "Compile-time error — cloning a temporary"
 
     ```arkoi
     copy @File = clone(File.open(path)!)!
@@ -96,7 +101,7 @@ point_copy @Point = point
 view_copy @[]u32 = view
 ```
 
-!!! failure "Compile-time errors — cloning data"
+!!! danger "Compile-time errors — cloning data"
 
     ```arkoi
     second @u32 = clone(first)

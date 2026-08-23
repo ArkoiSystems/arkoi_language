@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 types and values
+description: Arkoi 1.0 target-language rules for primitive and composite types, values, literals, text, optionals, and resources.
+---
+
 # Types and values
 
 <!-- spec-sections: 3.1–3.6, 3.8 -->
@@ -54,7 +59,7 @@ resource User:
 A `resource` declaration may express semantic ownership even when all visible
 fields are data. Arkoi never silently recategorizes a declaration.
 
-!!! failure "Compile-time error — resource field in data"
+!!! danger "Compile-time error — resource field in data"
 
     ```arkoi
     data Invalid:
@@ -195,7 +200,7 @@ encoded @[]u8 = bytes(text)       # [0x48, 0xC3, 0xA9]
 owned string, or permits mutable access to encoded bytes. Direct indexing is not
 defined for either text type.
 
-!!! failure "Compile-time error — direct text indexing"
+!!! danger "Compile-time error — direct text indexing"
 
     ```arkoi
     value @u8 = text[index]

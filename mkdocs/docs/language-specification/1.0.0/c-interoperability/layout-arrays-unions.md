@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 C arrays and unions
+description: Arkoi 1.0 target-language rules for C array members, flexible arrays, union layout, active members, and unsafe access.
+---
+
 # C arrays and unions
 
 <!-- spec-sections: 15.17, 15.18 -->

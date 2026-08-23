@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 bindings and initialization
+description: Arkoi 1.0 target-language rules for bindings, type annotations, initialization, mutability, and destructuring.
+---
+
 # Bindings and initialization
 
 <!-- spec-sections: 2.1; lexical scope from 1.1 -->
@@ -50,7 +55,7 @@ Arkoi checks initialization across branches, loops, handlers, early exits, and
 postfix propagation paths. A value may be read or cleaned up only where it is
 definitely initialized.
 
-!!! failure "Compile-time error — possibly uninitialized"
+!!! danger "Compile-time error — possibly uninitialized"
 
     ```arkoi
     result @u32
@@ -71,7 +76,7 @@ Every indentation block creates a lexical scope, and a declaration is visible
 only in its scope. Nevertheless, a local name may not be redeclared anywhere
 in the same function—including nested blocks and the parameter scope.
 
-!!! failure "Compile-time error — shadowing"
+!!! danger "Compile-time error — shadowing"
 
     ```arkoi
     fun process(value @u32):

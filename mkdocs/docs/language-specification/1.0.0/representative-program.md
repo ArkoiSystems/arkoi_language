@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 representative program
+description: Arkoi 1.0 target-language reference example combining modules, resources, failures, collections, and C interoperability.
+---
+
 # Representative program
 
 <!-- spec-sections: 16 -->

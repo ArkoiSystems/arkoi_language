@@ -1,6 +1,6 @@
 ---
 title: Arkoi 1.0 language foundations
-description: A task-oriented guide to Arkoi source syntax, bindings, types, aggregates, functions, calls, methods, and compiler hooks.
+description: A task-oriented guide to Arkoi 1.0 target-language source syntax, bindings, types, aggregates, functions, calls, methods, and compiler hooks.
 ---
 
 # Language foundations

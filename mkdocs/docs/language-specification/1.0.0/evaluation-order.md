@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 evaluation order
+description: Arkoi 1.0 target-language rules for operand order, argument evaluation, temporaries, cleanup, and side effects.
+---
+
 # Evaluation order
 
 <!-- spec-sections: 10.1–10.2 -->

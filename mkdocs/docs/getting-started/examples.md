@@ -98,7 +98,7 @@ introductions:
 
 | File | What it exercises |
 | --- | --- |
-| `example/test/test.ark` | Mixed numeric types, casts, boolean/numeric interactions, calls, inline branches, and reassignment |
+| `example/test/test.ark` | Mixed numeric types, numeric-literal type annotations, implicit conversions, boolean/numeric interactions, calls, inline branches, and reassignment |
 | `example/cc/cc.ark` | Integer and floating-point argument registers and the current `&&` / `||` operators |
 
 Their deliberately dense code includes behavior that differs from the target

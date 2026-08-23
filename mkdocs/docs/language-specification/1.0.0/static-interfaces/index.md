@@ -1,9 +1,9 @@
 ---
-title: Arkoi 1.0 static interfaces
-description: A task-oriented guide to Arkoi interface requirements, associated types, extension, implementation, and visibility.
+title: Arkoi 1.0 static interfaces guide
+description: A task-oriented guide to Arkoi 1.0 target-language interface requirements, associated types, extension, implementation, and visibility.
 ---
 
-# Static interfaces
+# Static interfaces guide
 
 <!-- spec-sections: none -->
 
@@ -42,7 +42,7 @@ chapters contain the specification rules.
 ## Suggested workflow
 
 1. Confirm that a compile-time contract—not a runtime polymorphic value—is the
-   intended model on [Static interfaces](../interfaces-overview.md).
+   intended model in [Static-interface model and declarations](../interfaces-overview.md).
 2. Write the smallest complete set of [requirements](../interface-requirements.md),
    using an [associated type](../interface-associated-types.md) only when the
    concrete type genuinely varies by implementation.

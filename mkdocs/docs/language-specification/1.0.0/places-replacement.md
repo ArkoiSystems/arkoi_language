@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 places and replacement
+description: Arkoi 1.0 target-language rules for resource-valued places, assignment, replacement, cleanup, and partial updates.
+---
+
 # Places and replacement
 
 <!-- spec-sections: 5.1 (take, replace, swap); 5.5; 6.1 (resource places and direct assignment) -->
@@ -21,7 +26,7 @@ value and must remain fully initialized.
 Reading a data place may copy its value. Reading a resource place as an ordinary
 value would imply an ownership copy and is invalid:
 
-!!! failure "Compile-time error — copying a resource element"
+!!! danger "Compile-time error — copying a resource element"
 
     ```arkoi
     file @File = files[0]
@@ -37,7 +42,7 @@ modify(&mut files[0])
 Directly moving a resource field or element is also invalid because its
 container would become partly initialized:
 
-!!! failure "Compile-time error — moving out of a resource place"
+!!! danger "Compile-time error — moving out of a resource place"
 
     ```arkoi
     first @File = move(files[0])
@@ -156,7 +161,8 @@ replacement @File = File.open(replacement_path)!
 files[0] = move(replacement)
 
 user.file = File.open(path)!
-files[index]! = move(replacement)
+indexed_replacement @File = File.open(replacement_path)!
+files[index]! = move(indexed_replacement)
 mutable_files[index]! = File.open(path)!
 ```
 
@@ -174,7 +180,7 @@ For `first = move(second)`, the conceptual order is:
 
 Self-move assignment is rejected.
 
-!!! failure "Compile-time error — self-move assignment"
+!!! danger "Compile-time error — self-move assignment"
 
     ```arkoi
     file = move(file)

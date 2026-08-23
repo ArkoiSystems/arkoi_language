@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 modules and imports
+description: Arkoi 1.0 target-language rules for module identity, source-file correspondence, imports, aliases, and visibility.
+---
+
 # Modules and imports
 
 <!-- spec-sections: 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7 -->
@@ -87,8 +92,10 @@ module app
 import graphics.color
 import system.files
 
-selected @graphics.color.Color = graphics.color.Color.red
-file @system.files.File = system.files.File.open(path)!
+fun use_imports(path @string_view):
+    selected @graphics.color.Color = graphics.color.Color.red
+    file @system.files.File = system.files.File.open(path) handle failure:
+        return
 ```
 
 The absolute name resolves to the same module from every importing location. Arkoi
@@ -113,11 +120,15 @@ import graphics.color.*
 `as` gives the imported module a shorter name inside the current module:
 
 ```arkoi
+module app
+
 import graphics.color as color
 import system.files as files
 
-selected @color.Color = color.Color.red
-file @files.File = files.File.open(path)!
+fun use_aliases(path @string_view):
+    selected @color.Color = color.Color.red
+    file @files.File = files.File.open(path) handle failure:
+        return
 ```
 
 The alias changes only local qualification; it does not change the imported module's

@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 C callback execution and symbols
+description: Arkoi 1.0 target-language rules for foreign callback execution, concurrency, reentrancy, symbol uniqueness, and linking.
+---
+
 # C callback execution and symbol uniqueness
 
 <!-- spec-sections: 15.19, 15.20 -->

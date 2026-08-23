@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 operator hooks
+description: Arkoi 1.0 target-language rules for operator-hook selection, signatures, overload resolution, failures, and results.
+---
+
 # Operator hooks
 
 <!-- spec-sections: 9.19–9.20 -->

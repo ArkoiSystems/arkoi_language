@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 C ownership, callbacks, addresses, and layout queries
+description: Arkoi 1.0 target-language rules for foreign ownership, callback lifetimes, address operations, and C layout queries.
+---
+
 # C ownership, callbacks, addresses, and layout queries
 
 <!-- spec-sections: 15.13, 15.14, 15.15, 15.16 -->

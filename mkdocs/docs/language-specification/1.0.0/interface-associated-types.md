@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 interface associated types
+description: Arkoi 1.0 target-language rules for declaring, binding, substituting, and exposing interface associated types.
+---
+
 # Interface associated types
 
 <!-- spec-sections: 13.8, 13.13, 13.23, 13.32–13.34 -->

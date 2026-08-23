@@ -55,10 +55,12 @@ def on_page_markdown(markdown, *, page, config, **kwargs):
             "getting-started/compatibility.md", source_uri
         )
         notice = (
+            "<div data-search-exclude markdown>\n\n"
             '!!! warning "Target Arkoi 1.0"\n\n'
-            "    This page specifies the target language; the current compiler may "
-            "not accept this syntax yet. See the "
-            f"[compatibility guide]({compatibility_url})."
+            "    This page specifies the target language; compiler 0.1.0 may not "
+            "accept this syntax. See the "
+            f"[compatibility guide]({compatibility_url}).\n\n"
+            "</div>"
         )
         return _insert_after_title(markdown, notice)
 
@@ -73,10 +75,11 @@ def on_page_markdown(markdown, *, page, config, **kwargs):
             "language-specification/1.0.0/index.md", source_uri
         )
         notice = (
-            '!!! info "Current compiler"\n\n'
-            "    Commands and syntax on this page describe the compiler available "
-            "in this repository today. The "
-            f"[Arkoi 1.0 reference]({specification_url}) describes the target language."
+            "<div data-search-exclude markdown>\n\n"
+            '!!! info "Current compiler 0.1.0"\n\n'
+            "    Commands and syntax on this page describe compiler 0.1.0. The "
+            f"[Arkoi 1.0 reference]({specification_url}) describes the target language.\n\n"
+            "</div>"
         )
         return _insert_after_title(markdown, notice)
 

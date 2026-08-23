@@ -60,6 +60,38 @@ x86-64 assembly generation, assembly, linking, and optional execution. Use the
    guide. If the language contract changes, update the canonical Arkoi 1.0
    reference page as a separate, explicit decision.
 
+## Build the documentation locally
+
+The generated C++ API requires [Doxygen](https://www.doxygen.nl/) and
+[Graphviz](https://graphviz.org/) in addition to Python. Install those system
+packages first, then create the documentation environment from the repository
+root:
+
+```console
+cd mkdocs
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+Keep `mkdocs/` as the working directory for all documentation commands. The
+MkDoxy source and Doxygen configuration paths in `mkdocs.yml` are relative to
+that directory.
+
+Start a local preview server with:
+
+```console
+.venv/bin/python -m mkdocs serve
+```
+
+Before submitting documentation changes, run the same strict build used in CI:
+
+```console
+.venv/bin/python -m mkdocs build --strict
+```
+
+The generated site is written to `mkdocs/site/`.
+
 ## API shortcuts
 
 - [Classes and structs](../arkoi_language/classes.md)

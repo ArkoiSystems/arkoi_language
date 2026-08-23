@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 arrays
+description: Arkoi 1.0 target-language rules for fixed-size arrays, array values, initialization, ownership, and element access.
+---
+
 # Arrays
 
 <!-- spec-sections: 6.1 (fixed arrays, length, indexing, resource elements, repetition) -->
@@ -59,7 +64,7 @@ type Header = [2 + 6]u8
 
 Every array consequently has statically known size and layout.
 
-!!! failure "Compile-time error — runtime array length"
+!!! danger "Compile-time error — runtime array length"
 
     ```arkoi
     size @usize = 4
@@ -85,7 +90,7 @@ cleanup. The full slice is an ordinary empty slice.
 
 Any compile-time index is invalid:
 
-!!! failure "Compile-time error — indexing a zero-length array"
+!!! danger "Compile-time error — indexing a zero-length array"
 
     ```arkoi
     value @u8 = empty[0]
@@ -99,14 +104,15 @@ A dynamic index compiles as a recoverable bounds check and always produces
 A compile-time-known index is checked statically:
 
 ```arkoi
-first @u32 = values[0]
-values[2] = 42
+mutable_values @mut [4]u32 = [10, 20, 30, 40]
+first @u32 = mutable_values[0]
+mutable_values[2] = 42
 ```
 
 An in-range constant access is infallible. An out-of-range one is a compile-time
 error.
 
-!!! failure "Compile-time error — constant index outside `[4]u32`"
+!!! danger "Compile-time error — constant index outside `[4]u32`"
 
     ```arkoi
     value @u32 = values[4]
@@ -116,7 +122,7 @@ A runtime index is recoverably checked:
 
 ```arkoi
 value @u32 = values[index]!
-values[index]! = 42
+mutable_values[index]! = 42
 ```
 
 Failure produces `CoreFail.out_of_range`; writing requires mutable array
@@ -159,7 +165,7 @@ Resource arrays clone and clean up element-by-element under the rules in
 Every element must be written in an array literal or produced by explicit
 construction code. Arkoi has no `[value; N]` repetition form.
 
-!!! failure "Compile-time error — array repetition"
+!!! danger "Compile-time error — array repetition"
 
     ```arkoi
     repeated @[4]u32 = [0; 4]

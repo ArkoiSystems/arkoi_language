@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 unsafe execution
+description: Arkoi 1.0 target-language rules for unsafe blocks, unsafe functions, caller obligations, and undefined behavior.
+---
+
 # Unsafe execution
 
 <!-- spec-sections: 8.2 -->
@@ -38,7 +43,7 @@ unsafe:
     byte @u8 = read_raw(pointer)
 ```
 
-!!! failure "Compile-time error — unsafe call from safe context"
+!!! danger "Compile-time error — unsafe call from safe context"
 
     ```arkoi
     byte @u8 = read_raw(pointer)

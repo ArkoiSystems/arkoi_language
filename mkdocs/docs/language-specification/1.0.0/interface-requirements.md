@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 interface requirements
+description: Arkoi 1.0 target-language rules for interface methods, functions, hooks, overloads, and exact requirement matching.
+---
+
 # Interface requirements
 
 <!-- spec-sections: 13.2, 13.4–13.5, 13.9, 13.12, 13.17–13.18, 13.24, 13.26–13.27, 13.38 -->

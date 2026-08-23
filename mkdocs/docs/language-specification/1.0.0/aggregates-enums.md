@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 aggregates and enums
+description: Arkoi 1.0 target-language rules for aggregate declarations, fields, initialization, anonymous aggregates, enums, and unions.
+---
+
 # Aggregates and enums
 
 <!-- spec-sections: 3.7, 3.9–3.10, 5.2 -->
@@ -47,7 +52,7 @@ Field declaration order is part of the source API for positional construction.
 Named construction avoids depending on that order and is usually clearer when
 an aggregate has several fields of the same type.
 
-!!! failure "Compile-time errors — invalid argument order or duplication"
+!!! danger "Compile-time errors — invalid argument order or duplication"
 
     ```arkoi
     duplicate @Point = Point(10.0, x = 20.0)
@@ -83,7 +88,7 @@ aggregate cannot be destructured to move out resource fields; use the
 addressable-place operations described in [Places and
 replacement](places-replacement.md).
 
-!!! failure "Compile-time error — aggregate destructuring"
+!!! danger "Compile-time error — aggregate destructuring"
 
     ```arkoi
     Point(x, y) = point
@@ -136,7 +141,7 @@ separate `pub` or private modifiers.
 
 Every enum must contain at least one member. Comments and `pass` do not count.
 
-!!! failure "Compile-time error — empty enum"
+!!! danger "Compile-time error — empty enum"
 
     ```arkoi
     enum Never:
@@ -169,8 +174,8 @@ Explicit discriminants define logical values only. Enums neither implicitly
 convert to integers nor accept implicit integer conversion.
 
 ```arkoi
-number @u32 = convert(HttpMethod.get, u32)!
-method @HttpMethod = convert(number, HttpMethod)!
+number @u32 = convert(Code.first, u32)!
+code @Code = convert(number, Code)!
 ```
 
 Integer-to-enum conversion produces `CoreFail.invalid_conversion` if no member

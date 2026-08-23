@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 slicing
+description: Arkoi 1.0 target-language rules for built-in and hook-based slicing, ranges, mutability, copying, and lifetimes.
+---
+
 # Slicing
 
 <!-- spec-sections: 12.4–12.7 -->

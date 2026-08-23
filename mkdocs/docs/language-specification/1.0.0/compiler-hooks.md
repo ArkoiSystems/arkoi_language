@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 compiler hooks
+description: Arkoi 1.0 target-language reference for reserved compiler hooks and the language operations that select them.
+---
+
 # Compiler hooks
 
 <!-- spec-sections: 7.3 -->

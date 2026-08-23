@@ -16,7 +16,7 @@ need exact edge cases.
     language**. The current compiler does not necessarily accept it. Check
     [Current compiler vs. Arkoi 1.0](../getting-started/compatibility.md), or use
     the [current-compiler examples](../getting-started/examples.md) when you want
-    code to build and run today.
+    code accepted by compiler 0.1.0.
 
 ## Start here
 
@@ -149,7 +149,7 @@ visibility, iterator lifetimes, and ABI restrictions.
 
 | Your goal | Best starting point |
 | --- | --- |
-| Build something with today's compiler | [Current compiler overview](../getting-started/overview.md) |
+| Build something with compiler 0.1.0 | [Current compiler overview](../getting-started/overview.md) |
 | Learn the intended Arkoi 1.0 language progressively | [Chapter 1: Your first Arkoi source file](basics.md) |
 | Look up exact Arkoi 1.0 behavior | [Quick reference](../language-specification/1.0.0/quick-reference.md) |
-| Understand what differs today | [Current compiler vs. Arkoi 1.0](../getting-started/compatibility.md) |
+| Understand what differs in compiler 0.1.0 | [Current compiler vs. Arkoi 1.0](../getting-started/compatibility.md) |

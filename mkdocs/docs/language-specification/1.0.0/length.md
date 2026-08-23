@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 length operations
+description: Arkoi 1.0 target-language rules for built-in length queries, length hooks, result types, and evaluation.
+---
+
 # Length
 
 <!-- spec-sections: 12.8 -->

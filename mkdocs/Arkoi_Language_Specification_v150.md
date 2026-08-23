@@ -1,11 +1,19 @@
 # Arkoi Programming Language Specification
 
-**Language version:** 1  
-**Document status:** Current language specification
+**Language target:** 1.0.0
+
+**Document revision:** v150
+
+**Document status:** Target specification
 
 Arkoi is a statically typed, compiled systems programming language with indentation-defined blocks, explicit ownership and failure handling, deterministic resource cleanup, statically resolved interfaces, and direct C interoperability.
 
-This document defines the accepted syntax and semantics of Arkoi. Statements marked as compile-time errors describe constraints enforced before execution. A *failure* is recoverable through the language's failure-effect system. A *trap* is unrecoverable. Undefined behavior can arise only where this specification assigns responsibility to unsafe or foreign code.
+This document defines the target syntax and semantics of Arkoi 1.0.0. It does
+not imply that every feature is available in compiler 0.1.0. Statements marked
+as compile-time errors describe constraints enforced before execution. A
+*failure* is recoverable through the language's failure-effect system. A *trap*
+is unrecoverable. Undefined behavior can arise only where this specification
+assigns responsibility to unsafe or foreign code.
 
 ## Contents
 - [1. Language and Source Model](#1-language-and-source-model)
@@ -419,7 +427,7 @@ Local constants are visible only within their lexical block.
 ```arkoi
 fun process():
     CHUNK_SIZE @const usize = 64
-    # ...
+    pass
 ```
 
 The `const` modifier is mutually exclusive with `mut` and `own`. Constants
@@ -1007,7 +1015,7 @@ left @s32 = convert(first, s32)!
 right @s32 = convert(second, s32)!
 
 if left < right:
-    # ...
+    pass
 ```
 
 This makes numeric ordering an explicit interpretation rather than an inherent enum operation.
@@ -1392,10 +1400,10 @@ Parameter names participate in matching named call arguments, but do not make ot
 
 ```arkoi
 fun resize(width @u32, height @u32):
-    # ...
+    pass
 
 fun resize(size @Size):
-    # ...
+    pass
 
 resize(width = 100, height = 80)
 resize(size = requested_size)
@@ -1405,10 +1413,10 @@ Arkoi does not apply implicit numeric conversions merely to make an overload app
 
 ```arkoi
 fun process(value @u32):
-    # ...
+    pass
 
 fun process(value @u64):
-    # ...
+    pass
 
 small @u16 = 10
 
@@ -1420,10 +1428,10 @@ Context-dependent literals may make a call ambiguous.
 
 ```arkoi
 fun store(value @u32):
-    # ...
+    pass
 
 fun store(value @u64):
-    # ...
+    pass
 
 store(10)  # Compile-time error: the literal fits more than one overload
 ```
@@ -1443,7 +1451,7 @@ Transparent type aliases preserve type identity and therefore do not create dist
 type UserId = u64
 
 fun find(value @u64):
-    # ...
+    pass
 
 fun find(value @UserId):
     # Compile-time error: UserId and u64 are the same type
@@ -1488,7 +1496,7 @@ fun copy_file(
     destination @string_view,
     overwrite @bool,
 ) !IOFail:
-    # ...
+    pass
 ```
 
 A call may be entirely positional:
@@ -1816,7 +1824,7 @@ An executable Arkoi program defines exactly one module-level `main` function.
 
 ```arkoi
 fun main():
-    # ...
+    pass
 ```
 
 The entry point:
@@ -2466,10 +2474,10 @@ Arkoi never inserts implicit borrowing for ordinary function arguments.
 
 ```arkoi
 fun inspect(file @&File):
-    # ...
+    pass
 
 fun modify(file @&mut File):
-    # ...
+    pass
 
 inspect(&file)
 modify(&mut file)
@@ -2837,8 +2845,8 @@ view @[]u32 = values[..]
 Creating a mutable slice requires a mutable array binding:
 
 ```arkoi
-values @mut [4]u32 = [10, 20, 30, 40]
-view @[]mut u32 = values[..]
+mutable_values @mut [4]u32 = [10, 20, 30, 40]
+mutable_view @[]mut u32 = mutable_values[..]
 ```
 
 A fixed-size array owns its elements. Its data-or-resource category follows its element type: `[N]T` is a resource when `T` is a resource, and otherwise it is data.
@@ -2910,7 +2918,7 @@ A constant index within the array bounds is infallible and does not require post
 
 ```arkoi
 first @u32 = values[0]
-values[2] = 42
+mutable_values[2] = 42
 ```
 
 A constant index outside the array bounds is a compile-time error:
@@ -2923,7 +2931,7 @@ When the index is not known at compile time, indexing is recoverably bounds-chec
 
 ```arkoi
 value @u32 = values[index]!
-values[index]! = 42
+mutable_values[index]! = 42
 ```
 
 An invalid dynamic index produces `CoreFail.out_of_range`. Writing through an array index additionally requires mutable access to the array.
@@ -3069,7 +3077,7 @@ view @&Collection = readonly(mutable)
 fun inspect(
     value @&Collection,
 ):
-    # ...
+    pass
 
 collection @&mut Collection = get_mutable_collection()
 
@@ -3088,12 +3096,12 @@ The explicit operation preserves Arkoi's exact overload-resolution model.
 fun inspect(
     value @&Collection,
 ):
-    # ...
+    pass
 
 fun inspect(
     value @&mut Collection,
 ):
-    # ...
+    pass
 
 inspect(collection)            # Selects the &mut Collection overload
 inspect(readonly(collection))  # Selects the &Collection overload
@@ -3288,7 +3296,7 @@ qualified by their declaring type or a visible interface requirement.
 
 ```arkoi
 fun File.write(self @&mut File, buffer @&Buffer) !IOFail:
-    # ...
+    pass
 
 File.write(&mut file, &buffer)!
 ```
@@ -3505,7 +3513,7 @@ Unsafe operations must appear inside an unsafe context.
 
 ```arkoi
 unsafe:
-    # Low-level operations.
+    pass
 ```
 
 #### Unsafe function
@@ -3843,7 +3851,7 @@ Even when every stored field supports comparison, a resource type does not suppo
 
 ```arkoi
 resource Buffer:
-    # fields
+    pass
 
 fun Buffer.__eq__(
     self @&Buffer,
@@ -4229,8 +4237,10 @@ A slice supports `<`, `<=`, `>`, and `>=` when its element type supports the com
 Slice ordering is lexicographic by viewed contents.
 
 ```arkoi
-first @[]u32 = [1, 2][..]
-second @[]u32 = [1, 2, 3][..]
+first_values @[2]u32 = [1, 2]
+second_values @[3]u32 = [1, 2, 3]
+first @[]u32 = first_values[..]
+second @[]u32 = second_values[..]
 
 less @bool = first < second  # true
 ```
@@ -5254,9 +5264,11 @@ for account @&Account in accounts:
 
 The loop binding type must exactly match the `Item` associated type of the selected `Iterable` implementation.
 
-Conceptually, the compiler lowers the loop to direct statically resolved calls:
+Conceptually, the compiler lowers the loop as shown by the following compiler
+pseudocode. The block is not Arkoi source: in particular, `next!` represents the
+compiler's extraction of the already-confirmed present optional value.
 
-```arkoi
+```text
 iterator @mut AccountIterator = AccountCollection.__iterate__(&accounts)
 
 loop:
@@ -5602,6 +5614,10 @@ fun FileLoader.__next__(
     # ...
 ```
 
+These examples assume that `loader` has an applicable creation-interface
+implementation whose `Item` is `File` and whose `Iterator` is `FileLoader`.
+Only the advancement implementation is shown here.
+
 The iterator returns ownership of each present resource item to the loop.
 
 ```arkoi
@@ -5629,13 +5645,13 @@ After `move(file)`, the loop binding is uninitialized and the loop does not clea
 
 The ordinary rules for moved bindings continue to apply. Using the loop binding after moving it is a compile-time error unless a mutable binding is validly reinitialized under the ordinary binding rules.
 
-A yielded owned resource is distinct from a borrowed resource item.
+A yielded owned resource is distinct from a borrowed resource item. The
+following associated-type bindings are alternatives, not declarations that
+appear together in one implementation:
 
-```arkoi
-type Item = &File      # Borrowed read-only item
-type Item = &mut File  # Borrowed mutable item
-type Item = File       # Newly owned item
-```
+- `type Item = &File` for a borrowed read-only item.
+- `type Item = &mut File` for a borrowed mutable item.
+- `type Item = File` for a newly owned item.
 
 The iterator implementation is responsible for producing a valid owned resource value. It may construct a new resource, transfer one from its own internal state, or obtain ownership through another explicit Arkoi ownership operation.
 
@@ -6415,7 +6431,7 @@ Mutable-place contexts select `__index_mut__`.
 container[index]!.field = value
 element @&mut Element = &mut container[index]!
 container[index]! += amount
-container[index]!.mutating_method()
+Element.mutating_method(&mut container[index]!)
 ```
 
 A type may define only `__index__`, only `__index_mut__`, or both. An unavailable indexing mode is a compile-time error.
@@ -6646,9 +6662,10 @@ Read-only slicing uses `__slice__`.
 ```arkoi
 fun Container.__slice__(
     self @&Container,
-    start @usize,
-    end @usize,
-) !CoreFail @ContainerView:
+    start @?usize,
+    end @?usize,
+) !CoreFail @&ContainerView:
+    return Container.view_ref(self, start, end)!
 ```
 
 Mutable slicing uses `__slice_mut__`.
@@ -6656,9 +6673,10 @@ Mutable slicing uses `__slice_mut__`.
 ```arkoi
 fun Container.__slice_mut__(
     self @&mut Container,
-    start @usize,
-    end @usize,
-) !CoreFail @MutableContainerView:
+    start @?usize,
+    end @?usize,
+) !CoreFail @&mut MutableContainerView:
+    return Container.mutable_view_ref(self, start, end)!
 ```
 
 Slice syntax is distinct from ordinary indexing syntax.
@@ -6677,7 +6695,9 @@ container[start..]
 container[..]
 ```
 
-Read-only contexts select `__slice__`. Mutable contexts select `__slice_mut__`.
+Ordinary slicing selects `__slice__`, including when the receiver is mutable.
+Only an explicit mutable borrow of the complete slicing expression selects
+`__slice_mut__`, as defined in section 12.7.
 
 A type may define only read-only slicing, only mutable slicing, or both. An unavailable slicing mode is a compile-time error.
 
@@ -6705,7 +6725,8 @@ fun Container.__slice__(
     self @&Container,
     start @?usize,
     end @?usize,
-) !CoreFail @ContainerView:
+) !CoreFail @&ContainerView:
+    return Container.view_ref(self, start, end)!
 ```
 
 Mutable slicing uses the same bound representation.
@@ -6715,7 +6736,8 @@ fun Container.__slice_mut__(
     self @&mut Container,
     start @?usize,
     end @?usize,
-) !CoreFail @MutableContainerView:
+) !CoreFail @&mut MutableContainerView:
+    return Container.mutable_view_ref(self, start, end)!
 ```
 
 The four slice forms map to hook arguments as follows:
@@ -6744,7 +6766,8 @@ fun Container.__slice__(
     self @&Container,
     start @?usize,
     end @?usize,
-) !CoreFail @ContainerView:
+) !CoreFail @&ContainerView:
+    return Container.view_ref(self, start, end)!
 ```
 
 A slicing hook may return:
@@ -6763,7 +6786,10 @@ fun Container.__slice__(
     self @&Container,
     start @?usize,
     end @?usize,
-) @[]Element:
+) !CoreFail @[]Element:
+    start_index @usize = start ?? 0
+    end_index @usize = end ?? length(self.elements)
+    return self.elements[start_index..end_index]!
 ```
 
 The returned slice's lifetime is tied to `self`.
@@ -6771,11 +6797,12 @@ The returned slice's lifetime is tied to `self`.
 A slicing hook may instead construct and return an independently owned resource.
 
 ```arkoi
-fun Container.__slice_copy__(
+fun Container.slice_copy(
     self @&Container,
     start @?usize,
     end @?usize,
 ) !CoreFail @Buffer:
+    return Buffer.copy_from(self, start, end)!
 ```
 
 Such an independently owned result may outlive the receiver because it does not borrow receiver storage.
@@ -6787,7 +6814,8 @@ fun Container.__slice_mut__(
     self @&mut Container,
     start @?usize,
     end @?usize,
-) !CoreFail @MutableContainerView:
+) !CoreFail @&mut MutableContainerView:
+    return Container.mutable_view_ref(self, start, end)!
 ```
 
 Its return type may be mutable, read-only, copied, or independently owned, provided it satisfies the ordinary type, ownership, and lifetime rules.
@@ -6799,13 +6827,13 @@ The hook name determines which slicing mode is selected; the return type does no
 Ordinary slicing syntax selects the read-only `__slice__` hook, even when the receiver is mutable.
 
 ```arkoi
-view @ContainerView = container[start..end]!
+view @&ContainerView = container[start..end]!
 ```
 
 Mutable slicing is selected only when the complete slicing expression is explicitly borrowed with `&mut`.
 
 ```arkoi
-view @&mut MutableContainerView = &mut container[start..end]!
+view @&mut MutableContainerView = &mut (container[start..end]!)
 ```
 
 The mutable receiver alone does not select `__slice_mut__`.
@@ -6813,7 +6841,7 @@ The mutable receiver alone does not select `__slice_mut__`.
 ```arkoi
 container @mut Container = create_container()
 
-view @ContainerView = container[start..end]!
+view @&ContainerView = container[start..end]!
 # Selects __slice__, not __slice_mut__
 ```
 
@@ -6832,8 +6860,8 @@ Therefore:
 Selecting `__slice_mut__` requires a stable mutable receiver. An immutable receiver or temporary receiver is a compile-time error.
 
 ```arkoi
-&mut immutable_container[start..end]!  # Compile-time error
-&mut create_container()[start..end]!   # Compile-time error
+&mut (immutable_container[start..end]!)  # Compile-time error
+&mut (create_container()[start..end]!)   # Compile-time error
 ```
 
 If the selected hook is fallible, postfix `!` applies to the complete slicing expression before the borrow result is used.
@@ -7105,12 +7133,12 @@ fun FileStream.write(
     self @&mut FileStream,
     value @u8,
 ):
-    # ...
+    pass
 
 fun FileStream.flush(
     self @&mut FileStream,
 ):
-    # ...
+    pass
 ```
 
 Implementing a child interface also makes the type an implementation of every transitive parent interface. A separate `implements` declaration for an inherited parent is unnecessary and is not permitted.
@@ -7127,7 +7155,10 @@ The interface-extension graph must be acyclic. Direct or indirect cycles are com
 
 ```arkoi
 interface First extends Second:
+    pass
+
 interface Second extends First:  # Compile-time error
+    pass
 ```
 
 Multiple inheritance is permitted.
@@ -7141,9 +7172,13 @@ interface Base:
     )
 
 interface Left extends Base:
+    pass
+
 interface Right extends Base:
+    pass
 
 interface Combined extends Left, Right:
+    pass
 ```
 
 `Combined` contains one `reset` requirement.
@@ -7199,7 +7234,7 @@ implements Reusable for Buffer
 fun Buffer.reset(
     self @&mut Buffer,
 ):
-    # ...
+    pass
 ```
 
 The one `Buffer.reset` definition satisfies both requirements because, after substituting `Self = Buffer`, the required declarations are identical.
@@ -7787,6 +7822,7 @@ implements Interface for Type
 
 ```arkoi
 interface Child extends Parent:
+    pass
 ```
 
 ```arkoi
@@ -7908,7 +7944,7 @@ fun Account.display(
 fun Account.internal_helper(
     self @&Account,
 ):
-    # ...
+    pass
 ```
 
 The `implements` declarations identify which contracts the type satisfies. The concrete functions themselves remain members of the type's ordinary function namespace.
@@ -8032,7 +8068,7 @@ Interfaces and `implements` declarations are permitted only at module level.
 module collections
 
 interface Iterable:
-    # ...
+    pass
 
 implements Iterable for Collection
 ```
@@ -8051,7 +8087,7 @@ They cannot appear inside:
 ```arkoi
 fun configure():
     interface LocalCapability:  # Compile-time error
-        # ...
+        pass
 
     implements LocalCapability for LocalType  # Compile-time error
 ```
@@ -8060,7 +8096,7 @@ Interface extension is declared only as part of a module-level interface declara
 
 ```arkoi
 interface Child extends Parent:
-    # ...
+    pass
 ```
 
 Restricting interfaces and implementations to module scope ensures that:
@@ -8080,8 +8116,10 @@ Arkoi permits interfaces with no associated types and no required functions.
 
 ```arkoi
 interface ThreadSafe:
+    pass
 
 interface PlainData:
+    pass
 ```
 
 Such an interface is a marker interface. It represents an explicit compile-time classification rather than a behavioral contract.
@@ -8105,8 +8143,10 @@ Marker interfaces:
 
 ```arkoi
 interface Sendable:
+    pass
 
 interface ConcurrentResource extends Sendable:
+    pass
 ```
 
 Implementing a child marker interface also provides conformance to its inherited parent interfaces under the ordinary interface-extension rules.
@@ -8119,17 +8159,20 @@ A public interface may extend only parent interfaces that are public and accessi
 
 ```arkoi
 pub interface Base:
+    pass
 
 pub interface PublicCapability extends Base:
+    pass
 ```
 
 A public interface cannot extend a private parent.
 
 ```arkoi
 interface InternalCapability:
+    pass
 
-pub interface PublicCapability extends InternalCapability:
-    # Compile-time error
+pub interface PublicCapability extends InternalCapability:  # Compile-time error
+    pass
 ```
 
 This rule applies to every direct parent and therefore to the complete transitive parent graph.
@@ -8141,10 +8184,13 @@ A private interface may extend either:
 
 ```arkoi
 pub interface PublicBase:
+    pass
 
 interface InternalBase:
+    pass
 
 interface InternalCapability extends PublicBase, InternalBase:
+    pass
 ```
 
 A public child also cannot extend a parent that is public in its own module but inaccessible because it is not exported through the relevant module boundary.
@@ -8186,8 +8232,13 @@ This rule applies whether the parent is inherited directly or through multiple i
 
 ```arkoi
 interface Base:
+    pass
+
 interface Middle extends Base:
+    pass
+
 interface Final extends Middle:
+    pass
 
 implements Final for Type
 implements Base for Type  # Compile-time error
@@ -8261,10 +8312,13 @@ interface Base:
     type Item
 
 interface Left extends Base:
+    pass
+
 interface Right extends Base:
+    pass
 
 interface Combined extends Left, Right:
-    # One inherited Base.Item requirement
+    pass  # One inherited Base.Item requirement
 ```
 
 Independent implementations never conflict merely because their associated-type names match.
@@ -8299,13 +8353,13 @@ fun Parser.parse(
     self @&Parser,
     value @u64,
 ):
-    # ...
+    pass
 
 fun Parser.parse(
     self @&Parser,
     value @string_view,
 ):
-    # ...
+    pass
 ```
 
 The concrete definitions belong to one ordinary overload set on `Parser`.
@@ -8457,7 +8511,7 @@ unsafe fun Device.read_raw(
     destination @*c.unsigned_char,
     length @usize,
 ):
-    # ...
+    pass
 ```
 
 Safety is part of the exact interface requirement.
@@ -8525,7 +8579,7 @@ fun File.write(
     self @&mut File,
     bytes @[]u8,
 ):
-    # ...
+    pass
 ```
 
 The parameter names `data` and `bytes` differ, but the substituted ordered parameter types, receiver mode, return type, failure effect, safety, and other exact contract properties match.
@@ -8607,10 +8661,13 @@ interface Base:
     )
 
 interface Left extends Base:
+    pass
+
 interface Right extends Base:
+    pass
 
 interface Combined extends Left, Right:
-    # Valid: both paths inherit the same Base.write declaration
+    pass  # Valid: both paths inherit the same Base.write declaration
 ```
 
 This diamond case preserves the parameter names from the single originating declaration.
@@ -8703,7 +8760,7 @@ Every type and failure appearing anywhere in a public interface's complete flatt
 
 ```arkoi
 data InternalBuffer:
-    # ...
+    pass
 
 pub interface Encoder:
     fun encode(
@@ -8743,7 +8800,7 @@ A private interface may reference private types and failures that are accessible
 
 ```arkoi
 data InternalBuffer:
-    # ...
+    pass
 
 interface InternalEncoder:
     fun encode(
@@ -8762,10 +8819,10 @@ When a public concrete type implements a public interface, every associated-type
 
 ```arkoi
 data InternalIterator:
-    # ...
+    pass
 
 pub data Collection:
-    # ...
+    pass
 
 implements Iterable for Collection:
     type Iterator = InternalIterator  # Compile-time error
@@ -8777,7 +8834,7 @@ A valid binding uses an externally accessible type.
 
 ```arkoi
 pub data CollectionIterator:
-    # ...
+    pass
 
 implements Iterable for Collection:
     type Iterator = CollectionIterator
@@ -8795,7 +8852,7 @@ The rule applies recursively to the complete bound type expression, including:
 
 ```arkoi
 data InternalItem:
-    # ...
+    pass
 
 implements Iterable for Collection:
     type Item = ?&InternalItem  # Compile-time error
@@ -8994,7 +9051,7 @@ Interface extension remains the mechanism for defining a single contract that in
 
 ```arkoi
 interface SerializableRecord extends Serializable, Record:
-    # ...
+    pass
 ```
 
 Implementing `SerializableRecord` provides its inherited conformances under the ordinary extension rules. This does not permit a comma-separated list in an `implements` declaration.
@@ -9208,11 +9265,14 @@ import graphics.color
 import system.files
 ```
 
-Imported declarations are accessed through their module path.
+Imported declarations are accessed through their module path. Resource values
+created through an import remain local to a function:
 
 ```arkoi
-color @graphics.color.Color = graphics.color.Color.red
-file @system.files.File = system.files.File.open(path)!
+fun use_imports(path @string_view):
+    color @graphics.color.Color = graphics.color.Color.red
+    file @system.files.File = system.files.File.open(path) handle failure:
+        return
 ```
 
 An import may define a local module alias using `as`.
@@ -9221,8 +9281,10 @@ An import may define a local module alias using `as`.
 import graphics.color as color
 import system.files as files
 
-value @color.Color = color.Color.red
-file @files.File = files.File.open(path)!
+fun use_aliases(path @string_view):
+    value @color.Color = color.Color.red
+    file @files.File = files.File.open(path) handle failure:
+        return
 ```
 
 Imports name complete modules. Individual-declaration and wildcard import forms are compile-time errors.
@@ -9369,7 +9431,7 @@ import graphics.color
 import math.vector as vector
 
 pub fun render():
-    # ...
+    pass
 ```
 
 The required source-file order is:
@@ -9411,7 +9473,7 @@ fun run():
     print_message()
 
 fun print_message():
-    # ...
+    pass
 ```
 
 This rule applies to:
@@ -10545,12 +10607,12 @@ Pointer copying, comparison, passing, returning, and null handling follow Arkoi'
 Converting between a typed raw pointer and a `c.void` raw pointer requires an explicit unsafe reinterpretation.
 
 ```arkoi
-typed @*mut c.unsigned_char
-raw @*mut c.void
+typed @*mut c.unsigned_char = null
+raw @*mut c.void = null
 
 unsafe:
     raw = reinterpret(typed, *mut c.void)
-    typed = reinterpret(raw, *mut u8)
+    typed = reinterpret(raw, *mut c.unsigned_char)
 ```
 
 The conversion must preserve pointee mutability:
@@ -11190,7 +11252,7 @@ An exported callback must not allow an Arkoi failure effect to cross the C bound
 export "C" fun invalid_callback(
     value @c.int,
 ) !CallbackFail:
-    # ...
+    pass
 # Compile-time error
 ```
 
@@ -11316,6 +11378,8 @@ Likewise, manually transcribed C type names do not imply that a linker symbol wi
 ## 16. Representative Program
 
 ```arkoi
+module example.file_demo
+
 failure IOFail:
     not_found
     permission_denied

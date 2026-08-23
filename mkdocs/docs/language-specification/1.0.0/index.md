@@ -7,11 +7,11 @@ description: The normative target-language reference for Arkoi 1.0 syntax, seman
 
 <div class="spec-meta" markdown>
 
-| | |
+| Property | Value |
 | --- | --- |
 | Language target | **1.0.0** |
 | Status | Target specification |
-| Source | Arkoi Language Specification v150, language version 1 |
+| Source revision | Arkoi Language Specification **v150** |
 | Documentation model | One canonical page per rule, with cross-links for related behavior |
 
 </div>
@@ -28,7 +28,7 @@ description: The normative target-language reference for Arkoi 1.0 syntax, seman
 
     Source syntax, declarations, constants, values, functions, calls, and aggregates.
 
-    [Start with source syntax →](source-syntax.md)
+    [Open the foundations guide →](foundations/index.md)
 
 -   **Ownership and safety**
 
@@ -36,24 +36,43 @@ description: The normative target-language reference for Arkoi 1.0 syntax, seman
 
     Moves, cloning, resource lifetime, references, pointers, arrays, slices, failures, and unsafe execution.
 
-    [Learn the ownership model →](ownership-moves.md)
+    [Open the ownership and safety guide →](ownership-and-safety/index.md)
 
--   **Expressions and protocols**
+-   **Expressions and control**
 
     ---
 
     Numeric behavior, pipelines, comparisons, evaluation order, control flow,
-    iteration, indexing, and static interfaces.
+    iteration, indexing, slicing, and length operations.
 
-    [Explore expressions →](expressions-and-numeric-operations.md)
+    [Open the expressions and control guide →](expressions-and-control/index.md)
 
--   **Modules and C**
+-   **Static interfaces**
 
     ---
 
-    Module identity, imports, C ABI declarations, compatible types, callbacks, layout, and symbol rules.
+    Compile-time contracts, requirements, associated types, extension,
+    implementations, and visibility.
 
-    [Read about modules →](modules-and-imports.md)
+    [Open the static interfaces guide →](static-interfaces/index.md)
+
+-   **Modules and imports**
+
+    ---
+
+    Module identity, file-to-module correspondence, imports, aliases, and
+    visibility across module boundaries.
+
+    [Read about modules and imports →](modules-and-imports.md)
+
+-   **C interoperability**
+
+    ---
+
+    C ABI declarations, compatible types, globals, callbacks, ownership,
+    layout, arrays, unions, and symbol rules.
+
+    [Open the C interoperability guide →](c-interoperability.md)
 
 </div>
 

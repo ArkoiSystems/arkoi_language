@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 ownership and moves
+description: Arkoi 1.0 target-language rules for owned resources, moves, use after move, bindings, arguments, and returns.
+---
+
 # Ownership and moves
 
 <!-- spec-sections: 5.1 (move, owning parameters, temporaries, returns, whole-value moves) -->
@@ -27,7 +32,7 @@ afterward, so any use before valid reinitialization is a compile-time error.
 Definite-initialization analysis tracks this state across all control-flow paths
 and drops a resource only on paths where it is initialized.
 
-!!! failure "Compile-time error — use after move"
+!!! danger "Compile-time error — use after move"
 
     ```arkoi
     first @string = string("Arkoi")!
@@ -45,7 +50,7 @@ second @u32 = first
 view_copy @[]u32 = view
 ```
 
-!!! failure "Compile-time errors — moving data values"
+!!! danger "Compile-time errors — moving data values"
 
     ```arkoi
     invalid @u32 = move(first)
@@ -67,7 +72,7 @@ No old value remains, so this is initialization rather than drop-and-replace.
 The new value becomes eligible for automatic cleanup. An immutable resource
 binding was already initialized once and cannot be initialized again.
 
-!!! failure "Compile-time error — reinitializing an immutable binding"
+!!! danger "Compile-time error — reinitializing an immutable binding"
 
     ```arkoi
     file @File = File.open(first_path)!
@@ -88,7 +93,7 @@ fun forward(file @own File) @File:
 It cannot extract a field or indexed element, because that would leave the
 containing value partly initialized.
 
-!!! failure "Compile-time errors — partial moves"
+!!! danger "Compile-time errors — partial moves"
 
     ```arkoi
     other @File = move(user.file)
@@ -127,7 +132,7 @@ consume(move(file))
 
 A named resource argument must be moved explicitly.
 
-!!! failure "Compile-time error — implicit ownership transfer"
+!!! danger "Compile-time error — implicit ownership transfer"
 
     ```arkoi
     consume(file)
@@ -135,7 +140,7 @@ A named resource argument must be moved explicitly.
 
 A resource parameter without a reference or ownership mode is invalid:
 
-!!! failure "Compile-time error — plain resource parameter"
+!!! danger "Compile-time error — plain resource parameter"
 
     ```arkoi
     fun consume(file @File):
@@ -156,7 +161,7 @@ consume(load_file()!)
 
 Wrapping a temporary in `move(...)` is redundant and invalid.
 
-!!! failure "Compile-time error — moving a temporary"
+!!! danger "Compile-time error — moving a temporary"
 
     ```arkoi
     consume(move(File.open(path)!))
@@ -173,7 +178,7 @@ fun create_file(path @string_view) !IOFail @File:
     return move(file)
 ```
 
-!!! failure "Compile-time error — named resource return without move"
+!!! danger "Compile-time error — named resource return without move"
 
     ```arkoi
     fun invalid(path @string_view) !IOFail @File:

@@ -1,6 +1,6 @@
 ---
 title: Arkoi 1.0 ownership and safety
-description: A task-oriented guide to Arkoi resources, moves, cleanup, references, pointers, arrays, slices, failures, and unsafe execution.
+description: A task-oriented guide to Arkoi 1.0 target-language resources, moves, cleanup, references, pointers, arrays, slices, failures, and unsafe execution.
 ---
 
 # Ownership and safety

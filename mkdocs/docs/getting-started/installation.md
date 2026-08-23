@@ -15,6 +15,7 @@ This is the local equivalent of the repository's Linux CI build. It builds
 | Operating system and target | Ubuntu 24.04 on x86-64 |
 | CMake | 4.2 or newer |
 | C++ compiler | GCC 14 with C++23 support |
+| Build backend | GNU Make |
 | Native tools | GNU `as` and `ld`, supplied by `binutils` |
 | Source control | Git |
 | Required library | `pretty_diagnostics`, built and installed below |
@@ -24,11 +25,11 @@ The compiler emits Linux x86-64 assembly and ELF entry-point code directly.
 Building or running generated programs on macOS, Windows, ARM, or another ABI is
 not currently supported.
 
-On Ubuntu, install Git, GCC, and binutils with:
+On Ubuntu, install Git, GCC, GNU Make, and binutils with:
 
 ```bash
 sudo apt-get update
-sudo apt-get install --yes git gcc-14 g++-14 binutils
+sudo apt-get install --yes git gcc-14 g++-14 make binutils
 ```
 
 Install CMake 4.2 or newer using a package source or official distribution that
@@ -43,6 +44,7 @@ Check the tools before continuing:
 ```bash
 cmake --version
 g++-14 --version
+make --version
 as --version
 ld --version
 ```

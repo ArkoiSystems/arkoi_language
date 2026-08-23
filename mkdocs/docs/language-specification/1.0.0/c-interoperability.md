@@ -1,6 +1,6 @@
 ---
 title: Arkoi 1.0 C interoperability
-description: A task-oriented guide to Arkoi's C ABI declarations, types, ownership boundaries, callbacks, and symbols.
+description: A task-oriented guide to Arkoi 1.0 target-language C ABI declarations, types, ownership boundaries, callbacks, and symbols.
 ---
 
 # C interoperability

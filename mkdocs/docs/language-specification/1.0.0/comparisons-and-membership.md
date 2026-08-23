@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 comparisons and membership
+description: Arkoi 1.0 target-language rules for equality, ordering, chained comparisons, identity, and membership tests.
+---
+
 # Comparisons and membership
 
 <!-- spec-sections: 9.6–9.18, 9.21 -->

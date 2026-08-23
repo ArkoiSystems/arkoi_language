@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 assignment and result use
+description: Arkoi 1.0 target-language rules for assignment, discarded results, required result use, and resource replacement.
+---
+
 # Assignment and result use
 
 <!-- spec-sections: 10.3–10.7 -->

@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 slices
+description: Arkoi 1.0 target-language rules for slice types, construction, ownership, references, pointers, length, and bounds.
+---
+
 # Slices
 
 <!-- spec-sections: 6.1 (slice representation, access, lifetimes, globals, subslices) -->
@@ -121,7 +126,7 @@ mutable subslices may overlap.
 
 A slice cannot outlive its backing storage. Arkoi rejects obvious local escapes:
 
-!!! failure "Compile-time error — slice of local storage escapes"
+!!! danger "Compile-time error — slice of local storage escapes"
 
     ```arkoi
     fun invalid_view() @[]u32:
@@ -157,7 +162,7 @@ mutable_view @[]mut u32 = mutable_values[..]
 This does not make slices general constant values. Local, parameter, temporary,
 or otherwise shorter-lived storage cannot initialize a module slice:
 
-!!! failure "Compile-time error — non-static global view"
+!!! danger "Compile-time error — non-static global view"
 
     ```arkoi
     view @mut []u32

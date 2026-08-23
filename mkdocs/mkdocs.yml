@@ -60,14 +60,9 @@ hooks:
 
 nav:
   - Home: index.md
-  - Quickstart: getting-started/quickstart.md
   - Current compiler:
-      - Overview: getting-started/overview.md
-      - Installation: getting-started/installation.md
-      - CLI reference: getting-started/cli.md
+      - Quickstart: getting-started/quickstart.md
       - Current compiler vs. 1.0: getting-started/compatibility.md
-      - Examples: getting-started/examples.md
-      - Compiler pipeline: getting-started/pipeline.md
   - Learn Arkoi 1.0:
       - learn/index.md
       - Foundations:
@@ -129,8 +124,8 @@ nav:
           - Slicing: language-specification/1.0.0/slicing.md
           - Length: language-specification/1.0.0/length.md
       - Static interfaces:
-          - language-specification/1.0.0/static-interfaces/index.md
-          - Overview: language-specification/1.0.0/interfaces-overview.md
+          - Guide: language-specification/1.0.0/static-interfaces/index.md
+          - Model and declarations: language-specification/1.0.0/interfaces-overview.md
           - Requirements: language-specification/1.0.0/interface-requirements.md
           - Associated types: language-specification/1.0.0/interface-associated-types.md
           - Extension and inheritance: language-specification/1.0.0/interface-extension.md
@@ -151,6 +146,12 @@ nav:
           - Source specification map: language-specification/1.0.0/specification-map.md
   - Development:
       - development/index.md
+      - Current compiler details:
+          - Implementation overview: getting-started/overview.md
+          - Full installation: getting-started/installation.md
+          - CLI reference: getting-started/cli.md
+          - Example fixtures: getting-started/examples.md
+          - Compiler pipeline: getting-started/pipeline.md
       - Generated C++ API:
           - Classes: arkoi_language/classes.md
           - Namespaces: arkoi_language/namespaces.md

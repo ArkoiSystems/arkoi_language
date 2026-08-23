@@ -1,3 +1,8 @@
+---
+title: Arkoi 1.0 glossary
+description: Arkoi 1.0 target-language reference for normative terms covering values, ownership, failures, traps, and unsafe behavior.
+---
+
 # Glossary
 
 These terms have one meaning throughout the Arkoi 1.0.0 specification. Follow each link for the complete normative rules.
