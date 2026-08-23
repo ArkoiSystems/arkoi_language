@@ -24,9 +24,9 @@ public:
     /**
      * @brief Returns the compilation module being populated.
      *
-     * @return A reference to the internal `Module`.
+     * @return A reference to the internal `Module`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& module() { return _module; }
+    [[nodiscard]] auto& module(this auto& self) { return self._module; }
 
 private:
     /**
@@ -50,19 +50,26 @@ private:
     void visit(ast::Immediate& node) override;
 
     /**
-     * @brief Specialized handler for integer literals.
+     * @brief Specialized handler for numeric literals.
      */
-    void visit_integer(const ast::Immediate& node);
-
-    /**
-     * @brief Specialized handler for floating-point literals.
-     */
-    void visit_floating(const ast::Immediate& node);
+    void visit_numeric(const ast::Immediate& node);
 
     /**
      * @brief Specialized handler for boolean literals.
      */
     void visit_boolean(const ast::Immediate& node);
+
+    /**
+     * @brief Generates an operand for an expression in an isolated result scope.
+     *
+     * The current operand is cleared before visiting the expression and restored
+     * afterwards. An expression visitor that fails to produce a result therefore
+     * raises an error instead of leaking a previous operand into the IL.
+     *
+     * @param node The expression node to generate.
+     * @return The operand produced by the expression.
+     */
+    [[nodiscard]] Operand _generate_operand(ast::Node& node);
 
     /**
      * @brief Processes a variable declaration, emitting `Alloca` if needed.
@@ -148,7 +155,7 @@ private:
     size_t _temp_index{ }, _label_index{ };
     Function* _current_function{ };
     BasicBlock* _current_block{ };
-    Operand _current_operand{ };
+    std::optional<Operand> _current_operand{ };
     Module _module;
 };
 } // namespace arkoi::il

@@ -22,8 +22,7 @@ public:
         Dedentation, ///< Decrease in indentation level
         Newline,     ///< End of line
 
-        Integer,    ///< Integer literal
-        Floating,   ///< Floating-point literal
+        Numeric,    ///< Numeric literal
         Identifier, ///< User-defined name
         Comment,    ///< Source code comment
 
@@ -86,16 +85,16 @@ public:
     /**
      * @brief Returns the source code span of the token.
      *
-     * @return A constant reference to the `pretty_diagnostics::Span`.
+     * @return A reference to the `pretty_diagnostics::Span`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& span() const { return _span; }
+    [[nodiscard]] auto& span(this auto& self) { return self._span; }
 
     /**
      * @brief Returns the type of the token.
      *
-     * @return A constant reference to the `Type`.
+     * @return A reference to the `Type`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& type() const { return _type; }
+    [[nodiscard]] auto& type(this auto& self) { return self._type; }
 
     /**
      * @brief Determines if a given string is a reserved keyword.

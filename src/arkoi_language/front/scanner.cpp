@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <tuple>
 
 #include "pretty_diagnostics/report.hpp"
 
@@ -76,15 +77,15 @@ std::vector<Token> Scanner::tokenize() {
 }
 
 Token Scanner::_next_token() {
-    while (_try_consume(_is_space)) { }
+    while (_try_consume(is_space)) { }
 
     const auto current = _current_char();
-    if (_is_ident_start(current)) {
+    if (is_ident_start(current)) {
         return _lex_identifier();
     }
 
-    if (current == '-' || _is_digit(current)) {
-        return _lex_number();
+    if (current == '-' || current == '+' || is_dec(current)) {
+        return _lex_numeric();
     }
 
     if (current == '\'') {
@@ -110,8 +111,8 @@ Token Scanner::_lex_comment() {
 Token Scanner::_lex_identifier() {
     const auto start_location = _current_location();
 
-    _consume(_is_ident_start, "_, a-z or A-Z");
-    while (_try_consume(_is_ident_inner)) { }
+    _consume(is_ident_start, "_, a-z or A-Z");
+    while (_try_consume(is_ident_inner)) { }
 
     const auto span = Span(_source, start_location, _current_location());
     if (auto keyword = Token::lookup_keyword(span.substr())) {
@@ -121,73 +122,78 @@ Token Scanner::_lex_identifier() {
     return { Token::Type::Identifier, span };
 }
 
-Token Scanner::_lex_number() {
+Token Scanner::_lex_numeric() {
     const auto start_location = _current_location();
 
-    if (_try_consume('-') && !_is_digit(_current_char())) {
+    if (_try_consume('-') && !is_dec(_current_char())) {
         return { Token::Type::Minus, { _source, start_location, _current_location() } };
+    } else if (_try_consume('+') && !is_dec(_current_char())) {
+        return { Token::Type::Plus, { _source, start_location, _current_location() } };
     }
 
-    const auto consumed = _consume(_is_digit, "0-9");
-    bool floating;
+    auto consume_digit_tail = [&](const std::function<bool(char)>& predicate, const std::string &expected) {
+        while (!_is_eol()) {
+            if (_try_consume(predicate)) {
+                continue;
+            }
 
-    if (consumed == '0' && _try_consume('x')) {
-        _consume(_is_hex, "0-9, a-f or A-F");
+            if (_try_consume('_')) {
+                // Reject trailing and repeated separators:
+                // 123_ or 123__456
+                _consume(predicate, expected);
+                continue;
+            }
 
-        while (_try_consume(_is_hex)) { }
-
-        floating = _try_consume('.');
-
-        while (_try_consume(_is_hex)) { }
-
-        if (_try_consume(_is_hex_expo)) {
-            std::ignore = _try_consume(_is_decimal_sign);
-
-            while (_try_consume(_is_hex));
+            break;
         }
+    };
+
+    auto consume_digits = [&](const std::function<bool(char)>& predicate, const std::string &expected) {
+        _consume(predicate, expected);
+        consume_digit_tail(predicate, expected);
+    };
+
+    const auto consumed = _consume(is_dec, "0-9");
+    if (consumed == '0' && _try_consume(is_hex_marker)) {
+        consume_digits(is_hex, "0-9, a-f or A-F");
+
+        if (_try_consume('.')) {
+            consume_digits(is_hex, "0-9, a-f or A-F");
+        }
+
+        if (_try_consume(is_hex_expo_marker)) {
+            std::ignore = _try_consume(is_sign);
+            consume_digits(is_dec, "0-9");
+        }
+    } else if (consumed == '0' && _try_consume(is_bin_marker)) {
+        consume_digits(is_bin, "0 or 1");
+    } else if (consumed == '0' && _try_consume(is_oct_marker)) {
+        consume_digits(is_oct, "0-7");
     } else {
-        while (_try_consume(_is_digit)) { }
+        // Already consumed one digits, thus only using consume_digit_tail here.
+        consume_digit_tail(is_dec, "0-9");
 
-        floating = _try_consume('.');
+        if (_try_consume('.')) {
+            consume_digits(is_dec, "0-9");
+        }
 
-        while (_try_consume(_is_digit)) { }
-
-        if (_try_consume(_is_expo)) {
-            floating = true;
-
-            std::ignore = _try_consume(_is_decimal_sign);
-
-            while (_try_consume(_is_hex));
+        if (_try_consume(is_expo_marker)) {
+            std::ignore = _try_consume(is_sign);
+            consume_digits(is_dec, "0-9");
         }
     }
 
-    const auto span = Span(_source, start_location, _current_location());
-    const auto kind = (floating ? Token::Type::Floating : Token::Type::Integer);
-    const auto number = span.substr();
-
-    try {
-        if (floating) {
-            std::stold(number);
-        } else if (number.starts_with("-")) {
-            std::stoll(number);
-        } else {
-            std::stoull(number);
-        }
-    } catch (const std::out_of_range&) {
-        throw NumberOutOfRange(span);
-    }
-
-    return { kind, span };
+    return { Token::Type::Numeric, { _source, start_location, _current_location() } };
 }
 
 Token Scanner::_lex_char() {
     const auto start_location = _current_location();
 
     _consume('\'');
-    std::ignore = _consume(_is_ascii, "'");
+    std::ignore = _consume(is_ascii, "'");
     _consume('\'');
 
-    return { Token::Type::Integer, { _source, start_location, _current_location() } };
+    return { Token::Type::Numeric, { _source, start_location, _current_location() } };
 }
 
 Token Scanner::_lex_special() {
@@ -282,41 +288,61 @@ size_t Scanner::_leading_spaces(const std::string& line) {
     return count;
 }
 
-bool Scanner::_is_digit(const char input) {
+bool Scanner::is_dec(const char input) {
     return std::isdigit(static_cast<unsigned char>(input));
 }
 
-bool Scanner::_is_ident_start(const char input) {
+bool Scanner::is_ident_start(const char input) {
     return std::isalpha(static_cast<unsigned char>(input)) || input == '_';
 }
 
-bool Scanner::_is_ident_inner(const char input) {
+bool Scanner::is_ident_inner(const char input) {
     return std::isalnum(static_cast<unsigned char>(input)) || input == '_';
 }
 
-bool Scanner::_is_ascii(const char input) {
+bool Scanner::is_ascii(const char input) {
     return static_cast<unsigned char>(input) <= 127;
 }
 
-bool Scanner::_is_space(const char input) {
+bool Scanner::is_space(const char input) {
     return std::isspace(static_cast<unsigned char>(input));
 }
 
-bool Scanner::_is_hex(const char input) {
+bool Scanner::is_hex(const char input) {
     return (input >= '0' && input <= '9') ||
            (input >= 'a' && input <= 'f') ||
            (input >= 'A' && input <= 'F');
 }
 
-bool Scanner::_is_hex_expo(const char input) {
+bool Scanner::is_hex_marker(const char input) {
+    return input == 'x' || input == 'X';
+}
+
+bool Scanner::is_hex_expo_marker(const char input) {
     return input == 'p' || input == 'P';
 }
 
-bool Scanner::_is_expo(const char input) {
+bool Scanner::is_bin(const char input) {
+    return input == '0' || input == '1';
+}
+
+bool Scanner::is_bin_marker(const char input) {
+    return input == 'b' || input == 'B';
+}
+
+bool Scanner::is_oct(const char input) {
+    return (input >= '0' && input <= '7');
+}
+
+bool Scanner::is_oct_marker(const char input) {
+    return input == 'o' || input == 'O';
+}
+
+bool Scanner::is_expo_marker(const char input) {
     return input == 'e' || input == 'E';
 }
 
-bool Scanner::_is_decimal_sign(const char input) {
+bool Scanner::is_sign(const char input) {
     return input == '+' || input == '-';
 }
 
@@ -357,16 +383,6 @@ UnknownChar::UnknownChar(const char got, const Span& span) :
        .message("Unrecognized character '" + std::string(1, got) + "' found in source")
        .code("E1003")
        .label("This character was not expected", span)
-       .build()
-    ) { }
-
-NumberOutOfRange::NumberOutOfRange(const Span& span) :
-    ScannerError(
-        Report::Builder()
-       .severity(Severity::Error)
-       .message("Numeric literal exceeds the 64-bit range")
-       .code("E1004")
-       .label("This number is out of range", span)
        .build()
     ) { }
 

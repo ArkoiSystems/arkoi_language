@@ -1,33 +1,169 @@
 site_name: "Arkoi"
-site_description: "A practical guide to the Arkoi programming language"
+site_description: "A practical guide and the target 1.0.0 specification for the Arkoi programming language"
+site_author: "Arkoi Systems"
+site_url: "https://arkoisystems.github.io/arkoi_language/"
+repo_url: "https://github.com/ArkoiSystems/arkoi_language"
+repo_name: "ArkoiSystems/arkoi_language"
+edit_uri: "edit/main/mkdocs/docs/"
+copyright: "Copyright &copy; 2025–2026 Arkoi contributors"
 
 theme:
   name: material
+  icon:
+    logo: material/hexagon-multiple-outline
+  font: false
+  palette:
+    - media: "(prefers-color-scheme)"
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-auto
+        name: Use light theme
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Use dark theme
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Follow system theme
   features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.path
+    - navigation.footer
+    - navigation.top
+    - navigation.tracking
+    - toc.follow
+    - search.suggest
+    - search.highlight
     - content.code.copy
+    - content.code.select
+    - content.action.edit
+    - content.action.view
+
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/accessibility.js
 
 hooks:
   - hooks.py
 
 nav:
   - Home: index.md
-  - Getting Started:
-      - Installation: getting-started/installation.md
-      - CLI usage: getting-started/cli.md
-      - Syntax reference: getting-started/syntax.md
-  - Language guide:
-      - Overview: getting-started/overview.md
-      - Grammar: getting-started/grammar.md
-      - Language rules: getting-started/rules.md
-      - Functions: getting-started/functions.md
-      - Types: getting-started/types.md
-      - Control flow: getting-started/control-flow.md
-      - Examples: getting-started/examples.md
-  - API reference: arkoi_language/classes.md
+  - Current compiler:
+      - Quickstart: getting-started/quickstart.md
+      - Current compiler vs. 1.0: getting-started/compatibility.md
+  - Learn Arkoi 1.0:
+      - learn/index.md
+      - Foundations:
+          - "1. Your first Arkoi source file": learn/basics.md
+          - "2. Types, text, and aggregates": learn/types-aggregates.md
+          - "3. Expressions and conversions": learn/expressions.md
+      - Everyday Arkoi:
+          - "4. Data, resources, and ownership": learn/ownership.md
+          - "5. Optionals and recoverable failures": learn/failures.md
+          - "6. Functions, calls, and methods": learn/calls-methods.md
+          - "7. Collections and iteration": learn/collections-iteration.md
+      - Architecture and systems boundaries:
+          - "8. Interfaces and modules": learn/interfaces-modules.md
+          - "9. Unsafe code, hooks, and C interoperability": learn/systems-interop.md
+          - "10. Capstone program": learn/capstone.md
+  - Arkoi 1.0 reference:
+      - Overview: language-specification/1.0.0/index.md
+      - Quick lookup:
+          - Quick reference: language-specification/1.0.0/quick-reference.md
+          - Glossary: language-specification/1.0.0/glossary.md
+          - Hook index: language-specification/1.0.0/compiler-hooks.md
+      - Language foundations:
+          - language-specification/1.0.0/foundations/index.md
+          - Source syntax: language-specification/1.0.0/source-syntax.md
+          - Bindings and initialization: language-specification/1.0.0/bindings-initialization.md
+          - Constants and globals: language-specification/1.0.0/constants-globals.md
+          - Types and values: language-specification/1.0.0/types-values.md
+          - Aggregates and enums: language-specification/1.0.0/aggregates-enums.md
+          - Functions and returns: language-specification/1.0.0/functions-returns.md
+          - Calls and overloads: language-specification/1.0.0/calls-overloads.md
+          - Function pointers: language-specification/1.0.0/function-pointers.md
+          - Methods and visibility: language-specification/1.0.0/methods-visibility.md
+      - Ownership and safety:
+          - language-specification/1.0.0/ownership-and-safety/index.md
+          - Moving resources: language-specification/1.0.0/ownership-moves.md
+          - Cloning: language-specification/1.0.0/cloning.md
+          - Resource-valued places: language-specification/1.0.0/places-replacement.md
+          - Resource lifecycle: language-specification/1.0.0/resource-lifecycle.md
+          - References and lifetimes: language-specification/1.0.0/references-lifetimes.md
+          - Raw pointers: language-specification/1.0.0/raw-pointers.md
+          - Slices: language-specification/1.0.0/slices.md
+          - Arrays: language-specification/1.0.0/arrays.md
+          - Read-only conversion: language-specification/1.0.0/access-reduction.md
+          - Failures: language-specification/1.0.0/failures.md
+          - Unsafe execution: language-specification/1.0.0/unsafe.md
+      - Expressions and control:
+          - language-specification/1.0.0/expressions-and-control/index.md
+          - Expressions and numeric operations: language-specification/1.0.0/expressions-and-numeric-operations.md
+          - Pipeline expressions: language-specification/1.0.0/pipelines.md
+          - Comparisons and membership: language-specification/1.0.0/comparisons-and-membership.md
+          - Operator hooks: language-specification/1.0.0/operator-hooks.md
+          - Evaluation order: language-specification/1.0.0/evaluation-order.md
+          - Assignment and result use: language-specification/1.0.0/assignment-and-result-use.md
+          - Control flow: language-specification/1.0.0/control-flow.md
+          - For loops: language-specification/1.0.0/for-loops.md
+          - Iteration protocols: language-specification/1.0.0/iteration-protocols.md
+          - Iterator values and lifetimes: language-specification/1.0.0/iterator-values-and-lifetimes.md
+          - Indexing: language-specification/1.0.0/indexing.md
+          - Slicing: language-specification/1.0.0/slicing.md
+          - Length: language-specification/1.0.0/length.md
+      - Static interfaces:
+          - Guide: language-specification/1.0.0/static-interfaces/index.md
+          - Model and declarations: language-specification/1.0.0/interfaces-overview.md
+          - Requirements: language-specification/1.0.0/interface-requirements.md
+          - Associated types: language-specification/1.0.0/interface-associated-types.md
+          - Extension and inheritance: language-specification/1.0.0/interface-extension.md
+          - Implementations: language-specification/1.0.0/interface-implementations.md
+          - Visibility: language-specification/1.0.0/interface-visibility.md
+      - Modules and C:
+          - Modules and imports: language-specification/1.0.0/modules-and-imports.md
+          - C interoperability:
+              - Overview: language-specification/1.0.0/c-interoperability.md
+              - Functions and ABI: language-specification/1.0.0/c-interoperability/functions-and-abi.md
+              - Types and layout: language-specification/1.0.0/c-interoperability/types-and-layout.md
+              - Globals, failures, variadics, and void: language-specification/1.0.0/c-interoperability/globals-errors-variadics-void.md
+              - Ownership, callbacks, addresses, and layout queries: language-specification/1.0.0/c-interoperability/ownership-callbacks-addresses.md
+              - Arrays and unions: language-specification/1.0.0/c-interoperability/layout-arrays-unions.md
+              - Callback execution and symbols: language-specification/1.0.0/c-interoperability/callback-execution-symbols.md
+      - Worked example: language-specification/1.0.0/representative-program.md
+      - Appendices:
+          - Source specification map: language-specification/1.0.0/specification-map.md
+  - Development:
+      - development/index.md
+      - Current compiler details:
+          - Implementation overview: getting-started/overview.md
+          - Full installation: getting-started/installation.md
+          - CLI reference: getting-started/cli.md
+          - Example fixtures: getting-started/examples.md
+          - Compiler pipeline: getting-started/pipeline.md
+      - Generated C++ API:
+          - Classes: arkoi_language/classes.md
+          - Namespaces: arkoi_language/namespaces.md
+          - Files: arkoi_language/files.md
+
+not_in_nav: |
+  arkoi_language/**
 
 plugins:
   - search:
       lang: en
+      separator: '[\s\-,:;()\[\]{}]+'
   - mkdoxy:
       projects:
         arkoi_language:
@@ -37,10 +173,16 @@ plugins:
 
 markdown_extensions:
   - admonition
+  - attr_list
+  - md_in_html
   - tables
   - pymdownx.highlight:
       pygments_lang_class: true
       guess_lang: false
   - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path:
+        - ..
+      check_paths: true
   - toc:
       permalink: true

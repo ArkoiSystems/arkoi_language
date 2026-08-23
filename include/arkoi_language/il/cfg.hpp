@@ -51,18 +51,18 @@ public:
     /**
      * @brief Returns the symbolic label of the block.
      *
-     * @return A constant reference to the label string.
+     * @return A reference to the label string, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& label() const { return _label; }
+    [[nodiscard]] auto& label(this auto& self) { return self._label; }
 
     /**
      * @brief Returns the non-sequential branch target (if any).
      *
      * For example, in an `If` instruction, this points to the "then" block.
      *
-     * @return A pointer to the branch target `BasicBlock`, or nullptr.
+     * @return A pointer to the branch target `BasicBlock`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto* branch() const { return _branch; }
+    [[nodiscard]] auto* branch(this auto& self) { return self._branch; }
 
     /**
      * @brief Sets the non-sequential branch target.
@@ -76,9 +76,9 @@ public:
      *
      * This is the block that executes if no conditional jump is taken.
      *
-     * @return A pointer to the next `BasicBlock`, or nullptr.
+     * @return A pointer to the next `BasicBlock`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto* next() const { return _next; }
+    [[nodiscard]] auto* next(this auto& self) { return self. _next; }
 
     /**
      * @brief Sets the sequential fallthrough target.
@@ -104,16 +104,16 @@ public:
     /**
      * @brief Returns the set of all blocks that can jump to this one.
      *
-     * @return A reference to the set of predecessor `BasicBlock` pointers.
+     * @return A reference to the set of predecessor `BasicBlock` pointers, const-qualified when this object is const.
      */
-    [[nodiscard]] const auto& predecessors() const { return _predecessors; }
+    [[nodiscard]] auto& predecessors(this auto& self) { return self._predecessors; }
 
     /**
      * @brief Returns the sequence of instructions within this block.
      *
-     * @return A reference to the vector of `Instruction` objects.
+     * @return A reference to the vector of `Instruction` objects, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& instructions() { return _instructions; }
+    [[nodiscard]] auto& instructions(this auto& self) { return self._instructions; }
 
     /**
      * @brief Returns an iterator to the first instruction.
@@ -443,30 +443,30 @@ public:
     /**
      * @brief Returns the name of the function.
      *
-     * @return A constant reference to the name string.
+     * @return A reference to the name string, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() const { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
     /**
      * @brief Returns the return type of the function.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& type() const { return _type; }
+    [[nodiscard]] auto& type(this auto& self) { return self._type; }
 
     /**
      * @brief Returns the initial entry block of the function.
      *
-     * @return Pointer to the entry `BasicBlock`.
+     * @return Pointer to the entry `BasicBlock`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto* entry() const { return _entry; }
+    [[nodiscard]] auto* entry(this auto& self) { return self._entry; }
 
     /**
      * @brief Returns the final exit block of the function.
      *
-     * @return Pointer to the exit `BasicBlock`.
+     * @return A pointer to the exit `BasicBlock`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto* exit() const { return _exit; }
+    [[nodiscard]] auto* exit(this auto& self) { return self._exit; }
 
     /**
      * @brief Overrides the current exit block.
@@ -478,16 +478,16 @@ public:
     /**
      * @brief Returns all the blocks of this function mapped by their label.
      *
-     * @return A reference to the unordered map of blocks used by this function.
+     * @return A reference to the unordered map of blocks used by this function, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& block_pool() { return _block_pool; }
+    [[nodiscard]] auto& block_pool(this auto& self) { return self._block_pool; }
 
     /**
      * @brief Returns the formal parameters of the function.
      *
-     * @return A reference to the vector of parameter `Variable` objects.
+     * @return A reference to the vector of parameter `Variable` objects, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& parameters() { return _parameters; }
+    [[nodiscard]] auto& parameters(this auto& self) { return self._parameters; }
 
     /**
      * @brief Returns a CFG traversal iterator starting at the entry block.

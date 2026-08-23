@@ -491,19 +491,8 @@ std::unique_ptr<ast::Node> Parser::_parse_factor() {
 
 std::unique_ptr<ast::Node> Parser::_parse_primary() {
     const auto& consumed = _consume_any();
-    if (consumed.type() == Token::Type::Integer) {
-        auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Integer, consumed.span());
-        if (_current().type() != Token::Type::At) return node;
-
-        const auto [type, type_span] = _parse_type();
-
-        const auto span = consumed.span().join(type_span);
-
-        return std::make_unique<ast::Cast>(std::move(node), type, span);
-    }
-
-    if (consumed.type() == Token::Type::Floating) {
-        auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Floating, consumed.span());
+    if (consumed.type() == Token::Type::Numeric) {
+        auto node = std::make_unique<ast::Immediate>(consumed, ast::Immediate::Kind::Numeric, consumed.span());
         if (_current().type() != Token::Type::At) return node;
 
         const auto [type, type_span] = _parse_type();

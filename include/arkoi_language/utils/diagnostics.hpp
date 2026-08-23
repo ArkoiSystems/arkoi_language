@@ -43,9 +43,9 @@ public:
     /**
      * @brief Returns the collection of reports.
      *
-     * @return A constant reference to the vector of reports.
+     * @return A reference to the vector of reports, const-qualified when this object is const.
      */
-    [[nodiscard]] const auto& reports() const { return _reports; }
+    [[nodiscard]] auto& reports(this auto& self) { return self._reports; }
 
 private:
     std::vector<pretty_diagnostics::Report> _reports;

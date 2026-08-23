@@ -46,6 +46,10 @@ Size Type::size() const {
     return std::visit([](const auto& value) { return value.size(); }, *this);
 }
 
+bool Type::is_arithmetic() const {
+    return std::holds_alternative<Integral>(*this) || std::holds_alternative<Floating>(*this);
+}
+
 std::ostream& sem::operator<<(std::ostream& os, const Integral& type) {
     return os << (type.sign() ? "s" : "u") << size_to_bits(type.size());
 }

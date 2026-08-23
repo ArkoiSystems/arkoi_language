@@ -29,6 +29,7 @@
         "--emit-il",
         "--emit-cfg",
         "--emit-asm",
+        "-O0",
         "-vr"
       ],
       "stopAtEntry": false,
@@ -55,6 +56,7 @@
         "--emit-il",
         "--emit-cfg",
         "--emit-asm",
+        "-O0",
         "-vr"
       ],
       "stopAtEntry": false,

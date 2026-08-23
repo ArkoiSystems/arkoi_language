@@ -1,0 +1,568 @@
+/* Arkoi's visual language: precise, technical, and slightly luminous. */
+:root {
+  --md-text-font: "Inter", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --md-code-font: "Berkeley Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --arkoi-radius-sm: 0.45rem;
+  --arkoi-radius-md: 0.8rem;
+  --arkoi-radius-lg: 1.15rem;
+  --arkoi-shadow-sm: 0 1px 2px rgb(15 23 42 / 0.04), 0 6px 18px rgb(15 23 42 / 0.04);
+  --arkoi-shadow-md: 0 16px 40px rgb(15 23 42 / 0.09);
+}
+
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #51439e;
+  --md-primary-fg-color--light: #7164bd;
+  --md-primary-fg-color--dark: #382d7a;
+  --md-accent-fg-color: #087b78;
+  --md-accent-fg-color--transparent: rgb(8 123 120 / 0.1);
+  --md-default-bg-color: #f6f7fa;
+  --md-default-bg-color--light: #f6f7fa;
+  --md-default-fg-color: #282838;
+  --md-default-fg-color--light: #565767;
+  --md-default-fg-color--lighter: #858694;
+  --md-default-fg-color--lightest: rgb(40 40 56 / 0.1);
+  --md-code-bg-color: #f3f3f7;
+  --arkoi-surface: #fff;
+  --arkoi-surface-soft: #f0f1f6;
+  --arkoi-rule-color: rgb(81 67 158 / 0.13);
+  --arkoi-glow-a: rgb(81 67 158 / 0.045);
+  --arkoi-glow-b: rgb(8 123 120 / 0.025);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 244;
+  --md-primary-fg-color: #8b7ddd;
+  --md-primary-fg-color--light: #a99eec;
+  --md-primary-fg-color--dark: #6557b4;
+  --md-accent-fg-color: #5ed1c8;
+  --md-accent-fg-color--transparent: rgb(94 209 200 / 0.13);
+  --md-default-bg-color: #12131d;
+  --md-default-bg-color--light: #171824;
+  --md-default-fg-color: #ebebf3;
+  --md-default-fg-color--light: #b8b8c7;
+  --md-default-fg-color--lighter: #89899a;
+  --md-default-fg-color--lightest: rgb(235 235 243 / 0.11);
+  --md-code-bg-color: #1d1e2a;
+  --arkoi-surface: #181924;
+  --arkoi-surface-soft: #1e1f2c;
+  --arkoi-rule-color: rgb(139 125 221 / 0.2);
+  --arkoi-glow-a: rgb(139 125 221 / 0.1);
+  --arkoi-glow-b: rgb(94 209 200 / 0.07);
+  --arkoi-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.16), 0 8px 24px rgb(0 0 0 / 0.12);
+  --arkoi-shadow-md: 0 18px 48px rgb(0 0 0 / 0.24);
+}
+
+html {
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  background-color: var(--md-default-bg-color);
+  background-image: linear-gradient(
+    180deg,
+    var(--arkoi-glow-a) 0,
+    var(--arkoi-glow-b) 10rem,
+    transparent 28rem
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 32rem;
+}
+
+.md-grid {
+  max-width: 90rem;
+}
+
+/* Header and primary navigation */
+.md-header {
+  background: linear-gradient(112deg, #2a2066 0%, #3e3285 56%, #2d5e76 120%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.08), 0 8px 30px rgb(14 12 35 / 0.18);
+}
+
+.md-header__inner {
+  height: 3.2rem;
+}
+
+.md-header__button.md-logo {
+  color: #8be0d8;
+}
+
+.md-header__button.md-logo svg {
+  filter: drop-shadow(0 0 10px rgb(94 209 200 / 0.35));
+}
+
+.md-header__title {
+  font-weight: 730;
+  letter-spacing: -0.02em;
+}
+
+.md-search__form {
+  background-color: rgb(255 255 255 / 0.1);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 0.55rem;
+}
+
+.md-search__form:hover {
+  background-color: rgb(255 255 255 / 0.15);
+}
+
+.md-tabs {
+  background: rgb(39 30 92 / 0.96);
+  border-top: 1px solid rgb(255 255 255 / 0.07);
+}
+
+.md-tabs__link {
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.015em;
+  opacity: 0.74;
+}
+
+.md-tabs__link--active,
+.md-tabs__link:hover {
+  color: #8be0d8;
+  opacity: 1;
+}
+
+/* Sidebars */
+.md-sidebar__scrollwrap {
+  scrollbar-width: thin;
+}
+
+.md-nav {
+  font-size: 0.69rem;
+}
+
+.md-nav__title {
+  box-shadow: none !important;
+  font-weight: 720;
+  letter-spacing: -0.01em;
+}
+
+@media screen and (min-width: 60em) {
+  .md-nav--secondary .md-nav__title {
+    background: transparent !important;
+    position: static;
+  }
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-nav--primary .md-nav__title {
+    background: transparent !important;
+    border-bottom: 0;
+    padding-bottom: 0;
+    position: static;
+  }
+
+  .md-sidebar--primary .md-nav[data-md-level="1"] > .md-nav__title {
+    display: none;
+  }
+
+  .md-sidebar--primary .md-nav[data-md-level="1"] > .md-nav__list {
+    box-shadow: none;
+  }
+}
+
+.md-nav__item .md-nav__link--active {
+  color: var(--md-accent-fg-color);
+  font-weight: 700;
+}
+
+.md-nav__link {
+  border-radius: 0.35rem;
+  margin-top: 0.5em;
+  transition: color 120ms ease, transform 120ms ease;
+}
+
+.md-nav__link:hover {
+  color: var(--md-accent-fg-color);
+  transform: translateX(0.1rem);
+}
+
+.md-nav--secondary {
+  border-left: 1px solid var(--arkoi-rule-color);
+  padding-left: 0.65rem;
+}
+
+/* Reading surface and typography */
+.md-content__inner {
+  margin-bottom: 2.5rem;
+  padding-bottom: 2.25rem;
+}
+
+.md-typeset {
+  --arkoi-code-size: 0.6804rem;
+  color: var(--md-default-fg-color--light);
+  font-size: 0.81rem;
+  line-height: 1.75;
+}
+
+/* Keep prose comfortable to scan while allowing code and reference tables to
+   use the wider technical reading surface. */
+.md-typeset > p,
+.md-typeset > ul,
+.md-typeset > ol,
+.md-typeset > blockquote,
+.md-typeset > .admonition,
+.md-typeset > details {
+  max-width: 54rem;
+}
+
+.md-typeset > h1:first-of-type {
+  color: var(--md-default-fg-color);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 780;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  margin: 0 0 0.65em;
+  position: relative;
+}
+
+.md-typeset > h1:first-of-type::after {
+  background: linear-gradient(90deg, var(--md-primary-fg-color), var(--md-accent-fg-color));
+  border-radius: 1rem;
+  content: "";
+  display: block;
+  height: 0.2rem;
+  margin-top: 0.55rem;
+  width: 3rem;
+}
+
+.md-typeset h2 {
+  border-bottom: 1px solid var(--arkoi-rule-color);
+  color: var(--md-default-fg-color);
+  font-size: 1.35rem;
+  font-weight: 730;
+  letter-spacing: -0.025em;
+  margin-top: 2.1em;
+  padding-bottom: 0.35em;
+}
+
+.md-typeset h3 {
+  color: var(--md-default-fg-color);
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.012em;
+}
+
+.md-typeset h4 {
+  color: var(--md-default-fg-color);
+  font-weight: 700;
+}
+
+.md-typeset a:not(.headerlink) {
+  text-decoration-color: var(--md-accent-fg-color--transparent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+  transition: color 120ms ease, text-decoration-color 120ms ease;
+}
+
+.md-typeset a:not(.headerlink):hover {
+  text-decoration-color: var(--md-accent-fg-color);
+}
+
+.md-typeset a:focus-visible,
+.md-nav__link:focus-visible,
+.md-tabs__link:focus-visible,
+.md-header__button:focus-visible {
+  border-radius: 0.2rem;
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 0.15rem;
+}
+
+.md-typeset strong {
+  color: var(--md-default-fg-color);
+  font-weight: 720;
+}
+
+.md-typeset hr {
+  border-bottom-color: var(--arkoi-rule-color);
+}
+
+/* Compact maturity labels used on landing pages. */
+.md-typeset .arkoi-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1rem 0 1.35rem;
+}
+
+.md-typeset .arkoi-status {
+  background: var(--arkoi-surface);
+  border: 1px solid var(--arkoi-rule-color);
+  border-radius: 999px;
+  color: var(--md-default-fg-color);
+  display: inline-flex;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  padding: 0.25rem 0.65rem;
+}
+
+.md-typeset .arkoi-status--current {
+  border-color: color-mix(in srgb, var(--md-accent-fg-color) 45%, transparent);
+}
+
+.md-typeset .arkoi-status--target {
+  border-color: color-mix(in srgb, var(--md-primary-fg-color) 45%, transparent);
+}
+
+/* Cards */
+.md-typeset .grid.cards {
+  margin: 1.5rem 0;
+}
+
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid.cards > ol > li {
+  background:
+    linear-gradient(145deg, var(--arkoi-glow-a), transparent 48%),
+    var(--arkoi-surface);
+  border: 1px solid var(--arkoi-rule-color);
+  border-radius: var(--arkoi-radius-lg);
+  box-shadow: var(--arkoi-shadow-sm);
+  padding: 1.25rem 1.35rem;
+  position: relative;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.md-typeset .grid.cards > ul > li:hover,
+.md-typeset .grid.cards > ol > li:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: var(--arkoi-shadow-md);
+  transform: translateY(-0.18rem);
+}
+
+.md-typeset .grid.cards hr {
+  margin: 0.75rem 0;
+}
+
+/* Tables */
+.md-typeset .md-typeset__table {
+  display: block;
+  margin: 1.25em 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.md-typeset table:not([class]),
+.md-typeset table.wide-table {
+  background: var(--arkoi-surface);
+  border: 1px solid var(--arkoi-rule-color);
+  border-collapse: separate;
+  border-radius: var(--arkoi-radius-md);
+  border-spacing: 0;
+  box-shadow: var(--arkoi-shadow-sm);
+  display: table;
+  width: 100%;
+}
+
+/* Apply this class only when preserving a wide comparison is more readable
+   than wrapping every cell. Ordinary two-column tables remain mobile-sized. */
+.md-typeset table.wide-table {
+  min-width: 40rem;
+}
+
+.md-typeset table:not([class]) th,
+.md-typeset table.wide-table th {
+  background: var(--arkoi-surface-soft);
+  color: var(--md-default-fg-color);
+  font-size: 0.7rem;
+  font-weight: 730;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.md-typeset table:not([class]) td,
+.md-typeset table.wide-table td {
+  border-top-color: var(--arkoi-rule-color);
+  vertical-align: top;
+}
+
+.md-typeset table:not([class]) tr:hover td,
+.md-typeset table.wide-table tr:hover td {
+  background-color: var(--md-accent-fg-color--transparent);
+}
+
+/* Code */
+.md-typeset code {
+  border: 1px solid var(--arkoi-rule-color);
+  border-radius: 0.3rem;
+  font-size: 0.84em;
+  padding: 0.08em 0.35em;
+}
+
+.md-typeset pre > code {
+  border: 0;
+  border-radius: 0;
+  padding: 1.05rem 1.15rem;
+}
+
+.md-typeset .highlight {
+  border: 1px solid var(--arkoi-rule-color);
+  border-radius: var(--arkoi-radius-md);
+  box-shadow: var(--arkoi-shadow-sm);
+  overflow: hidden;
+}
+
+.md-typeset .highlight pre {
+  border-radius: 0;
+  margin: 0;
+}
+
+.md-typeset .md-clipboard,
+.md-typeset .md-code__button {
+  color: var(--md-default-fg-color--lighter);
+  transition: color 120ms ease;
+}
+
+.md-typeset .md-clipboard:hover,
+.md-typeset .md-code__button:hover {
+  color: var(--md-accent-fg-color);
+}
+
+/* Notes, warnings, and specification metadata */
+.md-typeset .admonition,
+.md-typeset details {
+  background: var(--arkoi-surface);
+  border-radius: 0.6rem;
+  border-width: 0.075rem;
+  box-shadow: var(--arkoi-shadow-sm);
+  overflow: hidden;
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+  font-weight: 700;
+}
+
+.md-typeset .admonition-title {
+  align-items: center;
+  display: flex;
+  line-height: 1.25;
+  min-height: 2.15rem;
+  padding-bottom: 0.4rem;
+  padding-top: 0.4rem;
+}
+
+.md-typeset .admonition-title::before {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.md-typeset .admonition > .admonition-title:has(+ .highlight:last-child) {
+  margin-bottom: 0;
+}
+
+.md-typeset .admonition:has(> .highlight:last-child),
+.md-typeset details:has(> .highlight:last-child) {
+  padding-bottom: 0;
+}
+
+/* Let code-only callouts read as one component instead of nested cards. */
+.md-typeset .admonition > .highlight:last-child,
+.md-typeset details > .highlight:last-child {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0 -0.6rem;
+}
+
+.md-typeset .admonition > .highlight:last-child code,
+.md-typeset details > .highlight:last-child code {
+  font-size: var(--arkoi-code-size);
+}
+
+.md-typeset blockquote {
+  border-left: 0.18rem solid var(--md-primary-fg-color);
+  color: var(--md-default-fg-color--light);
+}
+
+.md-typeset .spec-meta {
+  font-size: 0.75rem;
+  margin: -0.15rem 0 1.35rem;
+}
+
+.md-typeset .spec-meta th {
+  width: 10rem;
+}
+
+/* Page-to-page navigation */
+.md-footer {
+  background: #242039;
+}
+
+.md-footer-meta {
+  background: #1b182b;
+}
+
+.md-footer__link {
+  padding-bottom: 1.25rem;
+  padding-top: 1.25rem;
+}
+
+.md-top {
+  background: var(--arkoi-surface);
+  border: 1px solid var(--arkoi-rule-color);
+  border-radius: 0.55rem;
+  box-shadow: var(--arkoi-shadow-sm);
+  color: var(--md-default-fg-color--light);
+  font-size: 0.65rem;
+  font-weight: 650;
+  padding: 0.45rem 0.7rem;
+}
+
+.md-top:hover {
+  background: var(--arkoi-surface-soft);
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-accent-fg-color);
+}
+
+.md-top:focus-visible {
+  outline: 2px solid var(--md-accent-fg-color);
+  outline-offset: 2px;
+}
+
+.md-top svg {
+  fill: currentcolor;
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-content__inner {
+    background: color-mix(in srgb, var(--arkoi-surface) 84%, transparent);
+    border: 1px solid var(--arkoi-rule-color);
+    border-radius: var(--arkoi-radius-lg);
+    box-shadow: var(--arkoi-shadow-sm);
+    margin-top: 1.2rem;
+    padding: 2.2rem 2.5rem 2.75rem;
+  }
+}
+
+@media screen and (max-width: 76.234375em) {
+  .md-nav--primary .md-nav__title[for="__drawer"] {
+    background: linear-gradient(112deg, #2a2066, #3e3285);
+    color: #fff;
+  }
+}
+
+@media screen and (max-width: 44.984375em) {
+  .md-typeset {
+    --arkoi-code-size: 0.6552rem;
+    font-size: 0.78rem;
+    line-height: 1.7;
+  }
+
+  .md-typeset > h1:first-of-type {
+    font-size: 2rem;
+  }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

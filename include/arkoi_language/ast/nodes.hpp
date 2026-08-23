@@ -80,16 +80,16 @@ public:
     /**
      * @brief Returns the statements contained within the program.
      *
-     * @return A constant reference to the vector of statement nodes.
+     * @return A reference to the vector of statement nodes, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& statements() const { return _statements; }
+    [[nodiscard]] auto& statements(this auto& self) { return self._statements; }
 
     /**
      * @brief Returns the global symbol table associated with the program.
      *
-     * @return A constant reference to the `sem::SymbolTable`.
+     * @return A reference to the `sem::SymbolTable`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& table() const { return _table; }
+    [[nodiscard]] auto& table(this auto& self) { return self._table; }
 
 private:
     std::vector<std::unique_ptr<Node>> _statements;
@@ -134,16 +134,16 @@ public:
     /**
      * @brief Returns the statements contained within the block.
      *
-     * @return A constant reference to the vector of statement nodes.
+     * @return A reference to the vector of statement nodes, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& statements() const { return _statements; }
+    [[nodiscard]] auto& statements(this auto& self) { return self._statements; }
 
     /**
      * @brief Returns the symbol table associated with this block's scope.
      *
-     * @return A constant reference to the `sem::SymbolTable`.
+     * @return A reference to the `sem::SymbolTable`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& table() const { return _table; }
+    [[nodiscard]] auto& table(this auto& self) { return self._table; }
 
 private:
     std::vector<std::unique_ptr<Node>> _statements;
@@ -202,10 +202,10 @@ public:
      *
      * This is populated during the semantic analysis phase.
      *
-     * @return A shared pointer to the `Symbol`.
+     * @return A reference to the shared pointer to the `Symbol`, const-qualified when this object is const.
      * @throws std::bad_optional_access if the symbol has not been resolved.
      */
-    [[nodiscard]] auto& symbol() const { return _symbol.value(); }
+    [[nodiscard]] auto& symbol(this auto& self) { return self._symbol.value(); }
 
     /**
      * @brief Sets the resolved symbol for this identifier.
@@ -217,16 +217,16 @@ public:
     /**
      * @brief Returns the token representing the identifier's name.
      *
-     * @return A constant reference to the `front::Token`.
+     * @return A reference to the `front::Token`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& value() const { return _value; }
+    [[nodiscard]] auto& value(this auto& self) { return self._value; }
 
     /**
      * @brief Returns the kind of the identifier.
      *
-     * @return The `Kind` of the identifier.
+     * @return A reference to the `Kind`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& kind() const { return _kind; }
+    [[nodiscard]] auto& kind(this auto& self) { return self._kind; }
 
     /**
      * @brief Converts an identifier kind to its string representation.
@@ -284,16 +284,16 @@ public:
     /**
      * @brief Returns the semantic type of the parameter.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& type() const { return _type; }
+    [[nodiscard]] auto& type(this auto& self) { return self._type; }
 
     /**
      * @brief Returns the identifier of the parameter.
      *
-     * @return A reference to the `Identifier`.
+     * @return A reference to the `Identifier`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     pretty_diagnostics::Span _span;
@@ -346,37 +346,37 @@ public:
     /**
      * @brief Returns the parameters of the function.
      *
-     * @return A reference to the vector of `Parameter` nodes.
+     * @return A reference to the vector of `Parameter` nodes, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& parameters() { return _parameters; }
+    [[nodiscard]] auto& parameters(this auto& self) { return self._parameters; }
 
     /**
      * @brief Returns the symbol table associated with the function's scope.
      *
-     * @return A constant reference to the `sem::SymbolTable`.
+     * @return A reference to the `sem::SymbolTable`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& table() const { return _table; }
+    [[nodiscard]] auto& table(this auto& self) { return self._table; }
 
     /**
      * @brief Returns the return type of the function.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& type() const { return _type; }
+    [[nodiscard]] auto& type(this auto& self) { return self._type; }
 
     /**
      * @brief Returns the body block of the function.
      *
-     * @return A reference to the unique pointer of the `Block`.
+     * @return A reference to the unique pointer of the `Block`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& block() { return _block; }
+    [[nodiscard]] auto& block(this auto& self) { return self._block; }
 
     /**
      * @brief Returns the name identifier of the function.
      *
-     * @return A reference to the `Identifier`.
+     * @return A reference to the `Identifier`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::shared_ptr<sem::SymbolTable> _table;
@@ -422,10 +422,10 @@ public:
      *
      * This is populated during semantic analysis.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      * @throws std::bad_optional_access if the type has not been set.
      */
-    [[nodiscard]] auto& type() const { return _type.value(); }
+    [[nodiscard]] auto& type(this auto& self) { return self._type.value(); }
 
     /**
      * @brief Sets the type of the expression being returned.
@@ -437,9 +437,9 @@ public:
     /**
      * @brief Returns the expression being returned.
      *
-     * @return A reference to the unique pointer of the expression `Node`.
+     * @return A reference to the unique pointer of the expression `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& expression() { return _expression; }
+    [[nodiscard]] auto& expression(this auto& self) { return self._expression; }
 
     /**
      * @brief Sets the expression to be returned.
@@ -495,23 +495,23 @@ public:
     /**
      * @brief Returns the `then` branch of the if statement.
      *
-     * @return A constant reference to the unique pointer of the branch `Node`.
+     * @return A reference to the unique pointer of the branch `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& branch() const { return _branch; }
+    [[nodiscard]] auto& branch(this auto& self) { return self._branch; }
 
     /**
      * @brief Returns the `else` branch of the if statement.
      *
-     * @return A constant reference to the unique pointer of the next `Node`.
+     * @return A reference to the unique pointer of the next `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& next() const { return _next; }
+    [[nodiscard]] auto& next(this auto& self) { return self._next; }
 
     /**
      * @brief Returns the condition expression.
      *
-     * @return A reference to the unique pointer of the condition `Node`.
+     * @return A reference to the unique pointer of the condition `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& condition() { return _condition; }
+    [[nodiscard]] auto& condition(this auto& self) { return self._condition; }
 
     /**
      * @brief Sets the condition expression.
@@ -563,16 +563,16 @@ public:
     /**
      * @brief Returns the node that is getting executed if the condition is true.
      *
-     * @return A constant reference to the unique pointer of the `Node`.
+     * @return A reference to the unique pointer of the `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& then() const { return _then; }
+    [[nodiscard]] auto& then(this auto& self) { return self._then; }
 
     /**
      * @brief Returns the condition expression.
      *
-     * @return A reference to the unique pointer of the condition `Node`.
+     * @return A reference to the unique pointer of the condition `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& condition() { return _condition; }
+    [[nodiscard]] auto& condition(this auto& self) { return self._condition; }
 
     /**
      * @brief Sets the condition expression.
@@ -621,9 +621,9 @@ public:
     /**
      * @brief Returns the expression being assigned.
      *
-     * @return A reference to the unique pointer of the expression `Node`.
+     * @return A reference to the unique pointer of the expression `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& expression() { return _expression; }
+    [[nodiscard]] auto& expression(this auto& self) { return self._expression; }
 
     /**
      * @brief Sets the expression being assigned.
@@ -635,9 +635,9 @@ public:
     /**
      * @brief Returns the identifier of the target variable.
      *
-     * @return A reference to the target `Identifier`.
+     * @return A reference to the target `Identifier`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::unique_ptr<Node> _expression;
@@ -685,9 +685,9 @@ public:
     /**
      * @brief Returns the initial value expression.
      *
-     * @return A reference to the unique pointer of the expression `Node`.
+     * @return A reference to the unique pointer of the expression `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& expression() { return _expression; }
+    [[nodiscard]] auto& expression(this auto& self) { return self._expression; }
 
     /**
      * @brief Sets the initial value expression.
@@ -699,16 +699,16 @@ public:
     /**
      * @brief Returns the declared semantic type of the variable.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& type() const { return _type; }
+    [[nodiscard]] auto& type(this auto& self) { return self._type; }
 
     /**
      * @brief Returns the identifier of the declared variable.
      *
-     * @return A reference to the `Identifier`.
+     * @return A reference to the `Identifier`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::unique_ptr<Node> _expression;
@@ -751,16 +751,16 @@ public:
     /**
      * @brief Returns the arguments passed to the function.
      *
-     * @return A reference to the vector of argument `Node` pointers.
+     * @return A reference to the vector of argument `Node` pointers, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& arguments() { return _arguments; }
+    [[nodiscard]] auto& arguments(this auto& self) { return self._arguments; }
 
     /**
      * @brief Returns the name of the function being called.
      *
-     * @return A reference to the function `Identifier`.
+     * @return A reference to the function `Identifier`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::vector<std::unique_ptr<Node>> _arguments;
@@ -771,13 +771,12 @@ private:
 /**
  * @brief Represents a literal (immediate) value in the source code.
  *
- * Immediates can be integers, floating-point numbers, or booleans.
+ * Immediates can either be of type numeric or boolean.
  */
 class Immediate final : public Node {
 public:
 #define IMMEDIATE_KIND_TYPES \
-    X(Integer)     \
-    X(Floating)    \
+    X(Numeric)     \
     X(Boolean)
 
     /**
@@ -817,25 +816,25 @@ public:
     /**
      * @brief Returns the token representing the literal value.
      *
-     * @return A constant reference to the `front::Token`.
+     * @return A reference to the `front::Token`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& value() const { return _value; }
+    [[nodiscard]] auto& value(this auto& self) { return self._value; }
 
     /**
      * @brief Returns the kind of the literal value.
      *
-     * @return The `Kind` of the immediate.
+     * @return A reference to the `Kind`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& kind() const { return _kind; }
+    [[nodiscard]] auto& kind(this auto& self) { return self._kind; }
 
     /**
      * @brief Returns the semantic type of the literal value.
      *
      * This is populated during semantic analysis.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& type() const { return *_type; }
+    [[nodiscard]] auto& type(this auto& self) { return *self._type; }
 
     /**
      * @brief Sets the semantic type of the literal value.
@@ -873,27 +872,42 @@ private:
  */
 class Binary final : public Node {
 public:
-#define BINARY_OPERATOR_TYPES \
-    X(Add)                    \
-    X(Sub)                    \
-    X(Mul)                    \
-    X(Div)                    \
-    X(GreaterThan)            \
-    X(LessThan)               \
-    X(GreaterEqual)           \
-    X(LessEqual)              \
-    X(Equal)                  \
-    X(NotEqual)               \
-    X(And)                    \
-    X(Or)
+#define BINARY_OPERATOR_TYPES(X) \
+    X(Add,          Arithmetic)  \
+    X(Sub,          Arithmetic)  \
+    X(Mul,          Arithmetic)  \
+    X(Div,          Arithmetic)  \
+    X(GreaterThan,  Comparison)  \
+    X(LessThan,     Comparison)  \
+    X(GreaterEqual, Comparison)  \
+    X(LessEqual,    Comparison)  \
+    X(Equal,        Comparison)  \
+    X(NotEqual,     Comparison)  \
+    X(And,          Logical)     \
+    X(Or,           Logical)
+
+#define BINARY_OPERATOR_CATEGORIES(X) \
+    X(Arithmetic, arithmetic)         \
+    X(Comparison, comparison)         \
+    X(Logical,    logical)
 
     /**
      * @brief Specifies the binary operator.
      */
     enum class Operator {
-#define X(element) element,
-        BINARY_OPERATOR_TYPES
+#define X(element, category) element,
+        BINARY_OPERATOR_TYPES(X)
 #undef X
+    };
+
+    /**
+     * @brief Specifies the binary operator category
+     */
+    enum class OperatorCategory {
+#define X(category, function_name) category,
+        BINARY_OPERATOR_CATEGORIES(X)
+#undef X
+        Unknown
     };
 
 public:
@@ -929,19 +943,19 @@ public:
     /**
      * @brief Returns the binary operator.
      *
-     * @return The `Operator` of the expression.
+     * @return A reference to the `Operator`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& op() const { return _op; }
+    [[nodiscard]] auto& op(this auto& self) { return self._op; }
 
     /**
      * @brief Returns the type expected for the operands.
      *
      * This is populated during semantic analysis.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      * @throws std::bad_optional_access if the type has not been set.
      */
-    [[nodiscard]] auto& op_type() const { return _op_type.value(); }
+    [[nodiscard]] auto& op_type(this auto& self) { return self._op_type.value(); }
 
     /**
      * @brief Sets the expected type for the operands.
@@ -953,9 +967,9 @@ public:
     /**
      * @brief Returns the right operand.
      *
-     * @return A reference to the unique pointer of the right `Node`.
+     * @return A reference to the unique pointer of the right `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& right() { return _right; }
+    [[nodiscard]] auto& right(this auto& self) { return self._right; }
 
     /**
      * @brief Sets the right operand.
@@ -967,9 +981,9 @@ public:
     /**
      * @brief Returns the left operand.
      *
-     * @return A reference to the unique pointer of the left `Node`.
+     * @return A reference to the unique pointer of the left `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& left() { return _left; }
+    [[nodiscard]] auto& left(this auto& self) { return self._left; }
 
     /**
      * @brief Sets the left operand.
@@ -983,10 +997,10 @@ public:
      *
      * This is populated during semantic analysis.
      *
-     * @return A constant reference to the `sem::Type`.
+     * @return A reference to the `sem::Type`, const-qualified when this object is const.
      * @throws std::bad_optional_access if the type has not been set.
      */
-    [[nodiscard]] auto& result_type() const { return _result_type.value(); }
+    [[nodiscard]] auto& result_type(this auto& self) { return self._result_type.value(); }
 
     /**
      * @brief Sets the result type of the binary operation.
@@ -1001,14 +1015,47 @@ public:
      * @param op The operator to convert.
      * @return A string literal representing the operator.
      */
-    static const char* to_string(const Operator op) {
+    [[nodiscard]] static const char* to_string(const Operator op) {
         switch (op) {
-#define X(element) case Operator::element: return #element;
-            BINARY_OPERATOR_TYPES
+#define X(element, category) \
+            case Operator::element: return #element;
+            BINARY_OPERATOR_TYPES(X)
 #undef X
         }
         return "<unknown>";
     }
+
+    /**
+     * Returns the category associated with an operator.
+     */
+    [[nodiscard]] static constexpr OperatorCategory category(const Operator op) {
+        switch (op) {
+#define X(name, category) \
+            case Operator::name: return OperatorCategory::category;
+            BINARY_OPERATOR_TYPES(X)
+#undef X
+        }
+        return OperatorCategory::Unknown;
+    }
+
+    /*
+     * Used to generate functions to check whether a binary node is 
+     * a arithmetic, logical or comparison operation.
+     * 
+     * This will generate a global function and local method e.g.:
+     * static bool is_arithmetic(Operator);
+     * bool is_arithmetic() const;
+     */
+#define X(category_name, function_name)                                         \
+    [[nodiscard]] static constexpr bool is_##function_name(const Operator op) { \
+        return category(op) == OperatorCategory::category_name;                 \
+    }                                                                           \
+                                                                                \
+    [[nodiscard]] constexpr bool is_##function_name() const {                   \
+        return is_##function_name(_op);                                         \
+    }
+    BINARY_OPERATOR_CATEGORIES(X)
+#undef X
 
 private:
     std::optional<sem::Type> _result_type{ }, _op_type{ };
@@ -1064,17 +1111,17 @@ public:
     /**
      * @brief Returns the expression being cast.
      *
-     * @return A constant reference to the unique pointer of the expression `Node`.
+     * @return A reference to the unique pointer of the expression `Node`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& expression() const { return _expression; }
+    [[nodiscard]] auto& expression(this auto& self) { return self._expression; }
 
     /**
      * @brief Returns the source type of the cast.
      *
-     * @return A constant reference to the source `sem::Type`.
+     * @return A reference to the source `sem::Type`, const-qualified when this object is const.
      * @throws std::bad_optional_access if the source type has not been set.
      */
-    [[nodiscard]] auto& from() const { return _from.value(); }
+    [[nodiscard]] auto& from(this auto& self) { return self._from.value(); }
 
     /**
      * @brief Sets the source type of the cast.
@@ -1086,9 +1133,9 @@ public:
     /**
      * @brief Returns the target type of the cast.
      *
-     * @return A constant reference to the target `sem::Type`.
+     * @return A reference to the target `sem::Type`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& to() const { return _to; }
+    [[nodiscard]] auto& to(this auto& self) { return self._to; }
 
 private:
     std::optional<sem::Type> _from{ };
