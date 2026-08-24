@@ -77,11 +77,9 @@ public:
 
     /**
      * @brief Returns the diagnostic report associated with this error.
-     * @return Reference to the stored diagnostic report.
+     * @return A reference to the stored diagnostic report, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& report() const {
-        return _report;
-    }
+    [[nodiscard]] auto& report(this auto& self) { return self._report; }
 
 private:
     pretty_diagnostics::Report _report;

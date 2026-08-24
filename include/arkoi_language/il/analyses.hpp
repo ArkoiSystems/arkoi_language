@@ -100,9 +100,9 @@ public:
     /**
      * @brief Returns a `State` with all live across calls operands.
      *
-     * @return A reference to the `State`s that are live across calls.
+     * @return A reference to the `State`s that are live across calls, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& live_across_calls() { return _live_across_calls; }
+    [[nodiscard]] auto& live_across_calls(this auto& self) { return self._live_across_calls; }
 
     /**
      * @brief Checks and returns if the provided operand is live across call instructions.

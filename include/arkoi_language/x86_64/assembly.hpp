@@ -24,9 +24,9 @@ public:
     /**
      * @brief Returns the name of the label.
      *
-     * @return A constant reference to the name string.
+     * @return A reference to the name string, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& name() const { return _name; }
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::string _name;
@@ -48,9 +48,9 @@ public:
     /**
      * @brief Returns the directive text.
      *
-     * @return A constant reference to the text string.
+     * @return A reference to the text string, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& text() const { return _text; }
+    [[nodiscard]] auto& text(this auto& self) { return self._text; }
 
 private:
     std::string _text;
@@ -87,16 +87,16 @@ public:
     /**
      * @brief Returns the instruction's operands.
      *
-     * @return A constant reference to the operand vector.
+     * @return A reference to the operand vector, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& operands() const { return _operands; }
+    [[nodiscard]] auto& operands(this auto& self) { return self._operands; }
 
     /**
      * @brief Returns the instruction's opcode.
      *
-     * @return The `Opcode` value.
+     * @return A reference to the `Opcode`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& opcode() const { return _opcode; }
+    [[nodiscard]] auto& opcode(this auto& self) { return self._opcode; }
 
 private:
     std::vector<Operand> _operands;

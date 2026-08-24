@@ -95,9 +95,9 @@ public:
     /**
      * @brief Provides access to the underlying adjacency map.
      *
-     * @return A reference to the internal adjacency map.
+     * @return A reference to the internal adjacency map, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& adjacent() const { return _adjacent; }
+    [[nodiscard]] auto& adjacent(this auto& self) { return self._adjacent; }
 
 private:
     std::unordered_map<Node, std::unordered_set<Node>> _adjacent;

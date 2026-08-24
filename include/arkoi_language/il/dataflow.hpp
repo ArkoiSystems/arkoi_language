@@ -146,9 +146,9 @@ public:
      * In a forward analysis, this is the state *after* the target.
      * In a backward analysis, this is the state *before* the target.
      *
-     * @return A map from the target pointer to `State`.
+     * @return A reference to the target-to-state map, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& out() const { return _out; }
+    [[nodiscard]] auto& out(this auto& self) { return self._out; }
 
     /**
      * @brief Returns the computed 'in' states for all program points.
@@ -156,9 +156,9 @@ public:
      * In a forward analysis, this is the state *before* the target.
      * In a backward analysis, this is the state *after* the target.
      *
-     * @return A map from the target pointer to `State`.
+     * @return A reference to the target-to-state map, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& in() const { return _in; }
+    [[nodiscard]] auto& in(this auto& self) { return self._in; }
 
 private:
     std::unordered_map<Key, State> _out{ };

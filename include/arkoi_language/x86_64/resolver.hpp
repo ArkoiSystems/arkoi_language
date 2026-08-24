@@ -63,7 +63,12 @@ class Resolver final : il::Visitor {
 public:
     void run(il::Function& function, const Mapping& mapping);
 
-    [[nodiscard]] auto& mappings() const { return _mappings; }
+    /**
+     * @brief Returns the resolved operand mappings.
+     *
+     * @return A reference to the mappings, const-qualified when this object is const.
+     */
+    [[nodiscard]] auto& mappings(this auto& self) { return self._mappings; }
 
     /**
      * @brief Retrieves the machine operand associated with a generic IL operand.
@@ -85,9 +90,9 @@ public:
     /**
      * @brief Returns all the call frames which got mapped.
      *
-     * @return A unordered map of call frames associated with `il::Call` instructions.
+     * @return A reference to the call-frame map, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& call_frames() const { return _call_frames; }
+    [[nodiscard]] auto& call_frames(this auto& self) { return self._call_frames; }
 
     /**
      * @brief Rounds up a size to satisfy the x86-64 16-byte stack alignment.

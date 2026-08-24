@@ -31,6 +31,102 @@ template <class... Ts>
 match(Ts...) -> match<Ts...>;
 
 /**
+ * @brief Temporarily replaces a value and restores it when leaving scope.
+ *
+ * The original value of `target` is retained for the lifetime of the
+ * `ScopedValue`. The replacement can be changed with `set()`, and the original
+ * value is restored when the guard is destroyed.
+ *
+ * @tparam T The guarded value type. It must be nothrow move-constructible and
+ * nothrow swappable.
+ */
+template<typename T>
+class [[nodiscard]] ScopedValue final {
+    static_assert(std::is_nothrow_move_constructible_v<T>, "ScopedValue requires noexcept move construction");
+    static_assert(std::is_nothrow_swappable_v<T>, "ScopedValue requires noexcept swap");
+
+public:
+    /**
+     * @brief Replaces `target` with `init` for the lifetime of this guard.
+     *
+     * @param target The value to replace temporarily.
+     * @param init The temporary value assigned to `target`.
+     */
+    explicit ScopedValue(T& target, T init) noexcept 
+        :  _target(target), _saved(std::move(init)) { 
+        std::swap(_target, _saved);
+    }
+
+    /**
+     * @brief Replaces `target` with `std::nullopt` for this guard's lifetime.
+     *
+     * This overload is available when `T` can be constructed from
+     * `std::nullopt`.
+     *
+     * @param target The value to clear temporarily.
+     */
+    explicit ScopedValue(T& target) noexcept 
+        : ScopedValue(target, std::nullopt) {}
+
+    /**
+     * @brief Restores the value held by `target` before construction.
+     */
+    ~ScopedValue() {
+         std::swap(_target, _saved);
+    }
+
+    ScopedValue(const ScopedValue&) = delete;
+    ScopedValue& operator=(const ScopedValue&) = delete;
+
+    ScopedValue(ScopedValue&&) = delete;
+    ScopedValue& operator=(ScopedValue&&) = delete;
+
+    /**
+     * @brief Assigns a new temporary value to the guarded target.
+     *
+     * @tparam U The assigned value type.
+     * @param value The value to forward to the target's assignment operator.
+     */
+    template <typename U> requires std::assignable_from<T&, U&&>
+    void set(U&& value) noexcept(std::is_nothrow_assignable_v<T&, U&&>) {
+        _target = std::forward<U>(value);
+    }
+
+    /**
+     * @brief Returns a constant reference to the current target value.
+     */
+    [[nodiscard]] const T& getTarget() const noexcept { return _target; }
+
+    /**
+     * @brief Returns a mutable reference to the current target value.
+     */
+    [[nodiscard]] T& getTarget() noexcept { return _target; }
+
+    /**
+     * @brief Returns a constant reference to the value restored on destruction.
+     */
+    [[nodiscard]] const T& getSaved() const noexcept { return _saved; }
+
+    /**
+     * @brief Returns a mutable reference to the value restored on destruction.
+     */
+    [[nodiscard]] T& getSaved() noexcept { return _saved; }
+
+private:
+    T& _target;
+    T _saved;
+};
+
+/**
+ * @brief Deduces the guarded type from the target argument.
+ *
+ * @tparam T The target's value type.
+ * @tparam U The initial temporary value type.
+ */
+template <typename T, typename U>
+ScopedValue(T&, U&&) -> ScopedValue<T>;
+
+/**
  * @brief Converts a value to its string representation using `operator<<`.
  *
  * This is a generic helper that works for any type that has an overloaded

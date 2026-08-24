@@ -53,9 +53,9 @@ public:
     /**
      * @brief Returns whether the type is signed.
      *
-     * @return True if signed, false otherwise.
+     * @return True if signed, false otherwise, const-qualified when this object is const.
      */
-    [[nodiscard]] auto sign() const { return _sign; }
+    [[nodiscard]] auto sign(this auto& self) { return self._sign; }
 
 private:
     Size _size;
@@ -150,6 +150,13 @@ struct Type final : std::variant<Integral, Floating, Boolean> {
      * @return The `Size` of the active type variant.
      */
     [[nodiscard]] Size size() const;
+
+    /**
+     * @brief Returns whether the underlying type is arithmetic (Integral, Floating) or not.
+     * 
+     * @return Whether the underlying type is arithmetic.
+     */
+    [[nodiscard]] bool is_arithmetic() const;
 };
 
 /**

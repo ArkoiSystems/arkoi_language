@@ -19,9 +19,15 @@ public:
 
     [[nodiscard]] std::string load() const;
 
-    [[nodiscard]] auto& path() const { return _path; }
+    /**
+     * @return A reference to the snapshot path, const-qualified when this object is const.
+     */
+    [[nodiscard]] auto& path(this auto& self) { return self._path; }
 
-    [[nodiscard]] auto& name() const { return _name; }
+    /**
+     * @return A reference to the snapshot name, const-qualified when this object is const.
+     */
+    [[nodiscard]] auto& name(this auto& self) { return self._name; }
 
 private:
     std::filesystem::path _path;

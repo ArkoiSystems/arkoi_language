@@ -1,0 +1,7 @@
+fun main() @s32:
+    if select(true, 42.5) == 42.5: return 0
+    else:                          return 1
+
+fun select(condition @bool, value @f64) @f64:
+    if condition: return value
+    else:         return 0.0

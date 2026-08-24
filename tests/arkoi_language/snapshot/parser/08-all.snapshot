@@ -17,9 +17,9 @@ Program
    │              │  │     │  │     └─ Arguments
    │              │  │     │  │        └─ Immediate[value=true, kind=Boolean]
    │              │  │     │  └─ Immediate[value=true, kind=Boolean]
-   │              │  │     └─ Immediate[value=10.5, kind=Floating]
-   │              │  └─ Immediate[value=2.01, kind=Floating]
-   │              └─ Immediate[value='*', kind=Integer]
+   │              │  │     └─ Immediate[value=10.5, kind=Numeric]
+   │              │  └─ Immediate[value=2.01, kind=Numeric]
+   │              └─ Immediate[value='*', kind=Numeric]
    ├─ Function
    │  ├─ Identifier[value=ok, kind=Function]
    │  ├─ Parameters
@@ -31,10 +31,10 @@ Program
    │        │  ├─ Identifier[value=foo1, kind=Variable]
    │        │  └─ Return
    │        │     └─ Binary[op=Add]
-   │        │        ├─ Immediate[value=21, kind=Integer]
-   │        │        └─ Immediate[value=21, kind=Integer]
+   │        │        ├─ Immediate[value=21, kind=Numeric]
+   │        │        └─ Immediate[value=21, kind=Numeric]
    │        └─ Return
-   │           └─ Immediate[value=0.0, kind=Floating]
+   │           └─ Immediate[value=0.0, kind=Numeric]
    └─ Function
       ├─ Identifier[value=test, kind=Function]
       ├─ Parameters

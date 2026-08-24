@@ -13,13 +13,21 @@ env:
   MAKE_INSTALLABLE: ON
   BUILD_EXECUTABLE: ON
   BUILD_TESTING: ON
+  CC: gcc-14
+  CXX: g++-14
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install GCC 14
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes gcc-14 g++-14
+          "$CXX" --version
 
       - name: Setup cmake
         uses: jwlawson/actions-setup-cmake@v2

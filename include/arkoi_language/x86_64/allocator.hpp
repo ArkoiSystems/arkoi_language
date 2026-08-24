@@ -16,9 +16,17 @@ public:
     explicit PreColorer(il::Function& function) :
         _function(function) { }
 
+    /**
+     * @brief Runs the precoloring pass on all the nodes of the AST
+     */
     void run();
 
-    [[nodiscard]] auto assigned() const { return _assigned; }
+    /**
+     * @brief Returns the all the variables to their assigned register bases.
+     *
+     * @return A `Mapping` of all variables, const-qualified when this object is const..
+     */
+    [[nodiscard]] auto assigned(this auto& self) { return self._assigned; }
 
     /**
      * @brief Determines the physical register used for returning a specific type.
@@ -95,9 +103,9 @@ public:
     /**
      * @brief Returns the successful virtual-to-physical register assignments.
      *
-     * @return A constant reference to the `Mapping`.
+     * @return A reference to the `Mapping`, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& assigned() const { return _assigned; }
+    [[nodiscard]] auto& assigned(this auto& self) { return self._assigned; }
 
     /**
      * @brief Returns the variables that could not be assigned a register.
@@ -105,9 +113,9 @@ public:
      * Spilled variables must be handled by the code generator by using
      * stack slots instead of registers.
      *
-     * @return A constant reference to the vector of spilled `il::Variable` objects.
+     * @return A reference to the vector of spilled `il::Variable` objects, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& spilled() const { return _spilled; }
+    [[nodiscard]] auto& spilled(this auto& self) { return self._spilled; }
 
 private:
     void _cleanup();

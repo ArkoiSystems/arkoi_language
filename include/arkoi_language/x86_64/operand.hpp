@@ -59,16 +59,16 @@ public:
     /**
      * @brief Returns the access size of the register.
      *
-     * @return The `Size` enumeration value.
+     * @return The `Size` enumeration value, const-qualified when this object is const.
      */
-    [[nodiscard]] auto size() const { return _size; }
+    [[nodiscard]] auto size(this auto& self) { return self._size; }
 
     /**
      * @brief Returns the architectural base identifier.
      *
-     * @return The `Base` enumeration value.
+     * @return The `Base` enumeration value, const-qualified when this object is const.
      */
-    [[nodiscard]] auto base() const { return _base; }
+    [[nodiscard]] auto base(this auto& self) { return self._base; }
 
 private:
     Size _size;
@@ -142,9 +142,9 @@ public:
     /**
      * @brief Returns the displacement value.
      *
-     * @return The displacement of the address.
+     * @return The displacement of the address, const-qualified when this object is const.
      */
-    [[nodiscard]] auto displacement() const { return _displacement; }
+    [[nodiscard]] auto displacement(this auto& self) { return self._displacement; }
 
     /**
      * @brief Sets the base address to the given one.
@@ -156,30 +156,30 @@ public:
     /**
      * @brief Returns the base address component.
      *
-     * @return A reference to the address.
+     * @return A reference to the address, const-qualified when this object is const.
      */
-    [[nodiscard]] auto& address() const { return _address; }
+    [[nodiscard]] auto& address(this auto& self) { return self._address; }
 
     /**
      * @brief Returns the scale factor.
      *
-     * @return The scale of the address.
+     * @return The scale of the address, const-qualified when this object is const.
      */
-    [[nodiscard]] auto scale() const { return _scale; }
+    [[nodiscard]] auto scale(this auto& self) { return self._scale; }
 
     /**
      * @brief Returns the index component.
      *
-     * @return The index of the address.
+     * @return The index of the address, const-qualified when this object is const.
      */
-    [[nodiscard]] auto index() const { return _index; }
+    [[nodiscard]] auto index(this auto& self) { return self._index; }
 
     /**
      * @brief Returns the size of the memory access.
      *
-     * @return The size of the address.
+     * @return The size of the address, const-qualified when this object is const.
      */
-    [[nodiscard]] auto size() const { return _size; }
+    [[nodiscard]] auto size(this auto& self) { return self._size; }
 
 private:
     int64_t _index, _scale, _displacement;
